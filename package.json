@@ -1,0 +1,35 @@
+{
+  "name": "local-task-manager",
+  "version": "1.0.0",
+  "description": "A lightweight task management application with integrated timer",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "lint": "eslint src/ public/js/",
+    "lint:fix": "eslint src/ public/js/ --fix",
+    "format": "prettier --write src/ public/",
+    "format:check": "prettier --check src/ public/",
+    "audit:security": "npm audit",
+    "quality": "npm run lint && npm run format:check && npm run audit:security",
+    "prepare": "husky install"
+  },
+  "keywords": [
+    "task",
+    "timer",
+    "productivity"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "eslint": "^8.50.0",
+    "eslint-plugin-security": "^1.7.1",
+    "husky": "^9.1.7",
+    "prettier": "^3.0.3"
+  }
+}

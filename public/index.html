@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Local Task Manager</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Active Task Section (conditional) -->
+      <div id="active-task-section" class="active-task-section hidden">
+        <div class="active-header">▸ ACTIVE TASK</div>
+        <div id="active-task-title" class="active-task-title">
+          No active task
+        </div>
+        <div id="active-task-details" class="active-task-details hidden">
+          <div id="active-task-meta" class="active-task-meta"></div>
+          <div id="active-task-links" class="active-task-links"></div>
+        </div>
+        <div id="timer-display" class="timer-display">00:00:00</div>
+        <div class="action-buttons">
+          <button id="stop-btn" class="stop-btn">⏸ STOP</button>
+          <button id="complete-btn" class="complete-btn">✓ DONE</button>
+        </div>
+      </div>
+
+      <!-- Header Section -->
+      <div class="header-section">
+        <button id="add-task-btn" class="add-button">+ NEW TASK</button>
+      </div>
+
+      <!-- Daily Checklist Section -->
+      <div class="daily-checklist-section">
+        <div class="daily-checklist-header" id="daily-checklist-toggle">
+          📋 Daily Routine
+        </div>
+        <div class="daily-checklist-content" id="daily-checklist-list">
+          <label class="checklist-item">
+            <input
+              type="checkbox"
+              class="checklist-checkbox"
+              data-item="calendar"
+            />
+            📅 Calendar
+          </label>
+          <label class="checklist-item">
+            <input
+              type="checkbox"
+              class="checklist-checkbox"
+              data-item="asana"
+            />
+            ✓ Asana (ok2build, EPD roadmap)
+          </label>
+          <label class="checklist-item">
+            <input
+              type="checkbox"
+              class="checklist-checkbox"
+              data-item="email"
+            />
+            ✉️ Email
+          </label>
+          <label class="checklist-item">
+            <input
+              type="checkbox"
+              class="checklist-checkbox"
+              data-item="slack-dms"
+            />
+            💬 Slack DMs & threads
+          </label>
+          <label class="checklist-item">
+            <input
+              type="checkbox"
+              class="checklist-checkbox"
+              data-item="slack-channels"
+            />
+            📢 Slack channels & enablement docs
+          </label>
+        </div>
+      </div>
+
+      <!-- Task List Section -->
+      <div class="task-list-section">
+        <div id="task-list" class="task-list">
+          <div class="empty-state">
+            No tasks yet. Create one to get started!
+          </div>
+        </div>
+      </div>
+
+      <!-- Archive Section -->
+      <div class="archive-section">
+        <div class="archive-header" id="archive-toggle">
+          📦 Archive
+          <span id="archive-count" class="archive-count"></span>
+        </div>
+        <div class="archive-content hidden" id="archive-list"></div>
+      </div>
+    </div>
+
+    <!-- Task Modal -->
+    <div id="task-modal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="modal-title">Add New Task</h3>
+          <button class="close-btn" id="modal-close">&times;</button>
+        </div>
+        <form id="task-form">
+          <div class="form-group">
+            <label for="description">Description *</label>
+            <textarea
+              id="description"
+              required
+              placeholder="Describe your task..."
+            ></textarea>
+          </div>
+          <div class="form-group">
+            <label for="due-date">Due Date</label>
+            <input type="date" id="due-date" />
+          </div>
+          <div class="form-group">
+            <label for="due-time">Due Time</label>
+            <input type="time" id="due-time" />
+          </div>
+          <div class="form-group">
+            <label for="priority">Priority</label>
+            <select id="priority">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="links">Links (comma-separated)</label>
+            <input
+              type="text"
+              id="links"
+              placeholder="https://example.com, https://another.com"
+            />
+          </div>
+          <div class="form-group">
+            <label for="recurring">Recurring</label>
+            <select id="recurring">
+              <option value="">None</option>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+            </select>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="save-btn">Save Task</button>
+            <button type="button" class="cancel-btn" id="modal-cancel">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/timer.js"></script>
+    <script src="js/taskManager.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>
