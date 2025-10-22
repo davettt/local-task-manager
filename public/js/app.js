@@ -13,6 +13,7 @@ class App {
     this.archivedTasks = [];
     this.activeTaskId = null;
     this.editingTaskId = null;
+    this.editingActiveTask = false;
 
     this.init();
   }
@@ -45,11 +46,19 @@ class App {
     }
 
     if (modalClose) {
-      modalClose.addEventListener('click', () => UI.hideModal());
+      modalClose.addEventListener('click', () => {
+        this.editingTaskId = null;
+        this.editingActiveTask = false;
+        UI.hideModal();
+      });
     }
 
     if (modalCancel) {
-      modalCancel.addEventListener('click', () => UI.hideModal());
+      modalCancel.addEventListener('click', () => {
+        this.editingTaskId = null;
+        this.editingActiveTask = false;
+        UI.hideModal();
+      });
     }
 
     if (taskForm) {
@@ -64,9 +73,16 @@ class App {
       });
     }
 
-    // Timer buttons
+    // Timer buttons and edit
+    const editActiveBtn = document.getElementById('edit-active-btn');
     const stopBtn = document.getElementById('stop-btn');
     const completeBtn = document.getElementById('complete-btn');
+
+    if (editActiveBtn) {
+      editActiveBtn.addEventListener('click', () =>
+        this.handleEditActiveTask()
+      );
+    }
 
     if (stopBtn) {
       stopBtn.addEventListener('click', () => this.handleStopTask());
@@ -290,7 +306,15 @@ class App {
 
       UI.hideModal();
       this.editingTaskId = null;
-      this.render();
+
+      // If editing active task, update display without full re-render (keeps timer running)
+      if (this.editingActiveTask) {
+        this.editingActiveTask = false;
+        UI.showActiveTask(task);
+      } else {
+        // Regular task edit/create - full render
+        this.render();
+      }
     } catch (error) {
       console.error('Error saving task:', error);
       UI.showError(error.message);
@@ -309,6 +333,25 @@ class App {
     }
 
     this.editingTaskId = taskId;
+    UI.populateFormWithTask(task);
+    UI.showModal(true);
+  }
+
+  /**
+   * Handle edit active task (while timer is running)
+   */
+  handleEditActiveTask() {
+    if (!this.activeTaskId) {
+      return;
+    }
+
+    const task = this.tasks.find((t) => t.id === this.activeTaskId);
+    if (!task) {
+      return;
+    }
+
+    this.editingTaskId = this.activeTaskId;
+    this.editingActiveTask = true;
     UI.populateFormWithTask(task);
     UI.showModal(true);
   }
