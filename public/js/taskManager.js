@@ -225,6 +225,18 @@ class TaskManager {
   }
 
   /**
+   * Get recurring icon
+   * @param {string} recurring - Recurring interval ('daily', 'weekly', or null)
+   * @returns {string} Icon symbol or empty string if not recurring
+   */
+  static getRecurringIcon(recurring) {
+    if (recurring === 'daily' || recurring === 'weekly') {
+      return '↻';
+    }
+    return '';
+  }
+
+  /**
    * Get relative date label (Today, Tomorrow, Overdue, or formatted date)
    * @param {string} date - Date in YYYY-MM-DD format
    * @returns {string} Relative date label

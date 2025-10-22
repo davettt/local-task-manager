@@ -64,6 +64,10 @@ class UI {
         const icon = TaskManager.getPriorityIcon(task.priority);
         metaHtml += `<span class="active-priority">${icon} ${task.priority}</span>`;
       }
+      if (task.recurring) {
+        const recurringIcon = TaskManager.getRecurringIcon(task.recurring);
+        metaHtml += `<span class="active-priority">${recurringIcon} ${task.recurring}</span>`;
+      }
       if (task.dueDate || task.dueTime) {
         const dateTimeStr = TaskManager.formatDateTime(
           task.dueDate,
@@ -143,6 +147,7 @@ class UI {
    */
   static createTaskElement(task) {
     const priorityIcon = TaskManager.getPriorityIcon(task.priority);
+    const recurringIcon = TaskManager.getRecurringIcon(task.recurring);
     const dateTimeStr = TaskManager.formatDateTime(task.dueDate, task.dueTime);
     const dateTimeHtml = dateTimeStr
       ? `<span class="task-due">${dateTimeStr}</span>`
@@ -176,6 +181,7 @@ class UI {
       <div class="task-item" data-task-id="${escapeHtml(task.id)}">
         <div class="task-item-header">
           <span class="priority-icon">${priorityIcon}</span>
+          ${recurringIcon ? `<span class="priority-icon" title="Recurring: ${task.recurring}">${recurringIcon}</span>` : ''}
           <div class="task-content" style="flex: 1">
             <div class="task-title">${escapeHtml(task.description)}</div>
             <div class="task-meta">
