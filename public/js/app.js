@@ -14,6 +14,7 @@ class App {
     this.activeTaskId = null;
     this.editingTaskId = null;
     this.editingActiveTask = false;
+    this.searchQuery = '';
 
     this.init();
   }
@@ -31,6 +32,15 @@ class App {
    * Attach all event listeners
    */
   attachEventListeners() {
+    // Search input
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        this.searchQuery = e.target.value.toLowerCase();
+        this.render();
+      });
+    }
+
     // Modal controls
     const addTaskBtn = document.getElementById('add-task-btn');
     const modalClose = document.getElementById('modal-close');
@@ -140,6 +150,21 @@ class App {
   }
 
   /**
+   * Filter tasks by search query
+   * @param {Array} tasks - Tasks to filter
+   * @returns {Array} Filtered tasks
+   */
+  filterTasksBySearch(tasks) {
+    if (!this.searchQuery) {
+      return tasks;
+    }
+
+    return tasks.filter((task) =>
+      task.description.toLowerCase().includes(this.searchQuery)
+    );
+  }
+
+  /**
    * Sort tasks by due date/time (most urgent first)
    * @param {Array} tasks - Tasks to sort
    * @returns {Array} Sorted tasks
@@ -175,6 +200,9 @@ class App {
   render() {
     // Separate in-progress task from regular tasks
     let regularTasks = this.tasks.filter((task) => !task.inProgress);
+
+    // Filter tasks by search query
+    regularTasks = this.filterTasksBySearch(regularTasks);
 
     // Sort tasks by due date (most urgent first)
     regularTasks = this.sortTasksByDueDate(regularTasks);
