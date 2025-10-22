@@ -113,23 +113,62 @@ router.post('/tasks', (req, res) => {
         .json({ error: 'Recurring must be "daily" or "weekly"' });
     }
 
-    const task = {
-      id: id || Date.now().toString(),
-      description: description.trim(),
-      dueDate: dueDate || null,
-      dueTime: dueTime || null,
-      priority: priority || 'medium',
-      recurring: recurring || null,
-      completed: false,
-      archived: false,
-      inProgress: false,
-      startedAt: null,
-      timeSpent: 0,
-      completedAt: null,
-      links: links || [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    // Check if task exists (update case)
+    let task;
+    if (id) {
+      const existingTask = getTask(id);
+      if (existingTask) {
+        // Preserve existing metadata and timer data
+        task = {
+          ...existingTask,
+          description: description.trim(),
+          dueDate: dueDate || null,
+          dueTime: dueTime || null,
+          priority: priority || 'medium',
+          recurring: recurring || null,
+          links: links || [],
+          updatedAt: new Date().toISOString(),
+        };
+      } else {
+        // Task doesn't exist, create new one
+        task = {
+          id,
+          description: description.trim(),
+          dueDate: dueDate || null,
+          dueTime: dueTime || null,
+          priority: priority || 'medium',
+          recurring: recurring || null,
+          completed: false,
+          archived: false,
+          inProgress: false,
+          startedAt: null,
+          timeSpent: 0,
+          completedAt: null,
+          links: links || [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+      }
+    } else {
+      // Create new task
+      task = {
+        id: Date.now().toString(),
+        description: description.trim(),
+        dueDate: dueDate || null,
+        dueTime: dueTime || null,
+        priority: priority || 'medium',
+        recurring: recurring || null,
+        completed: false,
+        archived: false,
+        inProgress: false,
+        startedAt: null,
+        timeSpent: 0,
+        completedAt: null,
+        links: links || [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+    }
 
     validateTask(task);
     const savedTask = saveTask(task);
