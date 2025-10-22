@@ -21,6 +21,10 @@ function validateTask(task) {
     throw new Error('Invalid priority value');
   }
 
+  if (task.details && typeof task.details !== 'string') {
+    throw new Error('Details must be a string');
+  }
+
   if (task.links && Array.isArray(task.links)) {
     task.links.forEach((link) => {
       try {
@@ -98,8 +102,16 @@ router.get('/tasks/archived', (_req, res) => {
  */
 router.post('/tasks', (req, res) => {
   try {
-    const { id, description, dueDate, dueTime, priority, links, recurring } =
-      req.body;
+    const {
+      id,
+      description,
+      dueDate,
+      dueTime,
+      priority,
+      links,
+      recurring,
+      details,
+    } = req.body;
 
     // Validate required fields
     if (!description || description.trim().length === 0) {
@@ -126,6 +138,7 @@ router.post('/tasks', (req, res) => {
           dueTime: dueTime || null,
           priority: priority || 'medium',
           recurring: recurring || null,
+          details: details || null,
           links: links || [],
           updatedAt: new Date().toISOString(),
         };
@@ -138,6 +151,7 @@ router.post('/tasks', (req, res) => {
           dueTime: dueTime || null,
           priority: priority || 'medium',
           recurring: recurring || null,
+          details: details || null,
           completed: false,
           archived: false,
           inProgress: false,
@@ -158,6 +172,7 @@ router.post('/tasks', (req, res) => {
         dueTime: dueTime || null,
         priority: priority || 'medium',
         recurring: recurring || null,
+        details: details || null,
         completed: false,
         archived: false,
         inProgress: false,
@@ -289,6 +304,7 @@ router.post('/tasks/:id/complete', (req, res) => {
         dueTime: task.dueTime || null,
         priority: task.priority,
         recurring: task.recurring,
+        details: task.details || null,
         completed: false,
         archived: false,
         inProgress: false,

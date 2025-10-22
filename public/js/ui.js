@@ -53,6 +53,7 @@ class UI {
     const title = document.getElementById('active-task-title');
     const details = document.getElementById('active-task-details');
     const metaDiv = document.getElementById('active-task-meta');
+    const detailsDiv = document.getElementById('active-task-extended-details');
     const linksDiv = document.getElementById('active-task-links');
 
     if (section && title) {
@@ -76,6 +77,12 @@ class UI {
         metaHtml += `<span class="active-due">${dateTimeStr}</span>`;
       }
 
+      // Build extended details
+      let extendedDetailsHtml = '';
+      if (task.details && task.details.trim()) {
+        extendedDetailsHtml = `<div class="active-details-content">${task.details.replace(/\n/g, '<br>')}</div>`;
+      }
+
       // Build links
       let linksHtml = '';
       if (task.links && task.links.length > 0) {
@@ -94,10 +101,13 @@ class UI {
       if (metaDiv) {
         metaDiv.innerHTML = metaHtml;
       }
+      if (detailsDiv) {
+        detailsDiv.innerHTML = extendedDetailsHtml;
+      }
       if (linksDiv) {
         linksDiv.innerHTML = linksHtml;
       }
-      if (details && (metaHtml || linksHtml)) {
+      if (details && (metaHtml || extendedDetailsHtml || linksHtml)) {
         details.classList.remove('hidden');
       }
 
@@ -177,6 +187,15 @@ class UI {
            </div>`
         : '';
 
+    // Format details for display
+    const detailsHtml =
+      task.details && task.details.trim()
+        ? `<div class="task-details-section">
+             <div class="task-details-label">Details:</div>
+             <div class="task-details-text">${escapeHtml(task.details)}</div>
+           </div>`
+        : '';
+
     return `
       <div class="task-item" data-task-id="${escapeHtml(task.id)}">
         <div class="task-item-header">
@@ -193,6 +212,7 @@ class UI {
           )}" title="Show details">▼</button>
         </div>
         <div class="task-item-details hidden">
+          ${detailsHtml}
           ${linksHtml}
         </div>
         <div class="task-actions">
@@ -314,6 +334,7 @@ class UI {
     const priority = document.getElementById('priority').value;
     const linksInput = document.getElementById('links').value;
     const recurring = document.getElementById('recurring').value;
+    const details = document.getElementById('details').value;
     const links = TaskManager.parseLinks(linksInput);
 
     return {
@@ -322,6 +343,7 @@ class UI {
       dueTime: dueTime || null,
       priority,
       recurring: recurring || null,
+      details: details || null,
       links,
     };
   }
@@ -336,6 +358,7 @@ class UI {
     document.getElementById('due-time').value = task.dueTime || '';
     document.getElementById('priority').value = task.priority || 'medium';
     document.getElementById('recurring').value = task.recurring || '';
+    document.getElementById('details').value = task.details || '';
     document.getElementById('links').value = TaskManager.linksToString(
       task.links
     );

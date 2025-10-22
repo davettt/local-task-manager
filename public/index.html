@@ -16,6 +16,10 @@
         </div>
         <div id="active-task-details" class="active-task-details hidden">
           <div id="active-task-meta" class="active-task-meta"></div>
+          <div
+            id="active-task-extended-details"
+            class="active-task-extended-details"
+          ></div>
           <div id="active-task-links" class="active-task-links"></div>
         </div>
         <div id="timer-display" class="timer-display">00:00:00</div>
@@ -144,6 +148,13 @@
               id="links"
               placeholder="https://example.com, https://another.com"
             />
+          </div>
+          <div class="form-group">
+            <label for="details">Details (optional)</label>
+            <textarea
+              id="details"
+              placeholder="Add more detailed notes or instructions for this task..."
+            ></textarea>
           </div>
           <div class="form-group">
             <label for="recurring">Recurring</label>

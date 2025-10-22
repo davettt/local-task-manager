@@ -108,6 +108,48 @@ body {
   display: inline-block;
 }
 
+.active-task-extended-details {
+  margin-top: 4px;
+  padding: 4px;
+  background-color: rgba(42, 161, 152, 0.1);
+  border-left: 2px solid #2aa198;
+  color: #839496;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.active-details-content {
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.task-details-section {
+  margin-top: 3px;
+  margin-bottom: 3px;
+}
+
+.task-details-label {
+  color: #586e75;
+  font-size: 11px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.task-details-text {
+  color: #839496;
+  font-size: 12px;
+  padding: 2px 4px;
+  background-color: rgba(42, 161, 152, 0.05);
+  border-left: 2px solid #586e75;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.4;
+}
+
 .timer-display {
   color: #2aa198;
   font-size: 16px;
