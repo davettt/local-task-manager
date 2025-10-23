@@ -1,4 +1,4 @@
-/* global TaskManager, TaskTimer, UI, playCompletionSound, appointmentReminder */
+/* global TaskManager, TaskTimer, UI, playCompletionSound, appointmentReminder, gamification */
 
 /**
  * Main Application Module
@@ -137,7 +137,6 @@ class App {
       this.resumeActiveTask();
 
       // Start checking for appointment reminders
-      appointmentReminder.clearAllReminders();
       appointmentReminder.startCheckingReminders(this.tasks);
     } catch (error) {
       console.error('Error loading tasks:', error);
@@ -226,8 +225,28 @@ class App {
     // Render archive
     UI.renderArchive(this.archivedTasks);
 
+    // Update streak display
+    this.updateStreakDisplay();
+
     // Attach task list event listeners
     this.attachTaskListeners();
+  }
+
+  /**
+   * Update streak display in header
+   */
+  updateStreakDisplay() {
+    const streakDisplay = document.getElementById('streak-display');
+    if (!streakDisplay) return;
+
+    const streakText = gamification.getStreakDisplayText();
+    streakDisplay.textContent = streakText;
+
+    if (streakText) {
+      streakDisplay.classList.add('active');
+    } else {
+      streakDisplay.classList.remove('active');
+    }
   }
 
   /**
@@ -509,6 +528,10 @@ class App {
         this.activeTaskId = null;
         UI.hideActiveTask();
       }
+
+      // Record gamification (streak + celebration)
+      gamification.recordTaskCompletion();
+      gamification.showCelebration(task.description);
 
       // Play completion sound
       playCompletionSound();

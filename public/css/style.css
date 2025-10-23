@@ -241,6 +241,38 @@ body {
   box-shadow: 0 0 8px rgba(133, 153, 0, 0.4);
 }
 
+.streak-display {
+  padding: 4px 8px;
+  background-color: #073642;
+  color: #dc322f;
+  border: 1px solid #dc322f;
+  border-radius: 2px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  font-weight: bold;
+  text-align: center;
+  min-height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 1px;
+}
+
+.streak-display.active {
+  color: #dc322f;
+  text-shadow: 0 0 6px rgba(220, 50, 47, 0.5);
+  animation: streakGlow 1s infinite alternate;
+}
+
+@keyframes streakGlow {
+  0% {
+    text-shadow: 0 0 6px rgba(220, 50, 47, 0.5);
+  }
+  100% {
+    text-shadow: 0 0 12px rgba(220, 50, 47, 0.8);
+  }
+}
+
 /* Daily Checklist Section */
 .daily-checklist-section {
   border-bottom: 1px solid #073642;
