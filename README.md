@@ -9,6 +9,8 @@ A lightweight, single-focused task management application with an integrated tim
 - **Timer Persistence**: Timer state survives browser refresh
 - **Task Archive**: View completed tasks with time tracking
 - **Sound Alerts**: Audio notification when tasks are completed
+- **Calendar Appointments**: Mark tasks as time-critical appointments with customizable reminders
+- **Appointment Reminders**: In-app alerts (15 min to 1 day before) with bell icon and sound notification
 - **Data Persistence**: All tasks saved to local JSON file
 - **Responsive Design**: Clean, narrow panel UI (300-500px width)
 
@@ -51,8 +53,18 @@ npm run dev
 2. **Add a Task**
    - Click "➕ Add New Task" button
    - Fill in the task description (required)
-   - Optionally add due date, time, priority, and links
+   - Optionally add due date, time, priority, details, and links
    - Click "Save Task"
+
+2.1 **Create a Calendar Appointment** (Optional)
+   - When adding or editing a task with a due date and time
+   - Check the "Calendar Appointment (time-sensitive)" checkbox
+   - Select reminder time (15 min, 30 min, 1 hour, 2 hours, or 1 day before)
+   - When the reminder time arrives, an alert will appear in the top-right corner with:
+     - Bell icon (🔔) and appointment details
+     - Sound notification
+     - Auto-dismisses after 10 seconds or click "Dismiss"
+   - Reminder settings carry over to recurring appointments
 
 3. **Start Working**
    - Click the "▶️ START" button next to any task
@@ -113,7 +125,8 @@ local-task-manager/
 │       ├── app.js          # Main app logic
 │       ├── timer.js        # Timer functionality
 │       ├── taskManager.js  # API client
-│       └── ui.js           # UI components
+│       ├── ui.js           # UI components
+│       └── appointmentReminder.js # Calendar appointment reminders
 ├── local_data/
 │   └── tasks.json          # Task storage
 └── .claude/
@@ -157,6 +170,8 @@ Each task contains:
   "dueDate": "YYYY-MM-DD or null",
   "dueTime": "HH:MM or null",
   "priority": "high|medium|low",
+  "isAppointment": false,
+  "reminderMinutes": 30,
   "completed": false,
   "archived": false,
   "inProgress": false,
@@ -164,6 +179,8 @@ Each task contains:
   "timeSpent": 0,
   "completedAt": "ISO_timestamp or null",
   "links": ["https://example.com"],
+  "details": "Optional additional notes",
+  "recurring": "daily|weekly or null",
   "createdAt": "ISO_timestamp",
   "updatedAt": "ISO_timestamp"
 }
@@ -231,8 +248,9 @@ Potential features for future versions:
 - Keyboard shortcuts
 - Dark/light theme toggle
 - Time tracking analytics
-- Calendar integration
-- Multiple timer support
+- Calendar grid view
+- Multiple simultaneous timers
+- Email/Slack notifications for appointments
 
 ## License
 

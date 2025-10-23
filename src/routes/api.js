@@ -111,6 +111,8 @@ router.post('/tasks', (req, res) => {
       links,
       recurring,
       details,
+      isAppointment,
+      reminderMinutes,
     } = req.body;
 
     // Validate required fields
@@ -140,6 +142,8 @@ router.post('/tasks', (req, res) => {
           recurring: recurring || null,
           details: details || null,
           links: links || [],
+          isAppointment: isAppointment || false,
+          reminderMinutes: isAppointment ? reminderMinutes || 30 : null,
           updatedAt: new Date().toISOString(),
         };
       } else {
@@ -152,6 +156,8 @@ router.post('/tasks', (req, res) => {
           priority: priority || 'medium',
           recurring: recurring || null,
           details: details || null,
+          isAppointment: isAppointment || false,
+          reminderMinutes: isAppointment ? reminderMinutes || 30 : null,
           completed: false,
           archived: false,
           inProgress: false,
@@ -173,6 +179,8 @@ router.post('/tasks', (req, res) => {
         priority: priority || 'medium',
         recurring: recurring || null,
         details: details || null,
+        isAppointment: isAppointment || false,
+        reminderMinutes: isAppointment ? reminderMinutes || 30 : null,
         completed: false,
         archived: false,
         inProgress: false,
@@ -305,6 +313,8 @@ router.post('/tasks/:id/complete', (req, res) => {
         priority: task.priority,
         recurring: task.recurring,
         details: task.details || null,
+        isAppointment: task.isAppointment || false,
+        reminderMinutes: task.reminderMinutes || null,
         completed: false,
         archived: false,
         inProgress: false,

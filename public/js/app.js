@@ -1,4 +1,4 @@
-/* global TaskManager, TaskTimer, UI, playCompletionSound */
+/* global TaskManager, TaskTimer, UI, playCompletionSound, appointmentReminder */
 
 /**
  * Main Application Module
@@ -75,6 +75,15 @@ class App {
       taskForm.addEventListener('submit', (e) => this.handleFormSubmit(e));
     }
 
+    // Appointment checkbox toggle
+    const appointmentCheckbox = document.getElementById('is-appointment');
+    const reminderSelect = document.getElementById('reminder-minutes');
+    if (appointmentCheckbox) {
+      appointmentCheckbox.addEventListener('change', (e) => {
+        reminderSelect.disabled = !e.target.checked;
+      });
+    }
+
     // Archive toggle
     const archiveToggle = document.getElementById('archive-toggle');
     if (archiveToggle) {
@@ -126,6 +135,10 @@ class App {
 
       // Check for active task and resume timer
       this.resumeActiveTask();
+
+      // Start checking for appointment reminders
+      appointmentReminder.clearAllReminders();
+      appointmentReminder.startCheckingReminders(this.tasks);
     } catch (error) {
       console.error('Error loading tasks:', error);
       UI.showError('Failed to load tasks');
@@ -331,6 +344,9 @@ class App {
       } else {
         this.tasks.push(task);
       }
+
+      // Reset reminder for this task in case it was edited
+      appointmentReminder.resetTaskReminder(task.id);
 
       UI.hideModal();
       this.editingTaskId = null;

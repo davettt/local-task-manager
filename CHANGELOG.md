@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2025-10-23
+
+### Added
+
+- Calendar appointment reminder feature (Closes #2)
+- Mark tasks as calendar appointments with time-sensitive indicator
+- Customizable appointment reminders (15, 30, 60, 120 minutes or 1 day before)
+- In-app red alert notification with bell icon and sound when appointment reminder triggers
+- Appointment settings persist across page reloads (no duplicate notifications today)
+- Appointment settings carried over to recurring task instances
+- Bell badge icon (🔔) displays next to appointment tasks
+
+---
+
 ## [1.1.0] - 2025-10-22
 
 ### Added

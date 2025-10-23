@@ -201,6 +201,7 @@ class UI {
         <div class="task-item-header">
           <span class="priority-icon">${priorityIcon}</span>
           ${recurringIcon ? `<span class="priority-icon" title="Recurring: ${task.recurring}">${recurringIcon}</span>` : ''}
+          ${task.isAppointment ? `<span class="appointment-badge" title="Calendar Appointment">🔔</span>` : ''}
           <div class="task-content" style="flex: 1">
             <div class="task-title">${escapeHtml(task.description)}</div>
             <div class="task-meta">
@@ -290,7 +291,10 @@ class UI {
     return `
       <div class="archived-task" data-task-id="${escapeHtml(task.id)}">
         <div class="archived-task-info">
-          <div class="archived-task-title">${escapeHtml(task.description)}</div>
+          <div class="archived-task-title">
+            ${escapeHtml(task.description)}
+            ${task.isAppointment ? `<span class="appointment-badge" title="Calendar Appointment">🔔</span>` : ''}
+          </div>
           <div class="archived-task-time">
             Completed ${completedDate} at ${completedTime} (${timeSpent})
           </div>
@@ -335,6 +339,11 @@ class UI {
     const linksInput = document.getElementById('links').value;
     const recurring = document.getElementById('recurring').value;
     const details = document.getElementById('details').value;
+    const isAppointment = document.getElementById('is-appointment').checked;
+    const reminderMinutes = parseInt(
+      document.getElementById('reminder-minutes').value,
+      10
+    );
     const links = TaskManager.parseLinks(linksInput);
 
     return {
@@ -344,6 +353,8 @@ class UI {
       priority,
       recurring: recurring || null,
       details: details || null,
+      isAppointment,
+      reminderMinutes: isAppointment ? reminderMinutes : null,
       links,
     };
   }
@@ -359,6 +370,11 @@ class UI {
     document.getElementById('priority').value = task.priority || 'medium';
     document.getElementById('recurring').value = task.recurring || '';
     document.getElementById('details').value = task.details || '';
+    document.getElementById('is-appointment').checked =
+      task.isAppointment || false;
+    document.getElementById('reminder-minutes').value =
+      task.reminderMinutes || 30;
+    document.getElementById('reminder-minutes').disabled = !task.isAppointment;
     document.getElementById('links').value = TaskManager.linksToString(
       task.links
     );

@@ -1,7 +1,7 @@
 {
   "name": "local-task-manager",
-  "version": "1.1.0",
-  "description": "A lightweight task management application with integrated timer",
+  "version": "1.2.0",
+  "description": "A lightweight task management application with integrated timer and calendar appointment reminders",
   "main": "src/server.js",
   "type": "commonjs",
   "scripts": {
