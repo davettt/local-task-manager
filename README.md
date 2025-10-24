@@ -11,6 +11,9 @@ A lightweight, single-focused task management application with an integrated tim
 - **Sound Alerts**: Audio notification when tasks are completed
 - **Calendar Appointments**: Mark tasks as time-critical appointments with customizable reminders
 - **Appointment Reminders**: In-app alerts (15 min to 1 day before) with bell icon and sound notification
+- **Recurring Tasks**: Create daily or weekly recurring tasks
+- **Working Days Only**: Daily recurring tasks can skip weekends (Saturday/Sunday)
+- **Gamification**: Streak counter for completing 3+ tasks per day with celebration notifications
 - **Data Persistence**: All tasks saved to local JSON file
 - **Responsive Design**: Clean, narrow panel UI (300-500px width)
 
@@ -66,16 +69,30 @@ npm run dev
      - Auto-dismisses after 10 seconds or click "Dismiss"
    - Reminder settings carry over to recurring appointments
 
-3. **Start Working**
+2.2 **Create Recurring Tasks** (Optional)
+   - Select "Daily" or "Weekly" from the Recurring dropdown
+   - For daily recurring tasks, optionally check "Weekdays only (skip weekends)"
+   - When a recurring task is completed, a new instance is automatically created for the next occurrence
+   - Daily weekday-only tasks skip Saturday and Sunday, with the next instance appearing on Monday
+   - All task properties carry over to recurring instances
+
+3. **Track Your Streak**
+   - Complete 3 or more tasks in a single day to start building a streak
+   - The streak counter appears in the header with a fire emoji (🔥)
+   - Each day you complete 3+ tasks, your streak continues
+   - Miss a day and your streak resets
+   - Celebrate each task completion with an ASCII modal and matrix-themed sound effects
+
+4. **Start Working**
    - Click the "▶️ START" button next to any task
    - The timer will appear at the top with live countdown
    - Only one task can be active at a time
 
-4. **Stop or Complete**
+5. **Stop or Complete**
    - Click "⏹️ STOP" to pause the timer (task returns to list)
    - Click "✅ COMPLETE" to finish the task (moves to archive)
 
-5. **View Archive**
+6. **View Archive**
    - Click "📦 Archive" to expand/collapse completed tasks
    - See time spent and completion date/time
    - Click "↩️" to restore a task back to active list
@@ -126,7 +143,8 @@ local-task-manager/
 │       ├── timer.js        # Timer functionality
 │       ├── taskManager.js  # API client
 │       ├── ui.js           # UI components
-│       └── appointmentReminder.js # Calendar appointment reminders
+│       ├── appointmentReminder.js # Calendar appointment reminders
+│       └── gamification.js # Streak counter and celebration modals
 ├── local_data/
 │   └── tasks.json          # Task storage
 └── .claude/
@@ -172,6 +190,8 @@ Each task contains:
   "priority": "high|medium|low",
   "isAppointment": false,
   "reminderMinutes": 30,
+  "recurring": "daily|weekly or null",
+  "workingDaysOnly": false,
   "completed": false,
   "archived": false,
   "inProgress": false,
@@ -180,11 +200,17 @@ Each task contains:
   "completedAt": "ISO_timestamp or null",
   "links": ["https://example.com"],
   "details": "Optional additional notes",
-  "recurring": "daily|weekly or null",
   "createdAt": "ISO_timestamp",
   "updatedAt": "ISO_timestamp"
 }
 ```
+
+### Field Descriptions
+
+- **recurring**: Set to "daily" or "weekly" for tasks that repeat
+- **workingDaysOnly**: When true and recurring is "daily", skips Saturday and Sunday
+- **isAppointment**: When true, enables reminder notifications at specified time before due date
+- **reminderMinutes**: How many minutes before the due date/time to trigger the appointment reminder
 
 ## Code Quality
 
@@ -251,6 +277,7 @@ Potential features for future versions:
 - Calendar grid view
 - Multiple simultaneous timers
 - Email/Slack notifications for appointments
+- Auto-delete archived tasks after specified period
 
 ## License
 

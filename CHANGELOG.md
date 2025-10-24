@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2025-10-24
+
+### Added
+
+- Working days feature for daily recurring tasks (Closes #7)
+  - "Weekdays only (skip weekends)" checkbox for daily recurring tasks
+  - Daily recurring tasks now automatically skip Saturday and Sunday
+  - Next occurrence moves to Monday when landing on a weekend
+  - Setting is preserved across task edits and recurring instances
+- Task gamification features
+  - Streak counter for completing 3+ tasks per day
+  - Fire emoji (🔥) display with day count in header
+  - ASCII celebration modal on task completion
+  - Streak progress indicator (1/3, 2/3, +STREAK POINT)
+  - Matrix-themed sound effects using Web Audio API
+  - Streak data persists in localStorage with daily reset
+- Improved checkbox styling
+  - Checkboxes now display side-by-side with their labels for better UX
+  - Consistent cyan color scheme (#2aa198) for checkbox styling
+
+### Fixed
+
+- Fixed `workingDaysOnly` checkbox not persisting when editing daily recurring tasks
+  - Form is now cleared before populating with task data to prevent stale values
+  - Checkbox state properly restores when editing recurring tasks
+
+---
+
 ## [1.2.0] - 2025-10-23
 
 ### Added
