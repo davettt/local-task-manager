@@ -92,12 +92,109 @@ function deleteTask(taskId) {
   writeTasks(filtered);
 }
 
+/**
+ * Get archive file path for a given date
+ * @param {string} dateStr - Date string in YYYY-MM-DD format
+ * @returns {string} Path to archive file
+ */
+function getArchiveFilePath(dateStr) {
+  const fileName = `archive_${dateStr.replace(/-/g, '')}.json`;
+  return path.join(DATA_DIR, fileName);
+}
+
+/**
+ * Read all tasks from all archive files
+ * @returns {Array} Array of archived task objects
+ */
+function readArchivedTasks() {
+  try {
+    ensureDataDir();
+    const files = fs.readdirSync(DATA_DIR);
+    const archivedTasks = [];
+
+    files.forEach((file) => {
+      if (file.startsWith('archive_') && file.endsWith('.json')) {
+        const filePath = path.join(DATA_DIR, file);
+        const data = fs.readFileSync(filePath, 'utf8');
+        const parsed = JSON.parse(data);
+        if (parsed.tasks && Array.isArray(parsed.tasks)) {
+          archivedTasks.push(...parsed.tasks);
+        }
+      }
+    });
+
+    return archivedTasks;
+  } catch (error) {
+    console.error('Error reading archived tasks:', error);
+    return [];
+  }
+}
+
+/**
+ * Append tasks to archive file for a given date
+ * @param {string} dateStr - Date string in YYYY-MM-DD format
+ * @param {Array} tasksToArchive - Tasks to add to archive
+ */
+function archiveTasks(dateStr, tasksToArchive) {
+  try {
+    ensureDataDir();
+    const filePath = getArchiveFilePath(dateStr);
+
+    let archiveData = { tasks: [] };
+
+    // If file exists, read existing data
+    if (fs.existsSync(filePath)) {
+      const data = fs.readFileSync(filePath, 'utf8');
+      archiveData = JSON.parse(data);
+    }
+
+    // Add new tasks to archive
+    archiveData.tasks.push(...tasksToArchive);
+
+    fs.writeFileSync(filePath, JSON.stringify(archiveData, null, 2), 'utf8');
+  } catch (error) {
+    console.error('Error archiving tasks:', error);
+    throw error;
+  }
+}
+
+/**
+ * Clean up archive files older than specified days
+ * @param {number} daysOld - Delete archives older than this many days (default: 45)
+ */
+function cleanupOldArchives(daysOld = 45) {
+  try {
+    ensureDataDir();
+    const files = fs.readdirSync(DATA_DIR);
+    const now = new Date().getTime();
+    const cutoffTime = now - daysOld * 24 * 60 * 60 * 1000;
+
+    files.forEach((file) => {
+      if (file.startsWith('archive_') && file.endsWith('.json')) {
+        const filePath = path.join(DATA_DIR, file);
+        const stats = fs.statSync(filePath);
+        if (stats.mtimeMs < cutoffTime) {
+          fs.unlinkSync(filePath);
+          // eslint-disable-next-line no-console
+          console.log(`Deleted old archive file: ${file}`);
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error cleaning up old archives:', error);
+  }
+}
+
 module.exports = {
   readTasks,
   writeTasks,
   getTask,
   saveTask,
   deleteTask,
+  readArchivedTasks,
+  archiveTasks,
+  getArchiveFilePath,
+  cleanupOldArchives,
   ensureDataDir,
   initializeTasksFile,
 };

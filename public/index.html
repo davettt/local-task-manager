@@ -100,11 +100,20 @@
         </div>
       </div>
 
-      <!-- Archive Section -->
+      <!-- Completed Section -->
       <div class="archive-section">
-        <div class="archive-header" id="archive-toggle">
-          📦 Archive
-          <span id="archive-count" class="archive-count"></span>
+        <div class="archive-header">
+          <div id="archive-toggle" style="flex: 1; cursor: pointer">
+            ✓ Completed
+            <span id="archive-count" class="archive-count"></span>
+          </div>
+          <button
+            id="clean-archive-btn"
+            class="clean-archive-btn"
+            title="Move completed tasks to archive files"
+          >
+            🧹 CLEAN
+          </button>
         </div>
         <div class="archive-content hidden" id="archive-list"></div>
       </div>
@@ -194,6 +203,44 @@
             </button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- Completed Tasks Cleanup Modal -->
+    <div id="cleanup-modal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Clean Completed Tasks</h3>
+          <button class="close-btn" id="cleanup-modal-close">&times;</button>
+        </div>
+        <div style="padding: 12px">
+          <p style="color: #839496; margin-bottom: 8px; font-size: 12px">
+            Move completed tasks to archive files before a selected date.
+          </p>
+          <div class="form-group">
+            <label for="cleanup-date">Move tasks completed before:</label>
+            <input type="date" id="cleanup-date" />
+          </div>
+          <div
+            style="
+              color: #586e75;
+              font-size: 11px;
+              margin-bottom: 8px;
+              padding: 6px;
+              background-color: #073642;
+              border-left: 2px solid #586e75;
+            "
+          >
+            💾 Tasks will be saved to archive files in local_data/. No data will
+            be lost.
+          </div>
+          <div style="display: flex; gap: 6px; justify-content: flex-end">
+            <button id="cleanup-cancel-btn" class="cancel-btn">Cancel</button>
+            <button id="cleanup-confirm-btn" class="save-btn">
+              Move to Archive Files
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 

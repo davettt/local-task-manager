@@ -105,6 +105,37 @@ class App {
       });
     }
 
+    // Clean archive button
+    const cleanArchiveBtn = document.getElementById('clean-archive-btn');
+    if (cleanArchiveBtn) {
+      cleanArchiveBtn.addEventListener('click', () => {
+        UI.showCleanupModal();
+      });
+    }
+
+    // Cleanup modal controls
+    const cleanupModalClose = document.getElementById('cleanup-modal-close');
+    const cleanupCancelBtn = document.getElementById('cleanup-cancel-btn');
+    const cleanupConfirmBtn = document.getElementById('cleanup-confirm-btn');
+
+    if (cleanupModalClose) {
+      cleanupModalClose.addEventListener('click', () => {
+        UI.hideCleanupModal();
+      });
+    }
+
+    if (cleanupCancelBtn) {
+      cleanupCancelBtn.addEventListener('click', () => {
+        UI.hideCleanupModal();
+      });
+    }
+
+    if (cleanupConfirmBtn) {
+      cleanupConfirmBtn.addEventListener('click', () => {
+        this.handleCleanupConfirm();
+      });
+    }
+
     // Timer buttons and edit
     const editActiveBtn = document.getElementById('edit-active-btn');
     const stopBtn = document.getElementById('stop-btn');
@@ -607,6 +638,50 @@ class App {
       this.render();
     } catch (error) {
       console.error('Error restoring task:', error);
+      UI.showError(error.message);
+    }
+  }
+
+  /**
+   * Handle archive cleanup confirmation
+   */
+  async handleCleanupConfirm() {
+    try {
+      const cutoffDate = document.getElementById('cleanup-date').value;
+
+      if (!cutoffDate) {
+        UI.showError('Please select a date');
+        return;
+      }
+
+      const response = await fetch('/api/archive/cleanup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ cutoffDate }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to clean archive');
+      }
+
+      const result = await response.json();
+
+      if (result.moved === 0) {
+        UI.showError(result.message);
+        return;
+      }
+
+      // Close modal and reload
+      UI.hideCleanupModal();
+      await this.loadTasks();
+
+      // Show success message
+      alert(`✓ Moved ${result.moved} completed tasks to archive files`);
+    } catch (error) {
+      console.error('Error cleaning archive:', error);
       UI.showError(error.message);
     }
   }

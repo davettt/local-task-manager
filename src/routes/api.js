@@ -5,6 +5,8 @@ const {
   saveTask,
   deleteTask,
   writeTasks,
+  readArchivedTasks,
+  archiveTasks,
 } = require('../utils/fileManager');
 
 const router = express.Router();
@@ -95,13 +97,21 @@ router.get('/tasks', (_req, res) => {
 
 /**
  * GET /api/tasks/archived
- * Returns all archived (completed) tasks
+ * Returns all archived (completed) tasks from both tasks.json and archive files
  */
 router.get('/tasks/archived', (_req, res) => {
   try {
+    // Get archived tasks from tasks.json
     const tasks = readTasks();
-    const archivedTasks = tasks.filter((task) => task.archived);
-    res.json(archivedTasks);
+    const tasksJsonArchived = tasks.filter((task) => task.archived);
+
+    // Get archived tasks from archive files
+    const archivedFileTasks = readArchivedTasks();
+
+    // Combine both sources
+    const allArchivedTasks = [...tasksJsonArchived, ...archivedFileTasks];
+
+    res.json(allArchivedTasks);
   } catch (error) {
     console.error('Error fetching archived tasks:', error);
     res.status(500).json({ error: 'Failed to fetch archived tasks' });
@@ -405,6 +415,76 @@ router.delete('/tasks/:id', (req, res) => {
   } catch (error) {
     console.error('Error deleting task:', error);
     res.status(500).json({ error: 'Failed to delete task' });
+  }
+});
+
+/**
+ * POST /api/archive/cleanup
+ * Move archived tasks completed before a specified date to archive files
+ * and mark them with archivedToFile flag
+ */
+router.post('/archive/cleanup', (req, res) => {
+  try {
+    const { cutoffDate } = req.body;
+
+    if (!cutoffDate) {
+      return res.status(400).json({ error: 'Cutoff date is required' });
+    }
+
+    const tasks = readTasks();
+    const cutoffTime = new Date(cutoffDate).getTime();
+
+    // Find tasks to move (archived and completed before cutoff date)
+    const tasksToMove = tasks.filter((task) => {
+      if (!task.archived || !task.completedAt) {
+        return false;
+      }
+      const completedTime = new Date(task.completedAt).getTime();
+      return completedTime < cutoffTime;
+    });
+
+    if (tasksToMove.length === 0) {
+      return res.json({
+        success: true,
+        moved: 0,
+        message: 'No archived tasks found before that date',
+      });
+    }
+
+    // Mark tasks as archivedToFile and organize by completion date
+    const tasksByDate = {};
+    tasksToMove.forEach((task) => {
+      task.archivedToFile = true;
+      // Extract date from completedAt timestamp (YYYY-MM-DD)
+      const completedDate = new Date(task.completedAt)
+        .toISOString()
+        .split('T')[0];
+      if (!tasksByDate[completedDate]) {
+        tasksByDate[completedDate] = [];
+      }
+      tasksByDate[completedDate].push(task);
+    });
+
+    // Save tasks to their respective archive files by completion date
+    Object.entries(tasksByDate).forEach(([dateStr, tasksForDate]) => {
+      archiveTasks(dateStr, tasksForDate);
+    });
+
+    // Remove moved tasks from the main list
+    const remainingTasks = tasks.filter((task) => !tasksToMove.includes(task));
+
+    // Write the updated tasks back
+    writeTasks(remainingTasks);
+
+    // Return success
+    res.json({
+      success: true,
+      moved: tasksToMove.length,
+      message: `Moved ${tasksToMove.length} archived tasks to archive files`,
+    });
+  } catch (error) {
+    console.error('Error cleaning archive:', error);
+    res.status(500).json({ error: 'Failed to clean archive' });
   }
 });
 

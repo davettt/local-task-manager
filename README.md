@@ -14,6 +14,7 @@ A lightweight, single-focused task management application with an integrated tim
 - **Recurring Tasks**: Create daily or weekly recurring tasks
 - **Working Days Only**: Daily recurring tasks can skip weekends (Saturday/Sunday)
 - **Gamification**: Streak counter for completing 3+ tasks per day with celebration notifications
+- **Archive Management**: Clean old archived tasks and export backup files
 - **Data Persistence**: All tasks saved to local JSON file
 - **Responsive Design**: Clean, narrow panel UI (300-500px width)
 
@@ -98,6 +99,14 @@ npm run dev
    - Click "↩️" to restore a task back to active list
    - Click "🗑️" to permanently delete a task
 
+6.1 **Clean Up Archive** (Optional)
+   - Click "🧹 CLEAN" button next to Archive header
+   - Select a cutoff date (default: 30 days ago)
+   - Click "Export & Delete" to proceed
+   - A backup JSON file will be saved to `local_data/archive_[date].json`
+   - Tasks completed before the selected date will be removed from active archive
+   - No data is lost - the backup file is safely stored in the local_data folder
+
 ## Development
 
 ### Scripts
@@ -176,6 +185,26 @@ Restore task from archive
 
 ### DELETE /api/tasks/:id
 Permanently delete task
+
+### POST /api/archive/cleanup
+Export and delete archived tasks completed before a specified date. Saves backup to `local_data/archive_[date].json`.
+
+**Request body:**
+```json
+{
+  "cutoffDate": "YYYY-MM-DD"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "exported": 5,
+  "archiveFile": "archive_20250924.json",
+  "message": "Exported 5 archived tasks to archive_20250924.json"
+}
+```
 
 ## Task Data Model
 

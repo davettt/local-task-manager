@@ -3,13 +3,18 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const apiRoutes = require('./routes/api');
-const { initializeTasksFile } = require('./utils/fileManager');
+const {
+  initializeTasksFile,
+  cleanupOldArchives,
+} = require('./utils/fileManager');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Initialize data files
 initializeTasksFile();
+// Auto-delete archive files older than 45 days
+cleanupOldArchives();
 
 // Middleware
 app.use(express.json());

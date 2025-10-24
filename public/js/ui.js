@@ -320,6 +320,34 @@ class UI {
   }
 
   /**
+   * Show cleanup modal
+   */
+  static showCleanupModal() {
+    const modal = document.getElementById('cleanup-modal');
+    const dateInput = document.getElementById('cleanup-date');
+    if (modal) {
+      // Set default date to 30 days ago
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const dateStr = thirtyDaysAgo.toISOString().split('T')[0];
+      if (dateInput) {
+        dateInput.value = dateStr;
+      }
+      modal.classList.remove('hidden');
+    }
+  }
+
+  /**
+   * Hide cleanup modal
+   */
+  static hideCleanupModal() {
+    const modal = document.getElementById('cleanup-modal');
+    if (modal) {
+      modal.classList.add('hidden');
+    }
+  }
+
+  /**
    * Show error message
    * @param {string} message - Error message
    */
