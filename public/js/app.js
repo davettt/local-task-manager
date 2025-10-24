@@ -84,6 +84,19 @@ class App {
       });
     }
 
+    // Working days checkbox toggle
+    const recurringSelect = document.getElementById('recurring');
+    const workingDaysCheckbox = document.getElementById('working-days-only');
+    if (recurringSelect && workingDaysCheckbox) {
+      recurringSelect.addEventListener('change', (e) => {
+        // Only enable working days option for daily recurring
+        workingDaysCheckbox.disabled = e.target.value !== 'daily';
+        if (e.target.value !== 'daily') {
+          workingDaysCheckbox.checked = false;
+        }
+      });
+    }
+
     // Archive toggle
     const archiveToggle = document.getElementById('archive-toggle');
     if (archiveToggle) {
@@ -396,6 +409,7 @@ class App {
     }
 
     this.editingTaskId = taskId;
+    UI.clearForm();
     UI.populateFormWithTask(task);
     UI.showModal(true);
   }
@@ -415,6 +429,7 @@ class App {
 
     this.editingTaskId = this.activeTaskId;
     this.editingActiveTask = true;
+    UI.clearForm();
     UI.populateFormWithTask(task);
     UI.showModal(true);
   }

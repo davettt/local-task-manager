@@ -344,9 +344,11 @@ class UI {
       document.getElementById('reminder-minutes').value,
       10
     );
+    const workingDaysOnly =
+      document.getElementById('working-days-only').checked;
     const links = TaskManager.parseLinks(linksInput);
 
-    return {
+    const formData = {
       description,
       dueDate: dueDate || null,
       dueTime: dueTime || null,
@@ -355,8 +357,11 @@ class UI {
       details: details || null,
       isAppointment,
       reminderMinutes: isAppointment ? reminderMinutes : null,
+      workingDaysOnly: recurring === 'daily' ? workingDaysOnly : false,
       links,
     };
+
+    return formData;
   }
 
   /**
@@ -375,6 +380,10 @@ class UI {
     document.getElementById('reminder-minutes').value =
       task.reminderMinutes || 30;
     document.getElementById('reminder-minutes').disabled = !task.isAppointment;
+    document.getElementById('working-days-only').checked =
+      task.workingDaysOnly || false;
+    document.getElementById('working-days-only').disabled =
+      task.recurring !== 'daily';
     document.getElementById('links').value = TaskManager.linksToString(
       task.links
     );

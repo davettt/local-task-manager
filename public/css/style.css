@@ -705,6 +705,23 @@ body {
   letter-spacing: 0.5px;
 }
 
+.form-group label input[type='checkbox'] {
+  display: inline;
+  margin-right: 6px;
+  width: auto;
+  accent-color: #2aa198;
+  cursor: pointer;
+}
+
+.form-group label:has(input[type='checkbox']) {
+  display: flex;
+  align-items: center;
+  text-transform: none;
+  font-weight: normal;
+  color: #839496;
+  gap: 4px;
+}
+
 .form-group input,
 .form-group textarea,
 .form-group select {

@@ -43,7 +43,7 @@ function validateTask(task) {
  * @param {string} recurring - Recurring interval ('daily' or 'weekly')
  * @returns {string} Next due date in YYYY-MM-DD format
  */
-function calculateNextDueDate(currentDate, recurring) {
+function calculateNextDueDate(currentDate, recurring, workingDaysOnly = false) {
   if (!currentDate || !recurring) {
     return currentDate;
   }
@@ -54,6 +54,18 @@ function calculateNextDueDate(currentDate, recurring) {
 
   if (recurring === 'daily') {
     date.setDate(date.getDate() + 1);
+
+    // If working days only, skip weekends (0 = Sunday, 6 = Saturday)
+    if (workingDaysOnly) {
+      const dayOfWeek = date.getDay();
+      if (dayOfWeek === 0) {
+        // Sunday - move to Monday
+        date.setDate(date.getDate() + 1);
+      } else if (dayOfWeek === 6) {
+        // Saturday - move to Monday
+        date.setDate(date.getDate() + 2);
+      }
+    }
   } else if (recurring === 'weekly') {
     date.setDate(date.getDate() + 7);
   }
@@ -113,6 +125,7 @@ router.post('/tasks', (req, res) => {
       details,
       isAppointment,
       reminderMinutes,
+      workingDaysOnly,
     } = req.body;
 
     // Validate required fields
@@ -144,6 +157,8 @@ router.post('/tasks', (req, res) => {
           links: links || [],
           isAppointment: isAppointment || false,
           reminderMinutes: isAppointment ? reminderMinutes || 30 : null,
+          workingDaysOnly:
+            recurring === 'daily' ? workingDaysOnly || false : false,
           updatedAt: new Date().toISOString(),
         };
       } else {
@@ -158,6 +173,8 @@ router.post('/tasks', (req, res) => {
           details: details || null,
           isAppointment: isAppointment || false,
           reminderMinutes: isAppointment ? reminderMinutes || 30 : null,
+          workingDaysOnly:
+            recurring === 'daily' ? workingDaysOnly || false : false,
           completed: false,
           archived: false,
           inProgress: false,
@@ -181,6 +198,8 @@ router.post('/tasks', (req, res) => {
         details: details || null,
         isAppointment: isAppointment || false,
         reminderMinutes: isAppointment ? reminderMinutes || 30 : null,
+        workingDaysOnly:
+          recurring === 'daily' ? workingDaysOnly || false : false,
         completed: false,
         archived: false,
         inProgress: false,
@@ -304,7 +323,11 @@ router.post('/tasks/:id/complete', (req, res) => {
 
     // If task is recurring, create a new task for the next occurrence
     if (task.recurring && task.dueDate) {
-      const nextDueDate = calculateNextDueDate(task.dueDate, task.recurring);
+      const nextDueDate = calculateNextDueDate(
+        task.dueDate,
+        task.recurring,
+        task.workingDaysOnly
+      );
       const newTask = {
         id: `${Date.now()}${Math.floor(Math.random() * 1000)}`,
         description: task.description,
@@ -315,6 +338,7 @@ router.post('/tasks/:id/complete', (req, res) => {
         details: task.details || null,
         isAppointment: task.isAppointment || false,
         reminderMinutes: task.reminderMinutes || null,
+        workingDaysOnly: task.workingDaysOnly || false,
         completed: false,
         archived: false,
         inProgress: false,
