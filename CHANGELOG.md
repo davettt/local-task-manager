@@ -9,17 +9,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Archive cleanup feature (Closes #8)
-  - "Clean Archive" button (🧹) in archive section header
+- Archive management system (Closes #8)
+  - Daily archive files to prevent unbounded `tasks.json` growth
+  - Automatic cleanup of archive files older than 45 days on server startup
+  - Manual "Clean" button (🧹) to move completed tasks to archive files
   - Modal dialog for selecting cleanup cutoff date
-  - Export archived tasks to `local_data/archive_[date].json` before deletion
-  - Backup files stored server-side for future archive browsing features
-  - Default cutoff date set to 30 days ago for convenience
-  - Non-destructive operation - all deleted tasks backed up locally
+  - Tasks moved to daily archive files named `archive_YYYYMMDD.json`
+  - New `archivedToFile` field indicates when task has been moved to archive file
+  - All data is preserved - no tasks are permanently deleted unless archive files age out
+  - Non-destructive operation with full data retention
 
 ### Changed
 
+- Renamed "Archive" section to "✓ Completed" for better semantic clarity
+- Completed tasks now show in "Completed" section until manually moved to archive files
 - Archive header now displays as flex container for better button alignment
+- Cleanup modal updated with clearer messaging about archive file movement
+
+### Architecture
+
+- **File Organization**: Completed tasks organized by date in separate JSON files
+- **Backwards Compatible**: Existing archived tasks in `tasks.json` remain unchanged
+- **Automatic Cleanup**: Server auto-deletes archive files older than 45 days
+- **Manual Cleanup**: User can trigger cleanup to move old completed tasks from `tasks.json` to archive files
+- **Data Integrity**: All moved tasks marked with `archivedToFile: true` for tracking
 
 ---
 

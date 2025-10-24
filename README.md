@@ -93,19 +93,20 @@ npm run dev
    - Click "⏹️ STOP" to pause the timer (task returns to list)
    - Click "✅ COMPLETE" to finish the task (moves to archive)
 
-6. **View Archive**
-   - Click "📦 Archive" to expand/collapse completed tasks
+6. **View Completed Tasks**
+   - Click "✓ Completed" to expand/collapse completed tasks
    - See time spent and completion date/time
    - Click "↩️" to restore a task back to active list
    - Click "🗑️" to permanently delete a task
+   - Completed tasks stay in the Completed section until moved to archive files
 
-6.1 **Clean Up Archive** (Optional)
-   - Click "🧹 CLEAN" button next to Archive header
-   - Select a cutoff date (default: 30 days ago)
-   - Click "Export & Delete" to proceed
-   - A backup JSON file will be saved to `local_data/archive_[date].json`
-   - Tasks completed before the selected date will be removed from active archive
-   - No data is lost - the backup file is safely stored in the local_data folder
+6.1 **Archive Management** (Optional)
+   - Click "🧹 CLEAN" button next to Completed section header
+   - Select a cutoff date to move completed tasks to archive files
+   - Click "Move to Archive Files" to proceed
+   - Tasks will be saved to daily archive files: `local_data/archive_YYYYMMDD.json`
+   - Archive files older than 45 days are automatically deleted on server startup
+   - No data is lost - all completed tasks are preserved in archive files or can be restored
 
 ## Development
 
@@ -187,7 +188,7 @@ Restore task from archive
 Permanently delete task
 
 ### POST /api/archive/cleanup
-Export and delete archived tasks completed before a specified date. Saves backup to `local_data/archive_[date].json`.
+Move completed tasks to daily archive files. Tasks completed before the specified date are moved from `tasks.json` to organized archive files by completion date.
 
 **Request body:**
 ```json
@@ -200,11 +201,16 @@ Export and delete archived tasks completed before a specified date. Saves backup
 ```json
 {
   "success": true,
-  "exported": 5,
-  "archiveFile": "archive_20250924.json",
-  "message": "Exported 5 archived tasks to archive_20250924.json"
+  "moved": 5,
+  "message": "Moved 5 archived tasks to archive files"
 }
 ```
+
+**Behavior:**
+- Tasks completed before the cutoff date are moved to `local_data/archive_YYYYMMDD.json` files
+- Each task is marked with `archivedToFile: true` when moved
+- Archive files older than 45 days are automatically deleted on server startup
+- Moved tasks can still be viewed and restored from the Completed section
 
 ## Task Data Model
 
@@ -223,6 +229,7 @@ Each task contains:
   "workingDaysOnly": false,
   "completed": false,
   "archived": false,
+  "archivedToFile": false,
   "inProgress": false,
   "startedAt": "ISO_timestamp or null",
   "timeSpent": 0,
@@ -236,6 +243,8 @@ Each task contains:
 
 ### Field Descriptions
 
+- **archived**: Set to true when task is completed (moved to Completed section)
+- **archivedToFile**: Set to true when task has been moved to a daily archive file by cleanup operation
 - **recurring**: Set to "daily" or "weekly" for tasks that repeat
 - **workingDaysOnly**: When true and recurring is "daily", skips Saturday and Sunday
 - **isAppointment**: When true, enables reminder notifications at specified time before due date
