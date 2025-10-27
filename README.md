@@ -17,6 +17,8 @@ A lightweight, single-focused task management application with an integrated tim
 - **Archive Management**: Clean old archived tasks and export backup files
 - **Data Persistence**: All tasks saved to local JSON file
 - **Responsive Design**: Clean, narrow panel UI (300-500px width)
+- **Server Reliability**: Single instance protection prevents data corruption from concurrent server processes
+- **Smart Port Detection**: Automatically finds available port if default (3000) is in use
 
 ## User Workflow
 
@@ -285,13 +287,20 @@ The timer state is maintained server-side in the tasks.json file for reliability
 - Restart the server: `npm run dev`
 
 ### Port already in use
-- Change port in .env file
-- Or kill process using port 3000
+- The server automatically detects if port 3000 is in use and finds the next available port
+- A warning message will be displayed showing which port is being used
+- Alternatively, you can change the default port in .env file: `PORT=3001`
 
 ### No sound on task completion
 - Check browser audio is enabled
 - Verify Web Audio API is supported
 - Check browser console for warnings
+
+### Server already running error
+- Only one instance of the server can run at a time to prevent data corruption
+- Stop the existing server (Ctrl+C) before starting a new instance
+- If the server crashed and left a stale lock file, the new instance will automatically clean it up
+- To manually remove a stale lock file: `rm local_data/.lock`
 
 ## Development Standards
 

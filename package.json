@@ -1,7 +1,7 @@
 {
   "name": "local-task-manager",
-  "version": "1.4.0",
-  "description": "A lightweight task management application with integrated timer, calendar appointment reminders, recurring tasks, gamification, and archive management",
+  "version": "1.5.0",
+  "description": "A lightweight task management application with integrated timer, calendar appointment reminders, recurring tasks, gamification, archive management, and server reliability features",
   "main": "src/server.js",
   "type": "commonjs",
   "scripts": {

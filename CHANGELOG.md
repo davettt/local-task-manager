@@ -5,6 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2025-10-27
+
+### Added
+
+- Server instance management system to prevent race conditions and data loss
+  - Single instance lock using PID-based lock file (`local_data/.lock`)
+  - Automatic detection of already-running server instances
+  - Clear error messages with PID, start time, and port information when attempting to run multiple instances
+  - Stale lock file cleanup for crashed server instances
+  - Graceful shutdown handling (SIGINT/SIGTERM) with automatic lock file cleanup
+- Automatic port availability detection
+  - Server now checks if default port (3000) is available
+  - Automatically finds and uses next available port (up to 10 ports checked)
+  - Clear visual indicator when fallback port is used
+- Enhanced server startup messages
+  - Formatted box-style console output showing server URL, status, and port information
+  - Clear warnings when port fallback occurs
+
+### Changed
+
+- Server initialization refactored to async IIFE pattern for better control flow
+- Lock file now stores PID, start timestamp, and active port
+- Exit handlers now properly clean up lock file on all shutdown scenarios
+
+### Technical Details
+
+- `isPortAvailable()` - Tests port availability by attempting temporary server bind
+- `findAvailablePort()` - Iterates through port range to find first available port
+- `isProcessRunning()` - Validates lock file PID using signal 0 (non-destructive check)
+- Lock file location: `local_data/.lock` (automatically cleaned on graceful shutdown)
+- Multiple process protection prevents concurrent writes to `tasks.json`
+
+---
+
 ## [1.4.0] - 2025-10-24
 
 ### Added
