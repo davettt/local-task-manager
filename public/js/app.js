@@ -25,7 +25,50 @@ class App {
   async init() {
     this.attachEventListeners();
     UI.initDailyChecklist();
+    await this.loadConfig();
     await this.loadTasks();
+  }
+
+  /**
+   * Load configuration from server
+   */
+  async loadConfig() {
+    try {
+      const response = await fetch('/api/config');
+      if (!response.ok) {
+        throw new Error('Failed to load config');
+      }
+      const config = await response.json();
+      this.applyConfig(config);
+    } catch (error) {
+      console.error('Error loading config:', error);
+    }
+  }
+
+  /**
+   * Apply configuration to the UI
+   */
+  applyConfig(config) {
+    if (config.mantra) {
+      const mantraEl = document.querySelector('.terminal-mantra');
+      const commandEl = document.querySelector('.terminal-command');
+
+      if (config.mantra.enabled && mantraEl && commandEl) {
+        // Update text
+        commandEl.textContent = config.mantra.text;
+
+        // Update tooltip with descriptions
+        if (config.mantra.descriptions) {
+          const desc = config.mantra.descriptions;
+          const tooltipText = `Name it = ${desc.nameIt} • Trace it = ${desc.traceIt} • Fix it = ${desc.fixIt} • Share it = ${desc.shareIt}`;
+          mantraEl.setAttribute('data-tooltip', tooltipText);
+        }
+
+        mantraEl.style.display = 'flex';
+      } else if (mantraEl) {
+        mantraEl.style.display = 'none';
+      }
+    }
   }
 
   /**

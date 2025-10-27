@@ -4,6 +4,7 @@ A lightweight, single-focused task management application with an integrated tim
 
 ## Features
 
+- **Terminal Mantra**: High-agency problem-solving framework displayed as terminal prompt at the top
 - **Task Management**: Create, edit, delete, and complete tasks
 - **Active Task Timer**: Single-task focus with live timer display
 - **Timer Persistence**: Timer state survives browser refresh
@@ -214,6 +215,25 @@ Move completed tasks to daily archive files. Tasks completed before the specifie
 - Archive files older than 45 days are automatically deleted on server startup
 - Moved tasks can still be viewed and restored from the Completed section
 
+### GET /api/config
+Returns application configuration including the terminal mantra settings.
+
+**Response:**
+```json
+{
+  "mantra": {
+    "enabled": true,
+    "text": "Name it. Trace it. Fix it. Share it.",
+    "descriptions": {
+      "nameIt": "What's the issue?",
+      "traceIt": "Why is it happening?",
+      "fixIt": "What's the solution + execute it",
+      "shareIt": "Keep people in the loop"
+    }
+  }
+}
+```
+
 ## Task Data Model
 
 Each task contains:
@@ -310,6 +330,33 @@ This project uses:
 - **Express.js** for HTTP server
 - **Vanilla JavaScript** (no framework dependencies)
 - **File-based storage** (no database required)
+
+## Customization
+
+### Terminal Mantra
+
+The terminal mantra at the top of the interface displays a high-agency problem-solving framework. You can customize it by editing `local_data/config.json`:
+
+```json
+{
+  "mantra": {
+    "enabled": true,
+    "text": "Name it. Trace it. Fix it. Share it.",
+    "descriptions": {
+      "nameIt": "What's the issue?",
+      "traceIt": "Why is it happening?",
+      "fixIt": "What's the solution + execute it",
+      "shareIt": "Keep people in the loop"
+    }
+  }
+}
+```
+
+- **enabled**: Set to `false` to hide the mantra
+- **text**: The main mantra text displayed in the terminal prompt
+- **descriptions**: Detailed explanations shown in the hover tooltip
+
+Restart the server after making changes to see the updates.
 
 ## Future Enhancements
 

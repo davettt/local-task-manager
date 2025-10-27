@@ -23,6 +23,72 @@ body {
   border-right: 1px solid #073642;
 }
 
+/* Terminal Mantra */
+.terminal-mantra {
+  background-color: #002b36;
+  padding: 4px 8px;
+  border-bottom: 1px solid #073642;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #586e75;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  cursor: help;
+  transition: background-color 150ms ease;
+}
+
+.terminal-mantra:hover {
+  background-color: #073642;
+}
+
+.terminal-mantra::before {
+  content: attr(data-tooltip);
+  position: fixed;
+  bottom: auto;
+  top: 30px;
+  left: 10px;
+  right: 10px;
+  max-width: 600px;
+  background-color: #073642;
+  color: #2aa198;
+  padding: 8px 10px;
+  border: 1px solid #2aa198;
+  border-radius: 3px;
+  font-size: 11px;
+  line-height: 1.6;
+  white-space: normal;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 200ms ease,
+    visibility 200ms ease;
+  z-index: 10000;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.5),
+    0 0 20px rgba(42, 161, 152, 0.4);
+}
+
+.terminal-mantra:hover::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+.terminal-prompt {
+  color: #859900;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.terminal-command {
+  color: #839496;
+  font-style: italic;
+  letter-spacing: 0.3px;
+}
+
 /* Active Task Section */
 .active-task-section {
   background-color: #073642;
@@ -194,11 +260,17 @@ body {
   border-bottom: 1px solid #073642;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
+}
+
+.header-controls {
+  display: flex;
+  gap: 4px;
+  align-items: center;
 }
 
 .search-input {
-  width: 100%;
+  flex: 1;
   padding: 4px 8px;
   background-color: #0a2c38;
   color: #839496;
@@ -221,8 +293,7 @@ body {
 }
 
 .add-button {
-  width: 100%;
-  padding: 4px 8px;
+  padding: 4px 12px;
   background-color: #073642;
   color: #859900;
   border: 1px solid #859900;
@@ -233,6 +304,8 @@ body {
   font-weight: bold;
   text-transform: uppercase;
   transition: all 150ms ease;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .add-button:hover {
@@ -242,26 +315,30 @@ body {
 }
 
 .streak-display {
-  padding: 4px 8px;
-  background-color: #073642;
+  padding: 0;
+  background-color: transparent;
   color: #dc322f;
-  border: 1px solid #dc322f;
-  border-radius: 2px;
+  border: none;
   font-family: 'Courier New', monospace;
-  font-size: 11px;
-  font-weight: bold;
+  font-size: 10px;
+  font-weight: normal;
   text-align: center;
-  min-height: 14px;
+  min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  letter-spacing: 1px;
+  letter-spacing: 0.3px;
+  opacity: 0.7;
+}
+
+.streak-display:empty {
+  display: none;
 }
 
 .streak-display.active {
   color: #dc322f;
-  text-shadow: 0 0 6px rgba(220, 50, 47, 0.5);
-  animation: streakGlow 1s infinite alternate;
+  opacity: 0.85;
+  text-shadow: 0 0 4px rgba(220, 50, 47, 0.3);
 }
 
 @keyframes streakGlow {

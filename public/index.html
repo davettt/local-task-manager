@@ -8,6 +8,17 @@
   </head>
   <body>
     <div class="container">
+      <!-- Terminal Mantra -->
+      <div
+        class="terminal-mantra"
+        data-tooltip="Name it = What's the issue? • Trace it = Why is it happening? • Fix it = What's the solution + execute it • Share it = Keep people in the loop"
+      >
+        <span class="terminal-prompt">user@matrix:~$</span>
+        <span class="terminal-command"
+          >Name it. Trace it. Fix it. Share it.</span
+        >
+      </div>
+
       <!-- Active Task Section (conditional) -->
       <div id="active-task-section" class="active-task-section hidden">
         <div class="active-header">▸ ACTIVE TASK</div>
@@ -32,14 +43,16 @@
 
       <!-- Header Section -->
       <div class="header-section">
-        <input
-          type="text"
-          id="search-input"
-          class="search-input"
-          placeholder="🔍 Search tasks..."
-        />
+        <div class="header-controls">
+          <input
+            type="text"
+            id="search-input"
+            class="search-input"
+            placeholder="🔍 Search tasks..."
+          />
+          <button id="add-task-btn" class="add-button">+ NEW</button>
+        </div>
         <div id="streak-display" class="streak-display"></div>
-        <button id="add-task-btn" class="add-button">+ NEW TASK</button>
       </div>
 
       <!-- Daily Checklist Section -->

@@ -7,6 +7,7 @@ const {
   writeTasks,
   readArchivedTasks,
   archiveTasks,
+  readConfig,
 } = require('../utils/fileManager');
 
 const router = express.Router();
@@ -485,6 +486,20 @@ router.post('/archive/cleanup', (req, res) => {
   } catch (error) {
     console.error('Error cleaning archive:', error);
     res.status(500).json({ error: 'Failed to clean archive' });
+  }
+});
+
+/**
+ * GET /api/config
+ * Returns application configuration
+ */
+router.get('/config', (_req, res) => {
+  try {
+    const config = readConfig();
+    res.json(config);
+  } catch (error) {
+    console.error('Error fetching config:', error);
+    res.status(500).json({ error: 'Failed to fetch config' });
   }
 });
 

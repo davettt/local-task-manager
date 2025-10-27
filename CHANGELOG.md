@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2025-10-27
+
+### Added
+
+- Terminal mantra display with high-agency problem-solving framework
+  - Matrix-themed terminal prompt at the top: `user@matrix:~$ Name it. Trace it. Fix it. Share it.`
+  - Interactive hover tooltip showing detailed descriptions for each step
+  - Configurable via `local_data/config.json` file
+  - New `/api/config` endpoint for retrieving application configuration
+  - Mantra can be enabled/disabled and fully customized per user preference
+
+### Changed
+
+- Header layout redesigned for cleaner, more compact appearance
+  - Search box and "+ NEW" button now share a single row (was 3 separate rows)
+  - Button label shortened from "+ NEW TASK" to "+ NEW" for space efficiency
+  - Streak display simplified with transparent background and centered text
+  - Removed prominent border/background box from streak display
+  - Reduced visual clutter by ~25% in header section
+
+### Technical Details
+
+- `config.json` structure for mantra customization with default values
+- File manager now includes `readConfig()`, `writeConfig()`, and `initializeConfigFile()` functions
+- Config loaded on app initialization with `applyConfig()` method
+- Tooltip implemented using CSS `::before` pseudo-element with `attr(data-tooltip)`
+- Fixed position tooltip with high z-index (10000) for proper visibility across all UI states
+
+---
+
 ## [1.5.0] - 2025-10-27
 
 ### Added

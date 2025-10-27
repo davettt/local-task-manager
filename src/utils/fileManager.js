@@ -3,6 +3,7 @@ const path = require('path');
 
 const DATA_DIR = process.env.DATA_DIR || './local_data';
 const TASKS_FILE = path.join(DATA_DIR, 'tasks.json');
+const CONFIG_FILE = path.join(DATA_DIR, 'config.json');
 
 /**
  * Ensure data directory exists
@@ -185,6 +186,68 @@ function cleanupOldArchives(daysOld = 45) {
   }
 }
 
+/**
+ * Get default config
+ * @returns {Object} Default configuration
+ */
+function getDefaultConfig() {
+  return {
+    mantra: {
+      enabled: true,
+      text: 'Name it. Trace it. Fix it. Share it.',
+      descriptions: {
+        nameIt: "What's the issue?",
+        traceIt: 'Why is it happening?',
+        fixIt: "What's the solution + execute it",
+        shareIt: 'Keep people in the loop',
+      },
+    },
+  };
+}
+
+/**
+ * Initialize config file with defaults if it doesn't exist
+ */
+function initializeConfigFile() {
+  ensureDataDir();
+  if (!fs.existsSync(CONFIG_FILE)) {
+    fs.writeFileSync(
+      CONFIG_FILE,
+      JSON.stringify(getDefaultConfig(), null, 2),
+      'utf8'
+    );
+  }
+}
+
+/**
+ * Read configuration from file
+ * @returns {Object} Configuration object
+ */
+function readConfig() {
+  try {
+    initializeConfigFile();
+    const data = fs.readFileSync(CONFIG_FILE, 'utf8');
+    return JSON.parse(data);
+  } catch (error) {
+    console.error('Error reading config file:', error);
+    return getDefaultConfig();
+  }
+}
+
+/**
+ * Write configuration to file
+ * @param {Object} config - Configuration object
+ */
+function writeConfig(config) {
+  try {
+    ensureDataDir();
+    fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2), 'utf8');
+  } catch (error) {
+    console.error('Error writing config file:', error);
+    throw error;
+  }
+}
+
 module.exports = {
   readTasks,
   writeTasks,
@@ -197,4 +260,7 @@ module.exports = {
   cleanupOldArchives,
   ensureDataDir,
   initializeTasksFile,
+  readConfig,
+  writeConfig,
+  initializeConfigFile,
 };
