@@ -198,6 +198,46 @@ class App {
       completeBtn.addEventListener('click', () => this.handleCompleteTask());
     }
 
+    // Pomodoro controls
+    const pomodoroToggle = document.getElementById('pomodoro-toggle-checkbox');
+    const pomodoroInterval = document.getElementById('pomodoro-interval');
+
+    if (pomodoroToggle) {
+      pomodoroToggle.addEventListener('change', (e) => {
+        // Enable/disable interval dropdown
+        if (pomodoroInterval) {
+          pomodoroInterval.disabled = !e.target.checked;
+        }
+        // Update timer if currently running
+        if (this.timer.isRunning() && this.activeTaskId) {
+          this.updatePomodoroSettings();
+        }
+      });
+    }
+
+    if (pomodoroInterval) {
+      pomodoroInterval.addEventListener('change', () => {
+        // Update timer if currently running
+        if (this.timer.isRunning() && this.activeTaskId) {
+          this.updatePomodoroSettings();
+        }
+      });
+    }
+
+    // Break modal controls
+    const breakSkipBtn = document.getElementById('break-skip-btn');
+    const breakContinueBtn = document.getElementById('break-continue-btn');
+
+    if (breakSkipBtn) {
+      breakSkipBtn.addEventListener('click', () => this.handleBreakSkip());
+    }
+
+    if (breakContinueBtn) {
+      breakContinueBtn.addEventListener('click', () =>
+        this.handleBreakContinue()
+      );
+    }
+
     // Modal background click to close
     const modal = document.getElementById('task-modal');
     if (modal) {
@@ -239,10 +279,15 @@ class App {
 
     if (activeTask && activeTask.startedAt) {
       this.activeTaskId = activeTask.id;
+      const pomodoroMode = activeTask.pomodoroMode || false;
+      const pomodoroInterval = activeTask.pomodoroInterval || 25;
       this.timer.start(
         activeTask.id,
         activeTask.startedAt,
-        activeTask.timeSpent
+        activeTask.timeSpent,
+        pomodoroMode,
+        pomodoroInterval,
+        () => this.handlePomodoroIntervalReached()
       );
       UI.showActiveTask(activeTask);
     }
@@ -538,8 +583,17 @@ class App {
         this.tasks[index] = task;
       }
 
-      // Start UI timer
-      this.timer.start(task.id, task.startedAt, task.timeSpent);
+      // Start UI timer with pomodoro callback
+      const pomodoroMode = task.pomodoroMode || false;
+      const pomodoroInterval = task.pomodoroInterval || 25;
+      this.timer.start(
+        task.id,
+        task.startedAt,
+        task.timeSpent,
+        pomodoroMode,
+        pomodoroInterval,
+        () => this.handlePomodoroIntervalReached()
+      );
       UI.showActiveTask(task);
 
       // Scroll to top to show active task
@@ -727,6 +781,136 @@ class App {
       console.error('Error cleaning archive:', error);
       UI.showError(error.message);
     }
+  }
+
+  /**
+   * Update pomodoro settings when user toggles or changes interval
+   */
+  updatePomodoroSettings() {
+    if (!this.activeTaskId) {
+      return;
+    }
+
+    const pomodoroToggle = document.getElementById('pomodoro-toggle-checkbox');
+    const pomodoroIntervalSelect = document.getElementById('pomodoro-interval');
+
+    const pomodoroMode = pomodoroToggle ? pomodoroToggle.checked : false;
+    const pomodoroInterval = pomodoroIntervalSelect
+      ? parseInt(pomodoroIntervalSelect.value)
+      : 25;
+
+    // Update timer settings
+    this.timer.pomodoroMode = pomodoroMode;
+    this.timer.pomodoroInterval = pomodoroInterval;
+
+    // Reset pomodoro interval tracking
+    if (pomodoroMode) {
+      this.timer.pomodoroIntervalStartedAt = new Date();
+      this.timer.pomodoroIntervalNotified = false;
+    }
+
+    // Update task in local state
+    const taskIndex = this.tasks.findIndex((t) => t.id === this.activeTaskId);
+    if (taskIndex >= 0) {
+      this.tasks[taskIndex].pomodoroMode = pomodoroMode;
+      this.tasks[taskIndex].pomodoroInterval = pomodoroInterval;
+    }
+  }
+
+  /**
+   * Handle pomodoro interval reached
+   */
+  handlePomodoroIntervalReached() {
+    // Stop the timer
+    this.timer.stop();
+
+    // Show break modal
+    const breakModal = document.getElementById('break-modal');
+    if (breakModal) {
+      breakModal.classList.remove('hidden');
+      this.startBreakCountdown();
+    }
+
+    // Play completion sound
+    playCompletionSound();
+  }
+
+  /**
+   * Start break countdown timer
+   */
+  startBreakCountdown() {
+    const breakCountdown = document.getElementById('break-countdown');
+    if (!breakCountdown) {
+      return;
+    }
+
+    let secondsRemaining = 5 * 60; // 5 minutes in seconds
+
+    const updateCountdown = () => {
+      const minutes = Math.floor(secondsRemaining / 60);
+      const seconds = secondsRemaining % 60;
+      breakCountdown.textContent = `${minutes}:${seconds
+        .toString()
+        .padStart(2, '0')}`;
+
+      if (secondsRemaining > 0) {
+        secondsRemaining--;
+        setTimeout(updateCountdown, 1000);
+      }
+    };
+
+    updateCountdown();
+  }
+
+  /**
+   * Handle skip break button
+   */
+  handleBreakSkip() {
+    const breakModal = document.getElementById('break-modal');
+    if (breakModal) {
+      breakModal.classList.add('hidden');
+    }
+
+    // Resume timer for next pomodoro
+    this.resumeFromBreak();
+  }
+
+  /**
+   * Handle continue working button
+   */
+  handleBreakContinue() {
+    const breakModal = document.getElementById('break-modal');
+    if (breakModal) {
+      breakModal.classList.add('hidden');
+    }
+
+    // Resume timer for next pomodoro
+    this.resumeFromBreak();
+  }
+
+  /**
+   * Resume from break and continue next pomodoro
+   */
+  resumeFromBreak() {
+    if (!this.activeTaskId) {
+      return;
+    }
+
+    // Resume timer
+    this.timer.resumeFromBreak();
+
+    // Re-start the timer interval
+    const pomodoroMode = this.timer.pomodoroMode;
+    const pomodoroInterval = this.timer.pomodoroInterval;
+
+    this.timer.start(
+      this.activeTaskId,
+      this.timer.startedAt,
+      this.timer.previousTimeSpent,
+      pomodoroMode,
+      pomodoroInterval,
+      () => this.handlePomodoroIntervalReached()
+    );
   }
 }
 

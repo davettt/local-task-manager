@@ -34,6 +34,17 @@
           <div id="active-task-links" class="active-task-links"></div>
         </div>
         <div id="timer-display" class="timer-display">00:00:00</div>
+        <div id="pomodoro-controls" class="pomodoro-controls">
+          <label class="pomodoro-toggle">
+            <input type="checkbox" id="pomodoro-toggle-checkbox" />
+            <span>Enable Pomodoro</span>
+          </label>
+          <select id="pomodoro-interval" class="pomodoro-interval" disabled>
+            <option value="25">25 min</option>
+            <option value="45">45 min</option>
+            <option value="65">65 min</option>
+          </select>
+        </div>
         <div class="action-buttons">
           <button id="edit-active-btn" class="stop-btn">◇ EDIT</button>
           <button id="stop-btn" class="stop-btn">⏸ STOP</button>
@@ -253,6 +264,21 @@
               Move to Archive Files
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Break Modal -->
+    <div id="break-modal" class="modal hidden">
+      <div class="modal-content break-modal">
+        <div class="break-title">🎉 Pomodoro Complete!</div>
+        <div class="break-message">Time for a 5-minute stretch break</div>
+        <div id="break-countdown" class="break-countdown">5:00</div>
+        <div class="break-buttons">
+          <button id="break-skip-btn" class="btn">Skip Break</button>
+          <button id="break-continue-btn" class="btn btn-primary">
+            Continue Working
+          </button>
         </div>
       </div>
     </div>

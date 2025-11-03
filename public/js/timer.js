@@ -9,6 +9,12 @@ class TaskTimer {
     this.activeTaskId = null;
     this.previousTimeSpent = 0;
     this.startedAt = null;
+    // Pomodoro-specific properties
+    this.pomodoroMode = false;
+    this.pomodoroInterval = 25; // minutes
+    this.pomodoroIntervalStartedAt = null;
+    this.pomodoroIntervalNotified = false;
+    this.onPomodoroIntervalReached = null; // Callback function
   }
 
   /**
@@ -16,14 +22,33 @@ class TaskTimer {
    * @param {string} taskId - Task ID
    * @param {string} startedAt - ISO timestamp when task started
    * @param {number} previousTimeSpent - Seconds already spent on task
+   * @param {boolean} pomodoroMode - Enable pomodoro mode
+   * @param {number} pomodoroInterval - Pomodoro interval in minutes (25, 45, or 65)
+   * @param {Function} onPomodoroIntervalReached - Callback when pomodoro interval reached
    */
-  start(taskId, startedAt, previousTimeSpent = 0) {
+  start(
+    taskId,
+    startedAt,
+    previousTimeSpent = 0,
+    pomodoroMode = false,
+    pomodoroInterval = 25,
+    onPomodoroIntervalReached = null
+  ) {
     // Stop existing timer if any
     this.stop();
 
     this.activeTaskId = taskId;
     this.startedAt = new Date(startedAt);
     this.previousTimeSpent = previousTimeSpent;
+    this.pomodoroMode = pomodoroMode;
+    this.pomodoroInterval = pomodoroInterval;
+    this.onPomodoroIntervalReached = onPomodoroIntervalReached;
+
+    // If pomodoro mode, set the interval start time
+    if (this.pomodoroMode) {
+      this.pomodoroIntervalStartedAt = new Date();
+      this.pomodoroIntervalNotified = false;
+    }
 
     // Update display immediately
     this.updateDisplay();
@@ -70,6 +95,29 @@ class TaskTimer {
     if (timerDisplay) {
       timerDisplay.textContent = display;
     }
+
+    // Check if pomodoro interval has been reached
+    if (
+      this.pomodoroMode &&
+      this.pomodoroIntervalStartedAt &&
+      !this.pomodoroIntervalNotified
+    ) {
+      const pomodoroElapsed = Math.floor(
+        (Date.now() - this.pomodoroIntervalStartedAt.getTime()) / 1000
+      );
+      const pomodoroIntervalSeconds = this.pomodoroInterval * 60;
+
+      if (pomodoroElapsed >= pomodoroIntervalSeconds) {
+        this.pomodoroIntervalNotified = true;
+        // Trigger callback if provided
+        if (
+          this.onPomodoroIntervalReached &&
+          typeof this.onPomodoroIntervalReached === 'function'
+        ) {
+          this.onPomodoroIntervalReached();
+        }
+      }
+    }
   }
 
   /**
@@ -84,6 +132,41 @@ class TaskTimer {
    */
   isRunning() {
     return this.intervalId !== null;
+  }
+
+  /**
+   * Resume from a pomodoro break
+   */
+  resumeFromBreak() {
+    if (this.pomodoroMode && this.activeTaskId) {
+      this.pomodoroIntervalStartedAt = new Date();
+      this.pomodoroIntervalNotified = false;
+    }
+  }
+
+  /**
+   * Get pomodoro info
+   */
+  getPomodoroInfo() {
+    if (!this.pomodoroMode || !this.pomodoroIntervalStartedAt) {
+      return null;
+    }
+
+    const pomodoroElapsed = Math.floor(
+      (Date.now() - this.pomodoroIntervalStartedAt.getTime()) / 1000
+    );
+    const pomodoroIntervalSeconds = this.pomodoroInterval * 60;
+    const pomodoroRemaining = Math.max(
+      0,
+      pomodoroIntervalSeconds - pomodoroElapsed
+    );
+
+    return {
+      elapsed: pomodoroElapsed,
+      remaining: pomodoroRemaining,
+      total: pomodoroIntervalSeconds,
+      interval: this.pomodoroInterval,
+    };
   }
 
   /**

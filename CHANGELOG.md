@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2025-11-04
+
+### Added
+
+- Optional pomodoro timer mode for flexible productivity tracking
+  - Enable/disable pomodoro on any task during timer session (opt-in, non-disruptive)
+  - Three interval options: 25, 45, or 65 minutes (flexible work sessions)
+  - Auto-pause timer when pomodoro interval completes
+  - Break modal with 5-minute countdown timer and visual display
+  - Two break actions: Skip Break (resume immediately) or Continue Working (auto-start next pomodoro)
+  - Pomodoro settings can be changed mid-task without restarting timer
+  - Completion sound plays when break starts
+  - Hybrid approach: works alongside existing normal timer mode
+
+### Features
+
+- Pomodoro is fully optional per-task - users can mix normal and pomodoro timers
+- Existing tasks and users unaffected - zero breaking changes
+- When task is stopped/paused, pomodoro settings are preserved for next session
+- When recurring task is completed, new instance starts fresh (no pomodoro carryover)
+- All pomodoro settings stored in task data structure for persistence
+
+### Technical Details
+
+- Extended `TaskTimer` class with pomodoro-specific properties and methods
+- Callback-based architecture for break modal triggering
+- Break countdown implemented with 1-second intervals
+- Backwards compatible - missing pomodoro fields default to false/inactive
+
+---
+
 ## [1.6.0] - 2025-10-27
 
 ### Added

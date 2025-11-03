@@ -888,6 +888,141 @@ body {
   color: #839496;
 }
 
+/* Pomodoro Controls */
+.pomodoro-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0;
+  padding: 4px 0;
+  flex-wrap: wrap;
+}
+
+.pomodoro-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #839496;
+  font-size: 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: color 150ms ease;
+}
+
+.pomodoro-toggle:hover {
+  color: #2aa198;
+}
+
+.pomodoro-toggle input[type='checkbox'] {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  accent-color: #2aa198;
+}
+
+.pomodoro-interval {
+  padding: 3px 6px;
+  background-color: #0a2c38;
+  color: #839496;
+  border: 1px solid #10535f;
+  border-radius: 2px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.pomodoro-interval:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pomodoro-interval:not(:disabled):focus {
+  outline: none;
+  border-color: #2aa198;
+  box-shadow: 0 0 6px rgba(42, 161, 152, 0.3);
+  color: #2aa198;
+}
+
+.pomodoro-interval:not(:disabled):hover {
+  border-color: #2aa198;
+  color: #2aa198;
+}
+
+/* Break Modal */
+.break-modal {
+  border-color: #dc322f !important;
+  box-shadow: 0 0 20px rgba(220, 50, 47, 0.4) !important;
+  padding: 12px !important;
+}
+
+.break-title {
+  color: #dc322f;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.break-message {
+  color: #839496;
+  font-size: 13px;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.break-countdown {
+  color: #2aa198;
+  font-size: 32px;
+  font-weight: bold;
+  text-align: center;
+  margin: 12px 0;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(42, 161, 152, 0.5);
+}
+
+.break-buttons {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 12px;
+  padding: 8px 0;
+}
+
+.btn {
+  padding: 6px 12px;
+  background-color: #073642;
+  color: #839496;
+  border: 1px solid #10535f;
+  border-radius: 2px;
+  cursor: pointer;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  transition: all 150ms ease;
+}
+
+.btn:hover {
+  background-color: #10535f;
+  color: #2aa198;
+  border-color: #2aa198;
+}
+
+.btn-primary {
+  color: #2aa198;
+  border-color: #2aa198;
+}
+
+.btn-primary:hover {
+  background-color: #2aa198;
+  color: #002b36;
+  box-shadow: 0 0 8px rgba(42, 161, 152, 0.4);
+}
+
 /* Scrollbar Styling */
 ::-webkit-scrollbar {
   width: 6px;

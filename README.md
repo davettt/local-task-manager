@@ -8,6 +8,7 @@ A lightweight, single-focused task management application with an integrated tim
 - **Task Management**: Create, edit, delete, and complete tasks
 - **Active Task Timer**: Single-task focus with live timer display
 - **Timer Persistence**: Timer state survives browser refresh
+- **Pomodoro Timer (Optional)**: Enable flexible pomodoro intervals (25, 45, or 65 minutes) on any task with automatic break reminders and countdown
 - **Task Archive**: View completed tasks with time tracking
 - **Sound Alerts**: Audio notification when tasks are completed
 - **Calendar Appointments**: Mark tasks as time-critical appointments with customizable reminders
@@ -91,6 +92,16 @@ npm run dev
    - Click the "▶️ START" button next to any task
    - The timer will appear at the top with live countdown
    - Only one task can be active at a time
+
+4.1 **Use Pomodoro Timer** (Optional)
+   - While timer is running, you can enable pomodoro mode for flexible work intervals
+   - Check the "Enable Pomodoro" checkbox in the active task section
+   - Select your preferred interval: 25 min (classic), 45 min, or 65 min (deep work)
+   - Timer runs normally until the selected interval completes
+   - When interval ends: timer auto-pauses and a break modal appears with 5-minute countdown
+   - During break: choose to "Skip Break" (resume immediately) or "Continue Working" (auto-start next pomodoro)
+   - You can enable/disable pomodoro or change the interval anytime while timer is running
+   - Pomodoro is fully optional - you can mix normal and pomodoro timers across different tasks
 
 5. **Stop or Complete**
    - Click "⏹️ STOP" to pause the timer (task returns to list)
