@@ -15,6 +15,9 @@ class App {
     this.editingTaskId = null;
     this.editingActiveTask = false;
     this.searchQuery = '';
+    // Pomodoro break tracking
+    this.pomodoroSessionTotalTime = 0;
+    this.pomodoroSessionStartTime = null;
 
     this.init();
   }
@@ -821,6 +824,26 @@ class App {
    * Handle pomodoro interval reached
    */
   handlePomodoroIntervalReached() {
+    // Calculate total time spent before stopping (including this pomodoro session)
+    if (!this.activeTaskId) {
+      return;
+    }
+
+    const currentTask = this.tasks.find((t) => t.id === this.activeTaskId);
+    if (!currentTask) {
+      return;
+    }
+
+    // Calculate elapsed time for this session
+    const elapsed = Math.floor(
+      (Date.now() - new Date(currentTask.startedAt).getTime()) / 1000
+    );
+    const totalTimeSpent = currentTask.timeSpent + elapsed;
+
+    // Store these values for resuming after break
+    this.pomodoroSessionTotalTime = totalTimeSpent;
+    this.pomodoroSessionStartTime = currentTask.startedAt;
+
     // Stop the timer
     this.timer.stop();
 
@@ -899,14 +922,18 @@ class App {
     // Resume timer
     this.timer.resumeFromBreak();
 
-    // Re-start the timer interval
+    // Re-start the timer interval with correct time values
     const pomodoroMode = this.timer.pomodoroMode;
     const pomodoroInterval = this.timer.pomodoroInterval;
 
+    // Use current time as start point and accumulated time as previous time spent
+    const nowISO = new Date().toISOString();
+    const previousTimeSpent = this.pomodoroSessionTotalTime || 0;
+
     this.timer.start(
       this.activeTaskId,
-      this.timer.startedAt,
-      this.timer.previousTimeSpent,
+      nowISO,
+      previousTimeSpent,
       pomodoroMode,
       pomodoroInterval,
       () => this.handlePomodoroIntervalReached()
