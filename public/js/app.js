@@ -440,14 +440,23 @@ class App {
       });
     });
 
-    // Expand buttons in task list
-    const expandButtons = document.querySelectorAll('.expand-btn');
-    expandButtons.forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        const taskId = btn.getAttribute('data-task-id');
-        UI.toggleTaskDetails(taskId);
+    // Expand task details - click on task header to toggle
+    const taskHeaders = document.querySelectorAll('.task-item-header');
+    taskHeaders.forEach((header) => {
+      header.addEventListener('click', (e) => {
+        // Don't toggle if clicking on the expand button itself
+        if (e.target.classList.contains('expand-btn')) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        const taskItem = header.closest('.task-item');
+        if (taskItem) {
+          const taskId = taskItem.getAttribute('data-task-id');
+          UI.toggleTaskDetails(taskId);
+        }
       });
+      // Add cursor pointer style to indicate the entire header is clickable
+      header.style.cursor = 'pointer';
     });
 
     // Checkboxes in task list (mark as complete)
