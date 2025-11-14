@@ -45,8 +45,8 @@ class SyncManager {
     const defaults = {
       lastSync: null,
       taskMappings: {}, // local_id -> todoist_id mapping
-      checksums: {}, // Store checksums to detect changes
-      todoistUpdatedAt: {}, // Track Todoist updated_at per task
+      localChecksums: {}, // Local task checksums for detecting local changes
+      todoistChecksums: {}, // Todoist task checksums for detecting remote changes
     };
 
     try {
@@ -59,8 +59,8 @@ class SyncManager {
           ...loaded,
           // Ensure nested objects exist
           taskMappings: loaded.taskMappings || {},
-          checksums: loaded.checksums || {},
-          todoistUpdatedAt: loaded.todoistUpdatedAt || {},
+          localChecksums: loaded.localChecksums || {},
+          todoistChecksums: loaded.todoistChecksums || {},
         };
       }
       return defaults;
@@ -98,8 +98,8 @@ class SyncManager {
   }
 
   /**
-   * Generate a checksum for a task to detect changes
-   * @param {Object} task - Task object
+   * Generate a checksum for a local task to detect changes
+   * @param {Object} task - Local task object
    * @returns {string} Checksum
    */
   generateChecksum(task) {
@@ -110,7 +110,26 @@ class SyncManager {
       dueDate: task.dueDate,
       dueTime: task.dueTime,
       details: task.details,
+      recurring: task.recurring,
       updatedAt: task.updatedAt,
+    };
+    return JSON.stringify(relevant);
+  }
+
+  /**
+   * Generate a checksum for a Todoist task to detect changes
+   * @param {Object} todoistTask - Todoist API task object
+   * @returns {string} Checksum
+   */
+  generateTodoistTaskChecksum(todoistTask) {
+    const relevant = {
+      content: todoistTask.content,
+      is_completed: todoistTask.is_completed,
+      priority: todoistTask.priority,
+      due: todoistTask.due,
+      description: todoistTask.description,
+      labels: todoistTask.labels,
+      is_recurring: todoistTask.due?.is_recurring,
     };
     return JSON.stringify(relevant);
   }
@@ -130,7 +149,7 @@ class SyncManager {
 
     // Find created and updated tasks
     localTasks.forEach((task) => {
-      const checksum = this.generateChecksum(task);
+      const localChecksum = this.generateChecksum(task);
       const todoistId = metadata.taskMappings[task.id];
 
       if (!todoistId) {
@@ -138,10 +157,15 @@ class SyncManager {
         if (!task.completed) {
           changes.created.push(task);
         }
-      } else if (metadata.checksums[task.id] !== checksum) {
-        // Task was modified locally
-        if (!task.completed) {
-          changes.updated.push(task);
+      } else {
+        // For synced tasks, check if LOCAL checksum has changed
+        // metadata.localChecksums tracks what the local version looked like at last sync
+        const storedLocalChecksum = metadata.localChecksums?.[task.id];
+        if (storedLocalChecksum && storedLocalChecksum !== localChecksum) {
+          // Task was modified locally since last sync
+          if (!task.completed) {
+            changes.updated.push(task);
+          }
         }
       }
     });
@@ -203,7 +227,10 @@ class SyncManager {
 
           // Map local task ID to Todoist task ID
           metadata.taskMappings[task.id] = todoistTask.id;
-          metadata.checksums[task.id] = this.generateChecksum(task);
+          // Store checksums after successful push
+          metadata.localChecksums[task.id] = this.generateChecksum(task);
+          metadata.todoistChecksums[task.id] =
+            this.generateTodoistTaskChecksum(todoistTask);
           syncReport.synced.created++;
         } catch (error) {
           syncReport.errors.push({
@@ -216,8 +243,17 @@ class SyncManager {
 
       for (const task of localChanges.updated) {
         try {
+          // Skip updating recurring tasks - Todoist REST API v2 doesn't support
+          // setting recurrence patterns, so we avoid pushing to avoid losing the
+          // recurrence data. Recurring tasks can only be modified via Todoist UI.
+          if (task.recurring) {
+            // Just update local checksum to mark as synced
+            metadata.localChecksums[task.id] = this.generateChecksum(task);
+            continue;
+          }
+
           const todoistId = metadata.taskMappings[task.id];
-          await this.todoist.updateTask(todoistId, {
+          const updatedTodoistTask = await this.todoist.updateTask(todoistId, {
             content: task.description,
             description: task.details || '',
             priority: this.mapLocalPriorityToTodoist(task.priority),
@@ -225,7 +261,12 @@ class SyncManager {
             labels: task.labels || [],
           });
 
-          metadata.checksums[task.id] = this.generateChecksum(task);
+          // Store checksums after successful push
+          metadata.localChecksums[task.id] = this.generateChecksum(task);
+          if (updatedTodoistTask) {
+            metadata.todoistChecksums[task.id] =
+              this.generateTodoistTaskChecksum(updatedTodoistTask);
+          }
           syncReport.synced.updated++;
         } catch (error) {
           syncReport.errors.push({
@@ -262,10 +303,12 @@ class SyncManager {
       remoteTasks.forEach((todoistTask) => {
         // Find corresponding local task
         let localTask = null;
+        let localTaskId = null;
 
         for (const [lId, tId] of Object.entries(metadata.taskMappings)) {
           if (tId === todoistTask.id) {
             localTask = localTasks.find((t) => t.id === lId);
+            localTaskId = lId;
             break;
           }
         }
@@ -274,22 +317,20 @@ class SyncManager {
           // Remote task doesn't exist locally - it's new from Todoist
           remoteChanges.created.push(todoistTask);
         } else {
-          // Check if remote task was updated
-          // Compare with previously synced Todoist updated_at, not local time
-          if (todoistTask.updated_at) {
-            const previousTodoistUpdatedAt =
-              metadata.todoistUpdatedAt[todoistTask.id];
-            const currentUpdatedAt = todoistTask.updated_at;
+          // Check if remote task was updated using checksum comparison
+          // Since Todoist API doesn't reliably return updated_at, we compare content
+          const remoteChecksum = this.generateTodoistTaskChecksum(todoistTask);
+          const storedTodoistChecksum =
+            metadata.todoistChecksums?.[localTaskId];
 
-            // Detect change if:
-            // 1. We've never synced this task before, OR
-            // 2. The Todoist updated_at has changed
-            if (
-              !previousTodoistUpdatedAt ||
-              previousTodoistUpdatedAt !== currentUpdatedAt
-            ) {
-              remoteChanges.updated.push(todoistTask);
-            }
+          // Detect change if:
+          // 1. We have no previous checksum (first sync/migration), OR
+          // 2. The Todoist content has changed
+          if (
+            !storedTodoistChecksum ||
+            storedTodoistChecksum !== remoteChecksum
+          ) {
+            remoteChanges.updated.push(todoistTask);
           }
         }
       });
@@ -313,10 +354,11 @@ class SyncManager {
           const newLocalTask = this.todoistTaskToLocal(todoistTask);
           localTasks.push(newLocalTask);
           metadata.taskMappings[newLocalTask.id] = todoistTask.id;
-          metadata.checksums[newLocalTask.id] =
+          // Store both checksums: local (what we have now) and todoist (what we pulled)
+          metadata.localChecksums[newLocalTask.id] =
             this.generateChecksum(newLocalTask);
-          // Track Todoist updated_at for future change detection
-          metadata.todoistUpdatedAt[todoistTask.id] = todoistTask.updated_at;
+          metadata.todoistChecksums[newLocalTask.id] =
+            this.generateTodoistTaskChecksum(todoistTask);
           syncReport.synced.pulled++;
         } catch (error) {
           syncReport.errors.push({
@@ -346,10 +388,11 @@ class SyncManager {
               const updated = this.todoistTaskToLocal(todoistTask);
               updated.id = localTaskId;
               localTasks[localIndex] = updated;
-              metadata.checksums[localTaskId] = this.generateChecksum(updated);
-              // Track Todoist updated_at for future change detection
-              metadata.todoistUpdatedAt[todoistTask.id] =
-                todoistTask.updated_at;
+              // Store both checksums after pulling update
+              metadata.localChecksums[localTaskId] =
+                this.generateChecksum(updated);
+              metadata.todoistChecksums[localTaskId] =
+                this.generateTodoistTaskChecksum(todoistTask);
               syncReport.synced.pulled++;
             }
           }
@@ -422,13 +465,19 @@ class SyncManager {
     // Generate a local ID if not already mapped
     const localId = `todoist_${todoistTask.id}`;
 
+    // Check if task is recurring
+    // Note: Todoist API v2 doesn't provide recurrence pattern details,
+    // so we default to "daily" if is_recurring is true
+    const isRecurring = todoistTask.due?.is_recurring || false;
+    const recurring = isRecurring ? 'daily' : null;
+
     return {
       id: localId,
       description: todoistTask.content,
       dueDate: todoistTask.due ? todoistTask.due.date : null,
       dueTime: null,
       priority: this.mapTodoistPriorityToLocal(todoistTask.priority),
-      recurring: null,
+      recurring,
       details: todoistTask.description || '',
       isAppointment: false,
       reminderMinutes: null,
