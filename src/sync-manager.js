@@ -42,22 +42,30 @@ class SyncManager {
    * @returns {Object} Metadata object
    */
   loadMetadata() {
+    const defaults = {
+      lastSync: null,
+      taskMappings: {}, // local_id -> todoist_id mapping
+      checksums: {}, // Store checksums to detect changes
+      todoistUpdatedAt: {}, // Track Todoist updated_at per task
+    };
+
     try {
       if (fs.existsSync(this.metadataPath)) {
         const content = fs.readFileSync(this.metadataPath, 'utf-8');
-        return JSON.parse(content);
+        const loaded = JSON.parse(content);
+        // Merge with defaults to handle missing fields from older metadata files
+        return {
+          ...defaults,
+          ...loaded,
+          // Ensure nested objects exist
+          taskMappings: loaded.taskMappings || {},
+          checksums: loaded.checksums || {},
+          todoistUpdatedAt: loaded.todoistUpdatedAt || {},
+        };
       }
-      return {
-        lastSync: null,
-        taskMappings: {}, // local_id -> todoist_id mapping
-        checksums: {}, // Store checksums to detect changes
-      };
+      return defaults;
     } catch (error) {
-      return {
-        lastSync: null,
-        taskMappings: {},
-        checksums: {},
-      };
+      return defaults;
     }
   }
 
@@ -267,12 +275,19 @@ class SyncManager {
           remoteChanges.created.push(todoistTask);
         } else {
           // Check if remote task was updated
-          // We'll use the updated_at field from Todoist API if available
-          if (todoistTask.updated_at && localTask.updatedAt) {
-            const remoteTime = new Date(todoistTask.updated_at).getTime();
-            const localTime = new Date(localTask.updatedAt).getTime();
+          // Compare with previously synced Todoist updated_at, not local time
+          if (todoistTask.updated_at) {
+            const previousTodoistUpdatedAt =
+              metadata.todoistUpdatedAt[todoistTask.id];
+            const currentUpdatedAt = todoistTask.updated_at;
 
-            if (remoteTime > localTime) {
+            // Detect change if:
+            // 1. We've never synced this task before, OR
+            // 2. The Todoist updated_at has changed
+            if (
+              !previousTodoistUpdatedAt ||
+              previousTodoistUpdatedAt !== currentUpdatedAt
+            ) {
               remoteChanges.updated.push(todoistTask);
             }
           }
@@ -300,6 +315,8 @@ class SyncManager {
           metadata.taskMappings[newLocalTask.id] = todoistTask.id;
           metadata.checksums[newLocalTask.id] =
             this.generateChecksum(newLocalTask);
+          // Track Todoist updated_at for future change detection
+          metadata.todoistUpdatedAt[todoistTask.id] = todoistTask.updated_at;
           syncReport.synced.pulled++;
         } catch (error) {
           syncReport.errors.push({
@@ -330,6 +347,9 @@ class SyncManager {
               updated.id = localTaskId;
               localTasks[localIndex] = updated;
               metadata.checksums[localTaskId] = this.generateChecksum(updated);
+              // Track Todoist updated_at for future change detection
+              metadata.todoistUpdatedAt[todoistTask.id] =
+                todoistTask.updated_at;
               syncReport.synced.pulled++;
             }
           }
