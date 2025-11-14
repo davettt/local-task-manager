@@ -17,13 +17,19 @@ class SyncManager {
 
   /**
    * Load local tasks from JSON file
-   * @returns {Object} Tasks object with categorized tasks
+   * @returns {Array} Array of task objects
    */
   loadLocalTasks() {
     try {
       if (fs.existsSync(this.tasksPath)) {
         const content = fs.readFileSync(this.tasksPath, 'utf-8');
-        return JSON.parse(content) || [];
+        const parsed = JSON.parse(content);
+        // Handle both array and object with tasks property
+        return parsed.tasks && Array.isArray(parsed.tasks)
+          ? parsed.tasks
+          : Array.isArray(parsed)
+            ? parsed
+            : [];
       }
       return [];
     } catch (error) {
@@ -73,7 +79,11 @@ class SyncManager {
    */
   saveLocalTasks(tasks) {
     try {
-      fs.writeFileSync(this.tasksPath, JSON.stringify(tasks, null, 2));
+      // Check if original format was { tasks: [...] }
+      const currentContent = fs.readFileSync(this.tasksPath, 'utf-8');
+      const currentData = JSON.parse(currentContent);
+      const dataToSave = currentData.tasks ? { tasks } : tasks;
+      fs.writeFileSync(this.tasksPath, JSON.stringify(dataToSave, null, 2));
     } catch (error) {
       throw new Error(`Failed to save local tasks: ${error.message}`);
     }
@@ -90,8 +100,9 @@ class SyncManager {
       completed: task.completed,
       priority: task.priority,
       dueDate: task.dueDate,
+      dueTime: task.dueTime,
       details: task.details,
-      labels: task.labels,
+      updatedAt: task.updatedAt,
     };
     return JSON.stringify(relevant);
   }
@@ -394,15 +405,23 @@ class SyncManager {
     return {
       id: localId,
       description: todoistTask.content,
-      completed: todoistTask.is_completed || false,
-      priority: this.mapTodoistPriorityToLocal(todoistTask.priority),
       dueDate: todoistTask.due ? todoistTask.due.date : null,
+      dueTime: null,
+      priority: this.mapTodoistPriorityToLocal(todoistTask.priority),
+      recurring: null,
       details: todoistTask.description || '',
-      labels: todoistTask.labels || [],
+      isAppointment: false,
+      reminderMinutes: null,
+      workingDaysOnly: false,
+      completed: todoistTask.is_completed || false,
+      archived: false,
+      inProgress: false,
+      startedAt: null,
+      timeSpent: 0,
+      completedAt: todoistTask.is_completed ? new Date().toISOString() : null,
+      links: [],
       createdAt: todoistTask.created_at || new Date().toISOString(),
       updatedAt: todoistTask.updated_at || new Date().toISOString(),
-      archivedAt: null,
-      archivedToFile: false,
     };
   }
 
