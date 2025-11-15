@@ -167,7 +167,8 @@ class SyncManager {
         // Push update if:
         // 1. Local has changed since last sync, OR
         // 2. Local and Todoist are out of sync (local != todoist)
-        const localChanged = storedLocalChecksum && storedLocalChecksum !== localChecksum;
+        const localChanged =
+          storedLocalChecksum && storedLocalChecksum !== localChecksum;
         const outOfSync = localChecksum !== todoistChecksum;
 
         if (localChanged || outOfSync) {
@@ -261,7 +262,7 @@ class SyncManager {
           const todoistId = metadata.taskMappings[task.id];
 
           // Update task fields (don't include is_completed - must use close/reopen endpoints)
-          const updatedTodoistTask = await this.todoist.updateTask(todoistId, {
+          await this.todoist.updateTask(todoistId, {
             content: task.description,
             description: task.details || '',
             priority: this.mapLocalPriorityToTodoist(task.priority),
@@ -271,7 +272,9 @@ class SyncManager {
 
           // Handle completion status separately using close/reopen endpoints
           const storedTodoistChecksum = metadata.todoistChecksums?.[task.id];
-          const storedTodoistTask = storedTodoistChecksum ? JSON.parse(storedTodoistChecksum) : null;
+          const storedTodoistTask = storedTodoistChecksum
+            ? JSON.parse(storedTodoistChecksum)
+            : null;
           const wasCompleted = storedTodoistTask?.is_completed || false;
 
           if (task.completed && !wasCompleted) {
