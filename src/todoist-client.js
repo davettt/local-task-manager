@@ -101,6 +101,19 @@ class TodoistClient {
   }
 
   /**
+   * Reopen a task (mark as not done)
+   * @param {string} taskId - Todoist task ID
+   * @returns {Promise<void>}
+   */
+  async reopenTask(taskId) {
+    try {
+      await this.client.post(`/tasks/${taskId}/reopen`);
+    } catch (error) {
+      throw new Error(`Failed to reopen task ${taskId}: ${error.message}`);
+    }
+  }
+
+  /**
    * Delete a task
    * @param {string} taskId - Todoist task ID
    * @returns {Promise<void>}

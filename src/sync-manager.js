@@ -159,13 +159,19 @@ class SyncManager {
         }
       } else {
         // For synced tasks, check if LOCAL checksum has changed
+        // OR if local and Todoist states differ (out of sync)
         // metadata.localChecksums tracks what the local version looked like at last sync
         const storedLocalChecksum = metadata.localChecksums?.[task.id];
-        if (storedLocalChecksum && storedLocalChecksum !== localChecksum) {
-          // Task was modified locally since last sync
-          if (!task.completed) {
-            changes.updated.push(task);
-          }
+        const todoistChecksum = metadata.todoistChecksums?.[task.id];
+
+        // Push update if:
+        // 1. Local has changed since last sync, OR
+        // 2. Local and Todoist are out of sync (local != todoist)
+        const localChanged = storedLocalChecksum && storedLocalChecksum !== localChecksum;
+        const outOfSync = localChecksum !== todoistChecksum;
+
+        if (localChanged || outOfSync) {
+          changes.updated.push(task);
         }
       }
     });
@@ -253,6 +259,8 @@ class SyncManager {
           }
 
           const todoistId = metadata.taskMappings[task.id];
+
+          // Update task fields (don't include is_completed - must use close/reopen endpoints)
           const updatedTodoistTask = await this.todoist.updateTask(todoistId, {
             content: task.description,
             description: task.details || '',
@@ -261,11 +269,27 @@ class SyncManager {
             labels: task.labels || [],
           });
 
+          // Handle completion status separately using close/reopen endpoints
+          const storedTodoistChecksum = metadata.todoistChecksums?.[task.id];
+          const storedTodoistTask = storedTodoistChecksum ? JSON.parse(storedTodoistChecksum) : null;
+          const wasCompleted = storedTodoistTask?.is_completed || false;
+
+          if (task.completed && !wasCompleted) {
+            // Mark as completed
+            await this.todoist.completeTask(todoistId);
+          } else if (!task.completed && wasCompleted) {
+            // Mark as not completed
+            await this.todoist.reopenTask(todoistId);
+          }
+
+          // Fetch updated task to get final state
+          const finalTodoistTask = await this.todoist.getTask(todoistId);
+
           // Store checksums after successful push
           metadata.localChecksums[task.id] = this.generateChecksum(task);
-          if (updatedTodoistTask) {
+          if (finalTodoistTask) {
             metadata.todoistChecksums[task.id] =
-              this.generateTodoistTaskChecksum(updatedTodoistTask);
+              this.generateTodoistTaskChecksum(finalTodoistTask);
           }
           syncReport.synced.updated++;
         } catch (error) {
@@ -281,7 +305,8 @@ class SyncManager {
         try {
           await this.todoist.deleteTask(deletion.todoistId);
           delete metadata.taskMappings[deletion.localId];
-          delete metadata.checksums[deletion.localId];
+          delete metadata.localChecksums[deletion.localId];
+          delete metadata.todoistChecksums[deletion.localId];
           syncReport.synced.deleted++;
         } catch (error) {
           syncReport.errors.push({

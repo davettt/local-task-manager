@@ -123,13 +123,7 @@ router.post('/sync', checkTodoistConfig, async (req, res) => {
     const dataDir = process.env.DATA_DIR || './local_data';
     const syncManager = new SyncManager(todoist, dataDir);
 
-    // eslint-disable-next-line no-console
-    console.log('Starting Todoist bidirectional sync...');
-
     const syncReport = await syncManager.bidirectionalSync();
-
-    // eslint-disable-next-line no-console
-    console.log('Sync completed:', syncReport);
 
     res.json({
       success: syncReport.status === 'success',
