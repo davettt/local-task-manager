@@ -321,6 +321,8 @@ class SyncManager {
       }
 
       // Step 3: Pull remote changes from Todoist
+      // Note: Only fetch active tasks. Todoist is used for creating new tasks only.
+      // All updates/completions should be managed locally to avoid sync conflicts.
       const remoteTasks = await this.todoist.getAllTasks();
       const remoteChanges = {
         created: [],
