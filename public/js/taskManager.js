@@ -266,7 +266,12 @@ class TaskManager {
       return 'Overdue';
     }
 
-    // For other dates, show formatted date
+    // For other dates, use settings formatter if available
+    if (window.settingsManager) {
+      return window.settingsManager.formatDate(date);
+    }
+
+    // Fallback formatting
     const options = { weekday: 'short', month: 'short', day: 'numeric' };
     return taskDate.toLocaleDateString('en-US', options);
   }
@@ -290,7 +295,12 @@ class TaskManager {
 
     if (time) {
       result += result ? ' ' : '';
-      result += time;
+      // Use settings formatter for time if available
+      if (window.settingsManager) {
+        result += window.settingsManager.formatTime(time);
+      } else {
+        result += time;
+      }
     }
 
     return result;

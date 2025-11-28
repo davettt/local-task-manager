@@ -268,18 +268,34 @@ class UI {
    */
   static createArchivedTaskElement(task) {
     const timeSpent = TaskTimer.formatTime(task.timeSpent || 0);
-    const completedDate = task.completedAt
-      ? new Date(task.completedAt).toLocaleDateString('en-US', {
+
+    // Format completed date using settings if available
+    let completedDate = 'Unknown';
+    if (task.completedAt) {
+      if (window.settingsManager) {
+        completedDate = window.settingsManager.formatDate(task.completedAt);
+      } else {
+        completedDate = new Date(task.completedAt).toLocaleDateString('en-US', {
           month: 'short',
           day: 'numeric',
-        })
-      : 'Unknown';
-    const completedTime = task.completedAt
-      ? new Date(task.completedAt).toLocaleTimeString('en-US', {
-          hour: '2-digit',
-          minute: '2-digit',
-        })
-      : '';
+        });
+      }
+    }
+
+    // Format completed time using settings if available
+    let completedTime = '';
+    if (task.completedAt) {
+      const timeStr = new Date(task.completedAt).toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      });
+      if (window.settingsManager) {
+        completedTime = window.settingsManager.formatTime(timeStr);
+      } else {
+        completedTime = timeStr;
+      }
+    }
 
     // Escape HTML in task description
     const escapeHtml = (text) => {
@@ -322,14 +338,26 @@ class UI {
   /**
    * Show cleanup modal
    */
-  static showCleanupModal() {
+  static async showCleanupModal() {
     const modal = document.getElementById('cleanup-modal');
     const dateInput = document.getElementById('cleanup-date');
     if (modal) {
-      // Set default date to 30 days ago
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      const dateStr = thirtyDaysAgo.toISOString().split('T')[0];
+      // Fetch configured cutoff days from settings
+      let cutoffDays = 30; // default
+      try {
+        const response = await fetch('/api/settings');
+        if (response.ok) {
+          const settings = await response.json();
+          cutoffDays = settings.cleanup?.defaultCutoffDays || 30;
+        }
+      } catch (error) {
+        console.error('Error fetching settings:', error);
+      }
+
+      // Set default date based on configured cutoff days
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - cutoffDays);
+      const dateStr = cutoffDate.toISOString().split('T')[0];
       if (dateInput) {
         dateInput.value = dateStr;
       }
@@ -465,7 +493,10 @@ class UI {
   /**
    * Initialize daily checklist event listeners and load saved state
    */
-  static initDailyChecklist() {
+  static async initDailyChecklist() {
+    // Render checklist items from config
+    await UI.renderDailyChecklistFromConfig();
+
     // Attach toggle handler for checklist header
     const checklistToggle = document.getElementById('daily-checklist-toggle');
     if (checklistToggle) {
@@ -480,6 +511,52 @@ class UI {
 
     // Check if a new day has started and reset if needed
     UI.checkAndResetDailyChecklist();
+  }
+
+  /**
+   * Render daily checklist items from config
+   */
+  static async renderDailyChecklistFromConfig() {
+    try {
+      const response = await fetch('/api/settings');
+      if (!response.ok) throw new Error('Failed to fetch settings');
+      const settings = await response.json();
+      const { dailyRoutine } = settings;
+
+      const checklistContainer = document.getElementById(
+        'daily-checklist-list'
+      );
+      if (!checklistContainer) return;
+
+      // Clear existing items but keep the container for state management
+      checklistContainer.innerHTML = '';
+
+      // Render enabled items
+      if (dailyRoutine && Array.isArray(dailyRoutine)) {
+        dailyRoutine.forEach((item) => {
+          if (item.enabled) {
+            const label = document.createElement('label');
+            label.className = 'checklist-item';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'checklist-checkbox';
+            checkbox.dataset.itemId = item.id;
+            checkbox.dataset.item = item.id; // For backward compatibility
+
+            const text = document.createElement('span');
+            text.textContent = `${item.icon} ${item.label}`;
+
+            label.appendChild(checkbox);
+            label.appendChild(text);
+            checklistContainer.appendChild(label);
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error rendering daily checklist from config:', error);
+      // Fall back to existing checklist if available
+    }
   }
 
   /**

@@ -54,16 +54,24 @@ class App {
   applyConfig(config) {
     if (config.mantra) {
       const mantraEl = document.querySelector('.terminal-mantra');
+      const promptEl = document.querySelector('.terminal-prompt');
       const commandEl = document.querySelector('.terminal-command');
 
       if (config.mantra.enabled && mantraEl && commandEl) {
+        // Update username and hostname
+        const username = config.mantra.username || 'user';
+        const hostname = config.mantra.hostname || 'matrix';
+        if (promptEl) {
+          promptEl.textContent = `${username}@${hostname}:~$`;
+        }
+
         // Update text
         commandEl.textContent = config.mantra.text;
 
         // Update tooltip with descriptions
         if (config.mantra.descriptions) {
           const desc = config.mantra.descriptions;
-          const tooltipText = `Name it = ${desc.nameIt} • Trace it = ${desc.traceIt} • Fix it = ${desc.fixIt} • Share it = ${desc.shareIt}`;
+          const tooltipText = `${username}@${hostname} = ${desc.nameIt} • Trace it = ${desc.traceIt} • Fix it = ${desc.fixIt} • Share it = ${desc.shareIt}`;
           mantraEl.setAttribute('data-tooltip', tooltipText);
         }
 
