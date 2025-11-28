@@ -5,6 +5,10 @@ A lightweight, single-focused task management application with an integrated tim
 ## Features
 
 - **Terminal Mantra**: High-agency problem-solving framework displayed as terminal prompt at the top
+- **Customizable Settings**: Configure timezone, date format, time format, daily routine items, terminal prompt, and cleanup defaults
+- **Timezone Auto-Detection**: Automatically detects browser timezone with change prompts when traveling
+- **Date/Time Localization**: Support for multiple date formats (MM/DD/YYYY, DD/MM/YYYY, YYYY-MM-DD) and time formats (12h/24h)
+- **Customizable Daily Routine**: Create up to 10 personalized daily checklist items that reset each day
 - **Task Management**: Create, edit, delete, and complete tasks
 - **Active Task Timer**: Single-task focus with live timer display
 - **Timer Persistence**: Timer state survives browser refresh
@@ -16,8 +20,8 @@ A lightweight, single-focused task management application with an integrated tim
 - **Recurring Tasks**: Create daily or weekly recurring tasks
 - **Working Days Only**: Daily recurring tasks can skip weekends (Saturday/Sunday)
 - **Gamification**: Streak counter for completing 3+ tasks per day with celebration notifications
-- **Archive Management**: Clean old archived tasks and export backup files
-- **Data Persistence**: All tasks saved to local JSON file
+- **Archive Management**: Clean old archived tasks with configurable cutoff period
+- **Data Persistence**: All tasks and settings saved to local JSON files
 - **Responsive Design**: Clean, narrow panel UI (300-500px width)
 - **Server Reliability**: Single instance protection prevents data corruption from concurrent server processes
 - **Smart Port Detection**: Automatically finds available port if default (3000) is in use
@@ -122,6 +126,48 @@ npm run dev
    - Archive files older than 45 days are automatically deleted on server startup
    - No data is lost - all completed tasks are preserved in archive files or can be restored
 
+7. **Customize Settings** (Optional)
+   - Click the "⚙️" settings button in the top-right corner
+   - Choose from 4 tabs to customize your experience:
+
+   **7.1 General Tab**
+   - **Timezone**: Select your timezone (auto-detected from browser)
+     - When you travel, the app detects timezone changes and prompts you to update
+     - Choose "Keep Current" to save the detected timezone with auto-detected date format
+     - Choose "Update All" to shift existing task times to the new timezone
+   - **Date Format**: Choose how dates are displayed
+     - MM/DD/YYYY (US format)
+     - DD/MM/YYYY (EU/UK format)
+     - YYYY-MM-DD (ISO format)
+   - **Time Format**: Choose between 12-hour (AM/PM) or 24-hour display
+   - Changes apply to all task dates/times throughout the app
+
+   **7.2 Daily Routine Tab**
+   - Create up to 10 customizable daily checklist items
+   - Each item has: label, emoji icon, and enabled/disabled toggle
+   - Add new items with the "+ Add Item" button
+   - Delete items with the "×" button
+   - Delete old items with the "×" button
+   - These items reset daily and help you track your daily workflow
+
+   **7.3 Terminal Mantra Tab**
+   - **Terminal Username**: Customize the username in the terminal prompt (default: "user")
+   - **Terminal Hostname**: Customize the hostname in the terminal prompt (default: "matrix")
+   - **Mantra Text**: Customize the main problem-solving framework displayed at the top
+   - **Mantra Descriptions**: Add detailed hover tooltips for each part of your mantra
+   - Example: Terminal shows `user@matrix:~$ Name it. Trace it. Fix it. Share it.`
+
+   **7.4 Cleanup Tab**
+   - **Default Cleanup Period**: Set how many days old completed tasks should be before the "CLEAN" button can move them to archive files
+   - Default is 30 days
+   - Helps keep your active task list focused on recent work
+   - Archived tasks are never deleted - they're preserved in daily archive files
+
+8. **Save and Reset Settings**
+   - Click "Save Settings" to apply all changes (app will refresh automatically)
+   - Click "Reset All to Defaults" to restore all settings to their original values
+   - Settings are saved server-side in `local_data/config.json` and persist across sessions
+
 ## Development
 
 ### Scripts
@@ -168,7 +214,8 @@ local-task-manager/
 │       ├── taskManager.js  # API client
 │       ├── ui.js           # UI components
 │       ├── appointmentReminder.js # Calendar appointment reminders
-│       └── gamification.js # Streak counter and celebration modals
+│       ├── gamification.js # Streak counter and celebration modals
+│       └── settings.js     # Settings manager and customization
 ├── local_data/
 │   └── tasks.json          # Task storage
 └── .claude/
@@ -234,6 +281,89 @@ Returns application configuration including the terminal mantra settings.
 {
   "mantra": {
     "enabled": true,
+    "text": "Name it. Trace it. Fix it. Share it.",
+    "descriptions": {
+      "nameIt": "What's the issue?",
+      "traceIt": "Why is it happening?",
+      "fixIt": "What's the solution + execute it",
+      "shareIt": "Keep people in the loop"
+    }
+  }
+}
+```
+
+### GET /api/settings
+Returns user settings including timezone, localization, daily routine, and cleanup preferences.
+
+**Response:**
+```json
+{
+  "timezone": {
+    "current": "Australia/Sydney",
+    "autoDetect": true,
+    "lastDetected": "ISO_timestamp"
+  },
+  "localization": {
+    "dateFormat": "DD/MM/YYYY",
+    "timeFormat": "24h",
+    "firstDayOfWeek": 0
+  },
+  "dailyRoutine": [
+    { "id": "1", "label": "Calendar", "icon": "📅", "enabled": true },
+    { "id": "2", "label": "Asana", "icon": "✓", "enabled": true }
+  ],
+  "cleanup": {
+    "defaultCutoffDays": 30,
+    "lastCleanup": "ISO_timestamp or null"
+  }
+}
+```
+
+### PUT /api/settings
+Update user settings (partial or full update).
+
+**Request body:**
+```json
+{
+  "timezone": { "current": "Australia/Sydney" },
+  "localization": { "dateFormat": "DD/MM/YYYY", "timeFormat": "24h" },
+  "dailyRoutine": [...],
+  "cleanup": { "defaultCutoffDays": 45 }
+}
+```
+
+### PUT /api/settings/timezone
+Update timezone settings specifically.
+
+**Request body:**
+```json
+{
+  "current": "Australia/Sydney",
+  "autoDetect": true
+}
+```
+
+### PUT /api/settings/daily-routine
+Update daily routine items (validated to maximum 10 items).
+
+**Request body:**
+```json
+[
+  { "id": "1", "label": "Calendar", "icon": "📅", "enabled": true },
+  { "id": "2", "label": "Email", "icon": "✉️", "enabled": true }
+]
+```
+
+### PUT /api/config
+Update application configuration (terminal mantra, username, hostname).
+
+**Request body:**
+```json
+{
+  "mantra": {
+    "enabled": true,
+    "username": "user",
+    "hostname": "matrix",
     "text": "Name it. Trace it. Fix it. Share it.",
     "descriptions": {
       "nameIt": "What's the issue?",
@@ -344,14 +474,18 @@ This project uses:
 
 ## Customization
 
+All settings can be customized through the Settings UI (⚙️ button in the top-right corner) or by directly editing `local_data/config.json`.
+
 ### Terminal Mantra
 
-The terminal mantra at the top of the interface displays a high-agency problem-solving framework. You can customize it by editing `local_data/config.json`:
+The terminal mantra at the top of the interface displays a high-agency problem-solving framework. Customize via the Settings UI (Terminal Mantra tab) or by editing `local_data/config.json`:
 
 ```json
 {
   "mantra": {
     "enabled": true,
+    "username": "user",
+    "hostname": "matrix",
     "text": "Name it. Trace it. Fix it. Share it.",
     "descriptions": {
       "nameIt": "What's the issue?",
@@ -364,10 +498,64 @@ The terminal mantra at the top of the interface displays a high-agency problem-s
 ```
 
 - **enabled**: Set to `false` to hide the mantra
+- **username**: Username displayed in terminal prompt (default: "user")
+- **hostname**: Hostname displayed in terminal prompt (default: "matrix")
 - **text**: The main mantra text displayed in the terminal prompt
 - **descriptions**: Detailed explanations shown in the hover tooltip
 
-Restart the server after making changes to see the updates.
+Restart the server after manual file edits to see updates. Settings saved via UI apply immediately.
+
+### Timezone and Localization
+
+Customize timezone, date format, and time format via Settings UI (General tab). Settings auto-sync with browser timezone detection for travel scenarios:
+
+```json
+{
+  "userSettings": {
+    "timezone": {
+      "current": "Australia/Sydney",
+      "autoDetect": true,
+      "lastDetected": "2025-11-29T12:00:00Z"
+    },
+    "localization": {
+      "dateFormat": "DD/MM/YYYY",
+      "timeFormat": "24h",
+      "firstDayOfWeek": 0
+    }
+  }
+}
+```
+
+### Daily Routine
+
+Create up to 10 customizable daily checklist items via Settings UI (Daily Routine tab):
+
+```json
+{
+  "userSettings": {
+    "dailyRoutine": [
+      { "id": "1", "label": "Calendar", "icon": "📅", "enabled": true },
+      { "id": "2", "label": "Asana", "icon": "✓", "enabled": true },
+      { "id": "3", "label": "Email", "icon": "✉️", "enabled": true }
+    ]
+  }
+}
+```
+
+### Cleanup Configuration
+
+Set default cleanup period (days) via Settings UI (Cleanup tab):
+
+```json
+{
+  "userSettings": {
+    "cleanup": {
+      "defaultCutoffDays": 30,
+      "lastCleanup": null
+    }
+  }
+}
+```
 
 ## Future Enhancements
 

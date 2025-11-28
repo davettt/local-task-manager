@@ -240,8 +240,9 @@ class Gamification {
    */
   playMatrixSound() {
     try {
-      const audioContext = new (window.AudioContext ||
-        window.webkitAudioContext)();
+      const audioContext = new (
+        window.AudioContext || window.webkitAudioContext
+      )();
 
       // Create multiple oscillators for matrix effect
       const now = audioContext.currentTime;

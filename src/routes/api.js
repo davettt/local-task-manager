@@ -8,6 +8,8 @@ const {
   readArchivedTasks,
   archiveTasks,
   readConfig,
+  writeConfig,
+  updateUserSettings,
 } = require('../utils/fileManager');
 
 const router = express.Router();
@@ -500,6 +502,118 @@ router.get('/config', (_req, res) => {
   } catch (error) {
     console.error('Error fetching config:', error);
     res.status(500).json({ error: 'Failed to fetch config' });
+  }
+});
+
+/**
+ * GET /api/settings
+ * Returns user settings
+ */
+router.get('/settings', (_req, res) => {
+  try {
+    const config = readConfig();
+    res.json(config.userSettings);
+  } catch (error) {
+    console.error('Error fetching settings:', error);
+    res.status(500).json({ error: 'Failed to fetch settings' });
+  }
+});
+
+/**
+ * PUT /api/settings
+ * Updates user settings (full or partial)
+ */
+router.put('/settings', (req, res) => {
+  try {
+    const updates = req.body;
+
+    // Validate update object
+    if (!updates || typeof updates !== 'object') {
+      return res.status(400).json({ error: 'Invalid settings object' });
+    }
+
+    const config = updateUserSettings(updates);
+    res.json(config.userSettings);
+  } catch (error) {
+    console.error('Error updating settings:', error);
+    res.status(500).json({ error: 'Failed to update settings' });
+  }
+});
+
+/**
+ * PUT /api/settings/timezone
+ * Updates timezone settings specifically
+ */
+router.put('/settings/timezone', (req, res) => {
+  try {
+    const { timezone } = req.body;
+
+    if (!timezone || typeof timezone !== 'object') {
+      return res.status(400).json({ error: 'Invalid timezone object' });
+    }
+
+    const config = updateUserSettings({ timezone });
+    res.json(config.userSettings.timezone);
+  } catch (error) {
+    console.error('Error updating timezone:', error);
+    res.status(500).json({ error: 'Failed to update timezone' });
+  }
+});
+
+/**
+ * PUT /api/settings/daily-routine
+ * Updates daily routine items
+ */
+router.put('/settings/daily-routine', (req, res) => {
+  try {
+    const { dailyRoutine } = req.body;
+
+    if (!Array.isArray(dailyRoutine)) {
+      return res.status(400).json({ error: 'dailyRoutine must be an array' });
+    }
+
+    // Validate items count
+    if (dailyRoutine.length > 10) {
+      return res
+        .status(400)
+        .json({ error: 'Maximum 10 daily routine items allowed' });
+    }
+
+    // Validate each item
+    dailyRoutine.forEach((item) => {
+      if (!item.id || !item.label || !item.icon) {
+        throw new Error('Each item must have id, label, and icon');
+      }
+      if (typeof item.enabled !== 'boolean') {
+        throw new Error('Each item must have enabled boolean flag');
+      }
+    });
+
+    const config = updateUserSettings({ dailyRoutine });
+    res.json(config.userSettings.dailyRoutine);
+  } catch (error) {
+    console.error('Error updating daily routine:', error);
+    res.status(500).json({ error: 'Failed to update daily routine' });
+  }
+});
+
+/**
+ * PUT /api/config
+ * Updates full configuration (mantra + user settings)
+ */
+router.put('/config', (req, res) => {
+  try {
+    const config = req.body;
+
+    if (!config || typeof config !== 'object') {
+      return res.status(400).json({ error: 'Invalid config object' });
+    }
+
+    writeConfig(config);
+    res.json(config);
+  } catch (error) {
+    console.error('Error updating config:', error);
+    res.status(500).json({ error: 'Failed to update config' });
   }
 });
 

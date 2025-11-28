@@ -188,8 +188,9 @@ class TaskTimer {
 // eslint-disable-next-line no-unused-vars
 function playCompletionSound() {
   try {
-    const audioContext = new (window.AudioContext ||
-      window.webkitAudioContext)();
+    const audioContext = new (
+      window.AudioContext || window.webkitAudioContext
+    )();
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
 

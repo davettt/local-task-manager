@@ -5,6 +5,81 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0] - 2025-11-29
+
+### Added
+
+- Comprehensive settings system with configurable UI and persistent storage
+  - **Settings Modal**: Accessible via ⚙️ button in header with 4 customizable tabs
+  - **General Settings Tab**: Timezone selection with auto-detection and travel prompts
+    - Supports timezone auto-detection from browser with change notifications for travelers
+    - Intelligent date format auto-detection based on timezone and browser locale
+    - Three date format options: MM/DD/YYYY, DD/MM/YYYY, YYYY-MM-DD
+    - Two time format options: 12-hour (AM/PM) and 24-hour display
+  - **Daily Routine Tab**: Create up to 10 customizable daily checklist items (previously hardcoded at 5)
+    - Add/edit/delete daily routine items with custom labels and emoji icons
+    - Enable/disable items without deleting them
+    - Items reset daily and help structure user's daily workflow
+  - **Terminal Mantra Tab**: Customize the terminal prompt appearance and mantra text
+    - Customizable username and hostname in terminal prompt (e.g., `user@matrix:~$`)
+    - Editable mantra text and hover tooltip descriptions
+    - Live preview of terminal prompt changes
+  - **Cleanup Tab**: Configure default cutoff period for archive cleanup operations
+    - Set custom default days for the "CLEAN" button (previously hardcoded at 30)
+    - Helper text explains archive management and data preservation
+- Date/time formatting system applied throughout the app
+  - All task dates, times, and timestamps respect user's format preferences
+  - Relative date labels (Today, Tomorrow, Overdue) work with all date formats
+  - Consistent formatting across active tasks, completed tasks, and appointment reminders
+- Timezone change detection and handling
+  - Automatic browser timezone detection using Intl API
+  - Travel detection: Alerts user when timezone changes from stored value
+  - Two-option prompt: "Keep Current" (saves detected timezone + auto-format) or "Update All" (shifts task times)
+- Settings persistence and synchronization
+  - All settings stored server-side in `config.json` with `userSettings` object
+  - Settings auto-apply with page reload on save
+  - Backwards compatible with existing configs (auto-migrates missing settings)
+
+### Changed
+
+- Daily checklist now dynamically rendered from user settings instead of hardcoded HTML
+- Current time display added to header (updates every 500ms)
+- Settings saved via UI now trigger automatic page refresh to apply all changes
+- Terminal prompt now supports custom username and hostname
+- `config.json` schema extended with `userSettings` object containing timezone, localization, dailyRoutine, and cleanup sections
+
+### Technical Details
+
+- New `SettingsManager` class in `public/js/settings.js` with 40+ methods for settings management
+- New API endpoints:
+  - `GET /api/settings` - Retrieve user settings
+  - `PUT /api/settings` - Update user settings (partial or full)
+  - `PUT /api/settings/timezone` - Update timezone specifically
+  - `PUT /api/settings/daily-routine` - Update daily routine with validation (max 10 items)
+  - `PUT /api/config` - Update application configuration (mantra, username, hostname)
+- New utility functions in `fileManager.js`:
+  - `getDefaultUserSettings()` - Returns complete default settings structure
+  - `updateUserSettings(updates)` - Deep merge settings updates
+  - `migrateConfig(config)` - Auto-migrate configs to new schema
+- Formatting methods in `SettingsManager`:
+  - `formatDate(dateStr)` - Formats dates per user preference
+  - `formatTime(timeStr)` - Formats time per user preference (12h/24h)
+  - `detectBrowserTimezone()` - Detects timezone using Intl API
+  - `checkTimezoneChange()` - Compares stored vs detected timezone
+- Updated `TaskManager` methods to use `SettingsManager` formatters:
+  - `getRelativeDate()` now uses settings date formatter
+  - `formatDateTime()` now uses settings time formatter
+- Daily routine rendering integrated with settings via `UI.renderDailyChecklistFromConfig()`
+
+### Fixed
+
+- Date format now auto-detects based on timezone (AU = DD/MM/YYYY, US = MM/DD/YYYY, etc.)
+- "Keep Current" timezone prompt button now properly saves detected timezone
+- Date/time formatting now applies consistently across all task displays
+- Timezone changes while traveling now properly trigger migration prompts
+
+---
+
 ## [1.7.0] - 2025-11-04
 
 ### Added

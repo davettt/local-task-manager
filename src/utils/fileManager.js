@@ -187,6 +187,36 @@ function cleanupOldArchives(daysOld = 45) {
 }
 
 /**
+ * Get default user settings
+ * @returns {Object} Default user settings
+ */
+function getDefaultUserSettings() {
+  return {
+    timezone: {
+      current: 'UTC', // Will be detected by client
+      autoDetect: true,
+      lastDetected: new Date().toISOString(),
+    },
+    localization: {
+      dateFormat: 'MM/DD/YYYY', // MM/DD/YYYY, DD/MM/YYYY, YYYY-MM-DD
+      timeFormat: '12h', // 12h or 24h
+      firstDayOfWeek: 0, // 0=Sunday, 1=Monday
+    },
+    dailyRoutine: [
+      { id: '1', label: 'Calendar', icon: '📅', enabled: true },
+      { id: '2', label: 'Asana', icon: '✓', enabled: true },
+      { id: '3', label: 'Email', icon: '✉️', enabled: true },
+      { id: '4', label: 'Slack DMs', icon: '💬', enabled: true },
+      { id: '5', label: 'Slack channels', icon: '📢', enabled: true },
+    ],
+    cleanup: {
+      defaultCutoffDays: 30,
+      lastCleanup: null,
+    },
+  };
+}
+
+/**
  * Get default config
  * @returns {Object} Default configuration
  */
@@ -194,6 +224,8 @@ function getDefaultConfig() {
   return {
     mantra: {
       enabled: true,
+      username: 'user',
+      hostname: 'matrix',
       text: 'Name it. Trace it. Fix it. Share it.',
       descriptions: {
         nameIt: "What's the issue?",
@@ -202,7 +234,27 @@ function getDefaultConfig() {
         shareIt: 'Keep people in the loop',
       },
     },
+    userSettings: getDefaultUserSettings(),
   };
+}
+
+/**
+ * Migrate config to include new userSettings if missing
+ * @param {Object} config - Current configuration
+ * @returns {Object} Migrated configuration
+ */
+function migrateConfig(config) {
+  if (!config.userSettings) {
+    config.userSettings = getDefaultUserSettings();
+  }
+  // Ensure mantra has username and hostname fields
+  if (!config.mantra.username) {
+    config.mantra.username = 'user';
+  }
+  if (!config.mantra.hostname) {
+    config.mantra.hostname = 'matrix';
+  }
+  return config;
 }
 
 /**
@@ -216,6 +268,35 @@ function initializeConfigFile() {
       JSON.stringify(getDefaultConfig(), null, 2),
       'utf8'
     );
+  } else {
+    // Migrate existing config if needed
+    const currentConfig = readConfigRaw();
+    const migratedConfig = migrateConfig(currentConfig);
+    if (JSON.stringify(currentConfig) !== JSON.stringify(migratedConfig)) {
+      fs.writeFileSync(
+        CONFIG_FILE,
+        JSON.stringify(migratedConfig, null, 2),
+        'utf8'
+      );
+    }
+  }
+}
+
+/**
+ * Read configuration from file without migration (internal use)
+ * @returns {Object} Configuration object
+ */
+function readConfigRaw() {
+  try {
+    ensureDataDir();
+    if (!fs.existsSync(CONFIG_FILE)) {
+      return getDefaultConfig();
+    }
+    const data = fs.readFileSync(CONFIG_FILE, 'utf8');
+    return JSON.parse(data);
+  } catch (error) {
+    console.error('Error reading config file:', error);
+    return getDefaultConfig();
   }
 }
 
@@ -227,7 +308,8 @@ function readConfig() {
   try {
     initializeConfigFile();
     const data = fs.readFileSync(CONFIG_FILE, 'utf8');
-    return JSON.parse(data);
+    const config = JSON.parse(data);
+    return migrateConfig(config);
   } catch (error) {
     console.error('Error reading config file:', error);
     return getDefaultConfig();
@@ -248,6 +330,46 @@ function writeConfig(config) {
   }
 }
 
+/**
+ * Update user settings (partial update)
+ * @param {Object} updates - Settings updates (will be merged)
+ * @returns {Object} Updated configuration
+ */
+function updateUserSettings(updates) {
+  try {
+    const config = readConfig();
+
+    // Deep merge userSettings
+    if (updates.timezone) {
+      config.userSettings.timezone = {
+        ...config.userSettings.timezone,
+        ...updates.timezone,
+      };
+    }
+    if (updates.localization) {
+      config.userSettings.localization = {
+        ...config.userSettings.localization,
+        ...updates.localization,
+      };
+    }
+    if (updates.dailyRoutine) {
+      config.userSettings.dailyRoutine = updates.dailyRoutine;
+    }
+    if (updates.cleanup) {
+      config.userSettings.cleanup = {
+        ...config.userSettings.cleanup,
+        ...updates.cleanup,
+      };
+    }
+
+    writeConfig(config);
+    return config;
+  } catch (error) {
+    console.error('Error updating user settings:', error);
+    throw error;
+  }
+}
+
 module.exports = {
   readTasks,
   writeTasks,
@@ -263,4 +385,6 @@ module.exports = {
   readConfig,
   writeConfig,
   initializeConfigFile,
+  updateUserSettings,
+  getDefaultUserSettings,
 };
