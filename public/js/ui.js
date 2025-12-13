@@ -199,7 +199,7 @@ class UI {
     return `
       <div class="task-item" data-task-id="${escapeHtml(task.id)}">
         <div class="task-item-header">
-          <span class="priority-icon">${priorityIcon}</span>
+          <span class="priority-icon priority-${task.priority || 'medium'}">${priorityIcon}</span>
           ${recurringIcon ? `<span class="priority-icon" title="Recurring: ${task.recurring}">${recurringIcon}</span>` : ''}
           ${task.isAppointment ? `<span class="appointment-badge" title="Calendar Appointment">🔔</span>` : ''}
           <div class="task-content" style="flex: 1">
