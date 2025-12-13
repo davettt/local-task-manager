@@ -499,6 +499,18 @@ body {
   font-weight: bold;
 }
 
+.priority-icon.priority-high {
+  color: var(--color-accent-red);
+}
+
+.priority-icon.priority-medium {
+  color: var(--color-accent-yellow);
+}
+
+.priority-icon.priority-low {
+  color: var(--color-accent-cyan);
+}
+
 .task-content {
   flex: 1;
   min-width: 0;
