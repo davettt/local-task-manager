@@ -5,7 +5,6 @@ const {
   saveTask,
   deleteTask,
   writeTasks,
-  readArchivedTasks,
   archiveTasks,
   readConfig,
   writeConfig,
@@ -104,17 +103,12 @@ router.get('/tasks', (_req, res) => {
  */
 router.get('/tasks/archived', (_req, res) => {
   try {
-    // Get archived tasks from tasks.json
+    // Get archived tasks from tasks.json only
+    // Archive files are for long-term storage, not for the active UI
     const tasks = readTasks();
     const tasksJsonArchived = tasks.filter((task) => task.archived);
 
-    // Get archived tasks from archive files
-    const archivedFileTasks = readArchivedTasks();
-
-    // Combine both sources
-    const allArchivedTasks = [...tasksJsonArchived, ...archivedFileTasks];
-
-    res.json(allArchivedTasks);
+    res.json(tasksJsonArchived);
   } catch (error) {
     console.error('Error fetching archived tasks:', error);
     res.status(500).json({ error: 'Failed to fetch archived tasks' });

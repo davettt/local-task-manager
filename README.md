@@ -228,7 +228,7 @@ local-task-manager/
 Returns all active (non-archived) tasks
 
 ### GET /api/tasks/archived
-Returns all archived (completed) tasks
+Returns all completed (archived) tasks that are still in the active task list
 
 ### POST /api/tasks
 Create or update a task
@@ -270,8 +270,8 @@ Move completed tasks to daily archive files. Tasks completed before the specifie
 **Behavior:**
 - Tasks completed before the cutoff date are moved to `local_data/archive_YYYYMMDD.json` files
 - Each task is marked with `archivedToFile: true` when moved
+- Moved tasks are removed from the Completed section (archived tasks section)
 - Archive files older than 45 days are automatically deleted on server startup
-- Moved tasks can still be viewed and restored from the Completed section
 
 ### GET /api/config
 Returns application configuration including the terminal mantra settings.
