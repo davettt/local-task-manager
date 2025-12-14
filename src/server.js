@@ -181,6 +181,14 @@ function cleanup() {
     // API Routes
     app.use('/api', apiRoutes);
 
+    // Todoist Sync Routes (optional - only load if TODOIST_API_TOKEN is configured)
+    if (process.env.TODOIST_API_TOKEN) {
+      const todoistSyncRoutes = require('./routes/todoist-sync');
+      app.use('/api/todoist', todoistSyncRoutes);
+      // eslint-disable-next-line no-console
+      console.log('✓ Todoist sync available at /api/todoist');
+    }
+
     // Serve index.html for root path
     app.get('/', (_req, res) => {
       res.sendFile(path.join(__dirname, '../public/index.html'));
