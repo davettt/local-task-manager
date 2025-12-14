@@ -903,6 +903,46 @@ body {
   resize: vertical;
 }
 
+/* Enhance native date picker icon */
+.form-group input[type='date']::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  border-radius: 2px;
+  margin-right: 2px;
+  opacity: 0.8;
+  filter: invert(0.8) brightness(1.2);
+  transition: all 150ms ease;
+}
+
+.form-group input[type='date']:hover::-webkit-calendar-picker-indicator {
+  opacity: 1;
+  filter: invert(1) brightness(1.4);
+}
+
+.form-group input[type='date']:focus::-webkit-calendar-picker-indicator {
+  opacity: 1;
+  filter: invert(1) brightness(1.6);
+}
+
+/* Enhance native time picker icon */
+.form-group input[type='time']::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  border-radius: 2px;
+  margin-right: 2px;
+  opacity: 0.8;
+  filter: invert(0.8) brightness(1.2);
+  transition: all 150ms ease;
+}
+
+.form-group input[type='time']:hover::-webkit-calendar-picker-indicator {
+  opacity: 1;
+  filter: invert(1) brightness(1.4);
+}
+
+.form-group input[type='time']:focus::-webkit-calendar-picker-indicator {
+  opacity: 1;
+  filter: invert(1) brightness(1.6);
+}
+
 .form-actions {
   display: flex;
   gap: 6px;
