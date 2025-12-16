@@ -214,7 +214,7 @@ class TaskManager {
   static getPriorityIcon(priority) {
     switch (priority) {
       case 'high':
-        return '!';
+        return '◆';
       case 'medium':
         return '◆';
       case 'low':
