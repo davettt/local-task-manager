@@ -250,27 +250,25 @@ class SyncManager {
 
       for (const task of localChanges.updated) {
         try {
-          // Skip updating recurring tasks - Todoist REST API v2 doesn't support
-          // setting recurrence patterns, so we avoid pushing to avoid losing the
-          // recurrence data. Recurring tasks can only be modified via Todoist UI.
-          if (task.recurring) {
-            // Just update local checksum to mark as synced
-            metadata.localChecksums[task.id] = this.generateChecksum(task);
-            continue;
-          }
-
           const todoistId = metadata.taskMappings[task.id];
 
-          // Update task fields (don't include is_completed - must use close/reopen endpoints)
-          await this.todoist.updateTask(todoistId, {
-            content: task.description,
-            description: task.details || '',
-            priority: this.mapLocalPriorityToTodoist(task.priority),
-            due_date: task.dueDate || undefined,
-            labels: task.labels || [],
-          });
+          // Skip updating task fields for recurring tasks - Todoist REST API v2
+          // doesn't support setting recurrence patterns, so we avoid the updateTask
+          // call to preserve recurrence data. However, we still handle completion
+          // status below since that uses a separate endpoint.
+          if (!task.recurring) {
+            // Update task fields (don't include is_completed - must use close/reopen endpoints)
+            await this.todoist.updateTask(todoistId, {
+              content: task.description,
+              description: task.details || '',
+              priority: this.mapLocalPriorityToTodoist(task.priority),
+              due_date: task.dueDate || undefined,
+              labels: task.labels || [],
+            });
+          }
 
           // Handle completion status separately using close/reopen endpoints
+          // This works for both regular and recurring tasks
           const storedTodoistChecksum = metadata.todoistChecksums?.[task.id];
           const storedTodoistTask = storedTodoistChecksum
             ? JSON.parse(storedTodoistChecksum)
@@ -286,7 +284,15 @@ class SyncManager {
           }
 
           // Fetch updated task to get final state
-          const finalTodoistTask = await this.todoist.getTask(todoistId);
+          // Note: For recurring tasks after completion, Todoist creates a new instance
+          // so getTask may return different data or 404 for completed recurring tasks
+          let finalTodoistTask = null;
+          try {
+            finalTodoistTask = await this.todoist.getTask(todoistId);
+          } catch {
+            // Task may no longer exist if it was a recurring task that was completed
+            // Todoist handles recurring task completion by creating the next occurrence
+          }
 
           // Store checksums after successful push
           metadata.localChecksums[task.id] = this.generateChecksum(task);
