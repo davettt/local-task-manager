@@ -25,6 +25,7 @@ A lightweight, single-focused task management application with an integrated tim
 - **Responsive Design**: Clean, narrow panel UI (300-500px width)
 - **Server Reliability**: Single instance protection prevents data corruption from concurrent server processes
 - **Smart Port Detection**: Automatically finds available port if default (3000) is in use
+- **Todoist Sync (Optional)**: Bidirectional sync with Todoist for managing tasks across platforms
 
 ## User Workflow
 
@@ -556,6 +557,19 @@ Set default cleanup period (days) via Settings UI (Cleanup tab):
   }
 }
 ```
+
+### Todoist Sync (Optional)
+
+Enable bidirectional sync with Todoist to manage tasks across platforms:
+
+1. Get your API token from [Todoist Integrations](https://todoist.com/app/settings/integrations/developer)
+2. Add it to your `.env` file:
+   ```
+   TODOIST_API_TOKEN=your_api_token_here
+   ```
+3. Restart the server - sync endpoints become available at `/api/todoist`
+
+When enabled, tasks sync between Local Task Manager and Todoist. Leave `TODOIST_API_TOKEN` empty to disable.
 
 ## Future Enhancements
 
