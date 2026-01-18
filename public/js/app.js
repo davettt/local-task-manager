@@ -15,7 +15,7 @@ class App {
     this.editingTaskId = null;
     this.editingActiveTask = false;
     this.searchQuery = '';
-    // Pomodoro break tracking
+    this.isFocusMode = false;
     this.pomodoroSessionTotalTime = 0;
     this.pomodoroSessionStartTime = null;
 
@@ -112,16 +112,34 @@ class App {
     if (modalClose) {
       modalClose.addEventListener('click', () => {
         this.editingTaskId = null;
+        const wasEditingActiveTask = this.editingActiveTask;
         this.editingActiveTask = false;
         UI.hideModal();
+        // Re-activate focus mode if we were editing the active task
+        if (
+          wasEditingActiveTask &&
+          this.activeTaskId &&
+          this.timer.pomodoroMode
+        ) {
+          this.activateFocusMode();
+        }
       });
     }
 
     if (modalCancel) {
       modalCancel.addEventListener('click', () => {
         this.editingTaskId = null;
+        const wasEditingActiveTask = this.editingActiveTask;
         this.editingActiveTask = false;
         UI.hideModal();
+        // Re-activate focus mode if we were editing the active task
+        if (
+          wasEditingActiveTask &&
+          this.activeTaskId &&
+          this.timer.pomodoroMode
+        ) {
+          this.activateFocusMode();
+        }
       });
     }
 
@@ -202,7 +220,13 @@ class App {
     }
 
     if (stopBtn) {
-      stopBtn.addEventListener('click', () => this.handleStopTask());
+      stopBtn.addEventListener('click', () => {
+        if (this.timer.pomodoroMode) {
+          this.handleStopPomodoro();
+        } else {
+          this.handleStopTask();
+        }
+      });
     }
 
     if (completeBtn) {
@@ -222,6 +246,10 @@ class App {
         // Update timer if currently running
         if (this.timer.isRunning() && this.activeTaskId) {
           this.updatePomodoroSettings();
+          // Activate focus mode if pomodoro is enabled
+          if (e.target.checked) {
+            this.activateFocusMode();
+          }
         }
       });
     }
@@ -258,6 +286,57 @@ class App {
         }
       });
     }
+
+    // Focus mode controls
+    const exitFocusBtn = document.getElementById('exit-focus-btn');
+    const focusExitBtn = document.getElementById('focus-exit-btn');
+    const focusStopBtn = document.getElementById('focus-stop-btn');
+    const focusPauseBtn = document.getElementById('focus-pause-btn');
+    const focusCompleteBtn = document.getElementById('focus-complete-btn');
+
+    if (exitFocusBtn) {
+      exitFocusBtn.addEventListener('click', () => this.handleStopPomodoro());
+    }
+
+    if (focusExitBtn) {
+      focusExitBtn.addEventListener('click', () => this.handleStopPomodoro());
+    }
+
+    if (focusStopBtn) {
+      focusStopBtn.addEventListener('click', () => this.handleStopPomodoro());
+    }
+
+    if (focusPauseBtn) {
+      focusPauseBtn.addEventListener('click', () => this.handlePauseInFocus());
+    }
+
+    const focusResumeBtn = document.getElementById('focus-resume-btn');
+    if (focusResumeBtn) {
+      focusResumeBtn.addEventListener('click', () =>
+        this.handleResumeInFocus()
+      );
+    }
+
+    if (focusCompleteBtn) {
+      focusCompleteBtn.addEventListener('click', () =>
+        this.handleCompleteTask()
+      );
+    }
+
+    // Focus mode edit button
+    const focusEditBtn = document.getElementById('focus-edit-btn');
+    if (focusEditBtn) {
+      focusEditBtn.addEventListener('click', () => {
+        this.handleEditActiveTask();
+      });
+    }
+
+    // Keyboard shortcut for focus mode
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.isFocusMode) {
+        this.deactivateFocusMode();
+      }
+    });
   }
 
   /**
@@ -526,6 +605,14 @@ class App {
       if (this.editingActiveTask) {
         this.editingActiveTask = false;
         UI.showActiveTask(task);
+        // Update focus mode task display if in focus mode
+        if (this.isFocusMode) {
+          this.renderFocusModeTask(task);
+        }
+        // Re-activate focus mode if pomodoro is enabled
+        if (this.timer.pomodoroMode) {
+          this.activateFocusMode();
+        }
       } else {
         // Regular task edit/create - full render
         this.render();
@@ -571,6 +658,12 @@ class App {
     UI.clearForm();
     UI.populateFormWithTask(task);
     UI.showModal(true);
+
+    // Hide focus mode overlay while editing
+    const overlay = document.getElementById('focus-mode-overlay');
+    if (overlay) {
+      overlay.classList.add('hidden');
+    }
   }
 
   /**
@@ -614,6 +707,15 @@ class App {
         pomodoroInterval,
         () => this.handlePomodoroIntervalReached()
       );
+
+      // Update pomodoro UI
+      this.updatePomodoroDisplay();
+
+      // Auto-activate focus mode if pomodoro is enabled
+      if (pomodoroMode) {
+        this.activateFocusMode();
+      }
+
       UI.showActiveTask(task);
 
       // Scroll to top to show active task
@@ -636,6 +738,12 @@ class App {
         return;
       }
 
+      // Save pomodoro settings before stopping
+      this.savePomodoroSettingsToTask();
+
+      // Deactivate focus mode
+      this.deactivateFocusMode();
+
       const task = await this.taskManager.stopTask(this.activeTaskId);
 
       // Stop timer
@@ -655,6 +763,171 @@ class App {
       this.render();
     } catch (error) {
       console.error('Error stopping task:', error);
+      UI.showError(error.message);
+    }
+  }
+
+  /**
+   * Stop Pomodoro mode and timer (exit Pomodoro focus)
+   */
+  async handleStopPomodoro() {
+    try {
+      if (!this.activeTaskId) {
+        return;
+      }
+
+      // Save pomodoro settings (turn off pomodoro)
+      this.savePomodoroSettingsToTask();
+
+      // Deactivate focus mode
+      this.deactivateFocusMode();
+
+      // Stop the timer
+      const task = await this.taskManager.stopTask(this.activeTaskId);
+
+      // Update local state
+      const index = this.tasks.findIndex((t) => t.id === this.activeTaskId);
+      if (index >= 0) {
+        this.tasks[index] = task;
+      }
+
+      // Reset active task
+      this.activeTaskId = null;
+
+      // Hide active task section and re-render
+      UI.hideActiveTask();
+      this.render();
+    } catch (error) {
+      console.error('Error stopping pomodoro:', error);
+      UI.showError(error.message);
+    }
+  }
+
+  /**
+   * Pause timer while keeping focus mode active
+   */
+  async handlePauseInFocus() {
+    try {
+      if (!this.activeTaskId) {
+        return;
+      }
+
+      const task = this.tasks.find((t) => t.id === this.activeTaskId);
+      if (!task) return;
+
+      // Calculate elapsed time for this session
+      const elapsed = Math.floor(
+        (Date.now() - new Date(task.startedAt).getTime()) / 1000
+      );
+      const totalTimeSpent = task.timeSpent + elapsed;
+
+      // Get Pomodoro info before stopping
+      const wasPomodoroMode = this.timer.pomodoroMode;
+      const pomodoroInterval = this.timer.pomodoroInterval;
+      const pomodoroElapsed = wasPomodoroMode
+        ? Math.floor(
+            (Date.now() - this.timer.pomodoroIntervalStartedAt.getTime()) / 1000
+          )
+        : 0;
+      const pomodoroRemaining = wasPomodoroMode
+        ? Math.max(0, pomodoroInterval * 60 - pomodoroElapsed)
+        : 0;
+
+      // Stop timer update interval
+      this.stopFocusModeTimerUpdate();
+      this.timer.stop();
+
+      // Update task with accumulated time and clear startedAt
+      task.timeSpent = totalTimeSpent;
+      task.startedAt = null;
+      task.pomodoroMode = false;
+
+      // Store pomodoro state for resume
+      this._pausedPomodoroState = {
+        wasPomodoroMode,
+        pomodoroInterval,
+        pomodoroRemaining,
+      };
+
+      // Directly update button visibility
+      const pauseBtn = document.getElementById('focus-pause-btn');
+      const resumeBtn = document.getElementById('focus-resume-btn');
+      if (pauseBtn) pauseBtn.classList.add('hidden');
+      if (resumeBtn) resumeBtn.classList.remove('hidden');
+
+      // Update UI with paused state
+      UI.showActiveTask(task);
+
+      // Update focus mode display with static values
+      this.updateFocusModeTimer();
+    } catch (error) {
+      console.error('Error pausing timer:', error);
+      UI.showError(error.message);
+    }
+  }
+
+  /**
+   * Resume timer after pause
+   */
+  async handleResumeInFocus() {
+    try {
+      if (!this.activeTaskId || !this._pausedPomodoroState) {
+        return;
+      }
+
+      const { wasPomodoroMode, pomodoroInterval, pomodoroRemaining } =
+        this._pausedPomodoroState;
+      this._pausedPomodoroState = null;
+
+      const task = this.tasks.find((t) => t.id === this.activeTaskId);
+      if (!task) return;
+
+      // Start a new session from now
+      const newStartedAt = new Date().toISOString();
+
+      // Calculate what the pomodoro start time should be so that remaining time is correct
+      let pomodoroStartedAt = new Date();
+      if (wasPomodoroMode && pomodoroRemaining > 0) {
+        // remaining = interval * 60 - (now - startedAt)
+        // startedAt = now - (interval * 60 - remaining)
+        const offsetMs = (pomodoroInterval * 60 - pomodoroRemaining) * 1000;
+        pomodoroStartedAt = new Date(Date.now() - offsetMs);
+      }
+
+      // Start timer with accumulated time and new start time
+      this.timer.start(
+        task.id,
+        newStartedAt,
+        task.timeSpent,
+        wasPomodoroMode,
+        pomodoroInterval,
+        () => this.handlePomodoroIntervalReached()
+      );
+
+      // Restore pomodoro interval start time
+      if (wasPomodoroMode) {
+        this.timer.pomodoroIntervalStartedAt = pomodoroStartedAt;
+        this.timer.pomodoroIntervalNotified = false;
+      }
+
+      // Update task with new startedAt and restored pomodoro settings
+      task.startedAt = newStartedAt;
+      task.pomodoroMode = wasPomodoroMode;
+      task.pomodoroInterval = pomodoroInterval;
+
+      // Directly update button visibility
+      const pauseBtn = document.getElementById('focus-pause-btn');
+      const resumeBtn = document.getElementById('focus-resume-btn');
+      if (pauseBtn) pauseBtn.classList.remove('hidden');
+      if (resumeBtn) resumeBtn.classList.add('hidden');
+
+      // Update UI
+      UI.showActiveTask(task);
+
+      // Update focus mode timer
+      this.startFocusModeTimerUpdate();
+    } catch (error) {
+      console.error('Error resuming timer:', error);
       UI.showError(error.message);
     }
   }
@@ -690,6 +963,8 @@ class App {
       if (targetTaskId === this.activeTaskId) {
         this.activeTaskId = null;
         UI.hideActiveTask();
+        // Deactivate focus mode when task is completed
+        this.deactivateFocusMode();
       }
 
       // Record gamification (streak + celebration)
@@ -835,6 +1110,190 @@ class App {
       this.tasks[taskIndex].pomodoroMode = pomodoroMode;
       this.tasks[taskIndex].pomodoroInterval = pomodoroInterval;
     }
+
+    // Update pomodoro display visibility
+    this.updatePomodoroDisplay();
+  }
+
+  updatePomodoroDisplay() {
+    const pomodoroDisplay = document.getElementById('pomodoro-display');
+    const pomodoroMode = this.timer.pomodoroMode;
+
+    if (pomodoroDisplay) {
+      if (pomodoroMode) {
+        pomodoroDisplay.classList.remove('hidden');
+      } else {
+        pomodoroDisplay.classList.add('hidden');
+      }
+    }
+  }
+
+  activateFocusMode() {
+    if (!this.activeTaskId) return;
+
+    this.isFocusMode = true;
+    document.body.classList.add('focus-mode');
+
+    const task = this.tasks.find((t) => t.id === this.activeTaskId);
+    if (task) {
+      this.renderFocusModeTask(task);
+    }
+
+    this.updateFocusModeUI();
+    this.startFocusModeTimerUpdate();
+  }
+
+  deactivateFocusMode() {
+    this.isFocusMode = false;
+    document.body.classList.remove('focus-mode');
+    this.stopFocusModeTimerUpdate();
+    this.updateFocusModeUI();
+  }
+
+  renderFocusModeTask(task) {
+    const container = document.getElementById('focus-task-container');
+    if (!container) return;
+
+    let html = `<div class="focus-task-title">${UI.escapeHtml(task.description)}</div>`;
+
+    // Add meta info row
+    const metaParts = [];
+    if (task.priority && task.priority !== 'medium') {
+      metaParts.push(`Priority: ${task.priority}`);
+    }
+    if (task.dueDate) {
+      const formattedDate = TaskManager.formatDateTime(
+        task.dueDate,
+        task.dueTime
+      );
+      if (formattedDate) {
+        metaParts.push(`Due: ${formattedDate}`);
+      }
+    }
+    if (task.recurring) {
+      metaParts.push(`Recurring: ${task.recurring}`);
+    }
+
+    if (metaParts.length > 0) {
+      html += `<div class="focus-task-meta">${metaParts.join(' | ')}</div>`;
+    }
+
+    if (task.details) {
+      html += `<div class="focus-task-details">${UI.escapeHtml(task.details)}</div>`;
+    }
+
+    if (task.links && task.links.length > 0) {
+      html += `<div class="focus-task-links">`;
+      task.links.forEach((link) => {
+        html += `<a href="${UI.escapeHtml(link)}" target="_blank" class="focus-link">🔗 ${UI.escapeHtml(link)}</a>`;
+      });
+      html += `</div>`;
+    }
+
+    container.innerHTML = html;
+  }
+
+  updateFocusModeUI() {
+    const overlay = document.getElementById('focus-mode-overlay');
+    const header = document.getElementById('focus-mode-header');
+    const pomodoroDisplay = document.getElementById('pomodoro-display');
+    const pauseBtn = document.getElementById('focus-pause-btn');
+    const resumeBtn = document.getElementById('focus-resume-btn');
+
+    if (overlay) {
+      if (this.isFocusMode) {
+        overlay.classList.remove('hidden');
+      } else {
+        overlay.classList.add('hidden');
+      }
+    }
+
+    if (header) {
+      if (this.isFocusMode) {
+        header.classList.remove('hidden');
+      } else {
+        header.classList.add('hidden');
+      }
+    }
+
+    if (pomodoroDisplay && this.timer.pomodoroMode) {
+      if (this.isFocusMode) {
+        pomodoroDisplay.classList.add('hidden');
+      } else {
+        pomodoroDisplay.classList.remove('hidden');
+      }
+    }
+
+    // Handle pause/resume button visibility
+    const isTimerRunning = this.timer.isRunning();
+    if (pauseBtn && resumeBtn) {
+      if (isTimerRunning && this.isFocusMode) {
+        pauseBtn.classList.remove('hidden');
+        resumeBtn.classList.add('hidden');
+      } else if (
+        !isTimerRunning &&
+        this.isFocusMode &&
+        this._pausedPomodoroState
+      ) {
+        pauseBtn.classList.add('hidden');
+        resumeBtn.classList.remove('hidden');
+      } else {
+        pauseBtn.classList.add('hidden');
+        resumeBtn.classList.add('hidden');
+      }
+    }
+  }
+
+  updateFocusModeTimer() {
+    if (!this.isFocusMode) return;
+
+    const focusTimerDisplay = document.getElementById('focus-timer-display');
+    const timerDisplay = document.getElementById('timer-display');
+
+    if (focusTimerDisplay && timerDisplay) {
+      focusTimerDisplay.textContent = timerDisplay.textContent;
+    }
+
+    const pomodoroInfo = this.timer.getPomodoroInfo();
+    const focusPomodoroTimer = document.getElementById('focus-pomodoro-timer');
+    const focusPomodoroProgress = document.getElementById(
+      'focus-pomodoro-progress'
+    );
+
+    if (pomodoroInfo) {
+      const minutes = Math.floor(pomodoroInfo.remaining / 60);
+      const seconds = pomodoroInfo.remaining % 60;
+      const countdownText = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+      if (focusPomodoroTimer) {
+        focusPomodoroTimer.textContent = countdownText;
+      }
+
+      const progress =
+        ((pomodoroInfo.total - pomodoroInfo.remaining) / pomodoroInfo.total) *
+        100;
+      if (focusPomodoroProgress) {
+        focusPomodoroProgress.style.width = `${Math.min(100, progress)}%`;
+      }
+    } else {
+      if (focusPomodoroTimer) {
+        focusPomodoroTimer.textContent = '--:--';
+      }
+      if (focusPomodoroProgress) {
+        focusPomodoroProgress.style.width = '0%';
+      }
+    }
+  }
+
+  savePomodoroSettingsToTask() {
+    if (!this.activeTaskId) return;
+
+    const taskIndex = this.tasks.findIndex((t) => t.id === this.activeTaskId);
+    if (taskIndex >= 0) {
+      this.tasks[taskIndex].pomodoroMode = this.timer.pomodoroMode || false;
+      this.tasks[taskIndex].pomodoroInterval =
+        this.timer.pomodoroInterval || 25;
+    }
   }
 
   /**
@@ -863,6 +1322,9 @@ class App {
 
     // Stop the timer
     this.timer.stop();
+
+    // Update focus mode timer display
+    this.updateFocusModeTimer();
 
     // Show break modal
     const breakModal = document.getElementById('break-modal');
@@ -926,6 +1388,29 @@ class App {
 
     // Resume timer for next pomodoro
     this.resumeFromBreak();
+
+    // Re-activate focus mode
+    if (this.activeTaskId) {
+      this.activateFocusMode();
+      this.startFocusModeTimerUpdate();
+    }
+  }
+
+  startFocusModeTimerUpdate() {
+    if (this.focusModeInterval) {
+      clearInterval(this.focusModeInterval);
+    }
+
+    this.focusModeInterval = setInterval(() => {
+      this.updateFocusModeTimer();
+    }, 1000);
+  }
+
+  stopFocusModeTimerUpdate() {
+    if (this.focusModeInterval) {
+      clearInterval(this.focusModeInterval);
+      this.focusModeInterval = null;
+    }
   }
 
   /**

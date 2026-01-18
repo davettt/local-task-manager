@@ -41,6 +41,10 @@ body {
   font-size: 14px;
 }
 
+.hidden {
+  display: none !important;
+}
+
 .container {
   width: 100%;
   margin: 0 auto;
@@ -1114,6 +1118,422 @@ body {
   background-color: var(--color-accent-cyan);
   color: var(--color-base-dark);
   box-shadow: 0 0 8px rgba(42, 161, 152, 0.4);
+}
+
+/* Timer Container */
+.timer-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.overall-time-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.overall-time-label {
+  font-size: 10px;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Pomodoro Display */
+.pomodoro-display {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  background-color: rgba(42, 161, 152, 0.1);
+  border-radius: 4px;
+  border: 1px solid rgba(42, 161, 152, 0.3);
+}
+
+.pomodoro-display.hidden {
+  display: none;
+}
+
+.pomodoro-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pomodoro-icon {
+  font-size: 16px;
+}
+
+.pomodoro-label {
+  font-size: 12px;
+  color: var(--color-accent-cyan);
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.pomodoro-interval-label {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+/* Progress Bar */
+.progress-bar-container {
+  width: 100%;
+  height: 12px;
+  background-color: var(--color-base-dark);
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--color-base-darker);
+}
+
+.progress-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--color-accent-cyan),
+    var(--color-accent-cyan) 8px,
+    rgba(42, 161, 152, 0.7) 8px,
+    rgba(42, 161, 152, 0.7) 10px
+  );
+  border-radius: 5px;
+  transition: width 0.5s ease;
+}
+
+.pomodoro-countdown {
+  font-size: 18px;
+  color: var(--color-accent-cyan);
+  font-weight: bold;
+  text-align: center;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 1px;
+}
+
+/* Focus Mode Header (compact) */
+.focus-mode-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  margin-bottom: 4px;
+  border-bottom: 1px solid rgba(42, 161, 152, 0.3);
+}
+
+.focus-mode-header.hidden {
+  display: none;
+}
+
+.exit-focus-btn {
+  padding: 4px 8px;
+  background-color: transparent;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-base-darker);
+  border-radius: 2px;
+  cursor: pointer;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  transition: all 150ms ease;
+}
+
+.exit-focus-btn:hover {
+  color: var(--color-accent-red);
+  border-color: var(--color-accent-red);
+}
+
+.focus-pomodoro-countdown {
+  font-size: 14px;
+  color: var(--color-accent-cyan);
+  font-weight: bold;
+  font-family: 'Courier New', monospace;
+}
+
+/* Focus Mode Overlay */
+body.focus-mode .container {
+  display: none;
+}
+
+.focus-mode-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 26, 35, 1);
+  z-index: 100000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.focus-mode-overlay.hidden {
+  display: none;
+}
+
+.focus-mode-content {
+  width: 100%;
+  max-width: 700px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-height: 80vh;
+  background-color: var(--color-base-darkest);
+  border-radius: 8px;
+  border: 1px solid var(--color-accent-cyan);
+}
+
+.focus-mode-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.focus-header-left {
+  display: flex;
+  gap: 8px;
+}
+
+.focus-exit-btn {
+  padding: 8px 16px;
+  background-color: transparent;
+  color: var(--color-accent-cyan);
+  border: 2px solid var(--color-accent-cyan);
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  font-weight: bold;
+  transition: all 150ms ease;
+}
+
+.focus-exit-btn:hover {
+  background-color: var(--color-accent-cyan);
+  color: var(--color-base-dark);
+  box-shadow: 0 0 10px rgba(42, 161, 152, 0.5);
+}
+
+.focus-edit-btn {
+  padding: 8px 16px;
+  background-color: transparent;
+  color: var(--color-accent-cyan);
+  border: 1px solid var(--color-accent-cyan);
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  transition: all 150ms ease;
+}
+
+.focus-edit-btn:hover {
+  background-color: var(--color-accent-cyan);
+  color: var(--color-base-dark);
+}
+
+#focus-pomodoro-timer {
+  font-weight: bold;
+  font-family: 'Courier New', monospace;
+}
+
+.focus-task-container {
+  background-color: var(--color-base-medium);
+  border-radius: 8px;
+  padding: 20px;
+  border: 1px solid var(--color-accent-cyan);
+  box-shadow: 0 0 20px rgba(42, 161, 152, 0.2);
+}
+
+.focus-task-title {
+  font-size: 24px;
+  color: var(--color-accent-cyan);
+  font-weight: bold;
+  margin-bottom: 12px;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.focus-task-details {
+  font-size: 14px;
+  color: var(--color-text-primary);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  margin-top: 8px;
+}
+
+.focus-task-meta {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin-bottom: 8px;
+  font-style: italic;
+}
+
+.focus-task-links {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.focus-link {
+  font-size: 12px;
+  color: var(--color-accent-blue);
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.focus-link:hover {
+  color: var(--color-accent-cyan);
+  text-decoration: underline;
+}
+
+.focus-timer-section {
+  text-align: center;
+}
+
+.focus-pomodoro-timer {
+  font-size: 48px;
+  color: var(--color-accent-cyan);
+  font-weight: bold;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 2px;
+  text-shadow: 0 0 20px rgba(42, 161, 152, 0.5);
+}
+
+.focus-total-time {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+#focus-timer-display {
+  color: var(--color-text-secondary);
+}
+
+.focus-pomodoro-progress-container {
+  width: 100%;
+  height: 16px;
+  background-color: var(--color-base-dark);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--color-base-darker);
+  margin: 16px 0;
+}
+
+.focus-pomodoro-progress {
+  height: 100%;
+  width: 0%;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--color-accent-cyan),
+    var(--color-accent-cyan) 10px,
+    rgba(42, 161, 152, 0.7) 10px,
+    rgba(42, 161, 152, 0.7) 12px
+  );
+  border-radius: 7px;
+  transition: width 0.5s ease;
+}
+
+.focus-controls {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.focus-btn {
+  padding: 12px 32px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  font-weight: bold;
+  text-transform: uppercase;
+  transition: all 150ms ease;
+}
+
+.focus-btn-stop {
+  background-color: transparent;
+  color: var(--color-accent-cyan);
+  border: 2px solid var(--color-accent-cyan);
+}
+
+.focus-btn-stop:hover {
+  background-color: var(--color-accent-cyan);
+  color: var(--color-base-dark);
+  box-shadow: 0 0 20px rgba(42, 161, 152, 0.5);
+}
+
+.focus-btn-pause {
+  background-color: transparent;
+  color: var(--color-text-secondary);
+  border: 2px solid var(--color-base-darker);
+}
+
+.focus-btn-pause:hover {
+  color: var(--color-accent-yellow);
+  border-color: var(--color-accent-yellow);
+}
+
+.focus-btn-resume {
+  background-color: transparent;
+  color: var(--color-accent-green);
+  border: 2px solid var(--color-accent-green);
+}
+
+.focus-btn-resume:hover {
+  background-color: var(--color-accent-green);
+  color: var(--color-base-dark);
+  box-shadow: 0 0 20px rgba(133, 153, 0, 0.5);
+}
+
+.focus-btn-complete {
+  background-color: var(--color-accent-green);
+  color: var(--color-base-dark);
+  border: 2px solid var(--color-accent-green);
+}
+
+.focus-btn-complete:hover {
+  box-shadow: 0 0 20px rgba(133, 153, 0, 0.5);
+}
+
+/* Focus Mode Break Modal */
+.focus-mode-overlay .break-modal {
+  background-color: rgba(0, 26, 35, 0.95);
+  border: 2px solid var(--color-accent-red);
+  border-radius: 8px;
+  padding: 32px !important;
+  max-width: 400px;
+}
+
+.focus-mode-overlay .break-title {
+  font-size: 24px;
+  color: var(--color-accent-red);
+}
+
+.focus-mode-overlay .break-countdown {
+  font-size: 64px;
+  color: var(--color-accent-cyan);
+  margin: 24px 0;
+}
+
+.focus-mode-overlay .break-message {
+  font-size: 16px;
+  color: var(--color-text-primary);
+}
+
+.focus-mode-overlay .break-buttons {
+  margin-top: 24px;
+}
+
+.focus-mode-overlay .btn {
+  padding: 10px 24px;
+  font-size: 14px;
 }
 
 /* Scrollbar Styling */

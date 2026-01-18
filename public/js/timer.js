@@ -96,6 +96,9 @@ class TaskTimer {
       timerDisplay.textContent = display;
     }
 
+    // Update progress bar if in pomodoro mode
+    this.updateProgressBar();
+
     // Check if pomodoro interval has been reached
     if (
       this.pomodoroMode &&
@@ -167,6 +170,45 @@ class TaskTimer {
       total: pomodoroIntervalSeconds,
       interval: this.pomodoroInterval,
     };
+  }
+
+  /**
+   * Update progress bar display
+   */
+  updateProgressBar() {
+    const pomodoroInfo = this.getPomodoroInfo();
+    const progressBar = document.getElementById('pomodoro-progress');
+    const countdown = document.getElementById('pomodoro-countdown');
+    const intervalLabel = document.getElementById('pomodoro-interval-label');
+
+    if (pomodoroInfo) {
+      const progress =
+        ((pomodoroInfo.total - pomodoroInfo.remaining) / pomodoroInfo.total) *
+        100;
+
+      if (progressBar) {
+        progressBar.style.width = `${Math.min(100, progress)}%`;
+      }
+
+      const minutes = Math.floor(pomodoroInfo.remaining / 60);
+      const seconds = pomodoroInfo.remaining % 60;
+      const countdownText = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+      if (countdown) {
+        countdown.textContent = `${countdownText} remaining`;
+      }
+
+      if (intervalLabel) {
+        intervalLabel.textContent = `(${pomodoroInfo.interval} min)`;
+      }
+    } else {
+      if (progressBar) {
+        progressBar.style.width = '0%';
+      }
+      if (countdown) {
+        countdown.textContent = '';
+      }
+    }
   }
 
   /**

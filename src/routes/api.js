@@ -133,6 +133,8 @@ router.post('/tasks', (req, res) => {
       isAppointment,
       reminderMinutes,
       workingDaysOnly,
+      pomodoroMode,
+      pomodoroInterval,
     } = req.body;
 
     // Validate required fields
@@ -166,6 +168,9 @@ router.post('/tasks', (req, res) => {
           reminderMinutes: isAppointment ? reminderMinutes || 30 : null,
           workingDaysOnly:
             recurring === 'daily' ? workingDaysOnly || false : false,
+          pomodoroMode: pomodoroMode ?? existingTask.pomodoroMode ?? false,
+          pomodoroInterval:
+            pomodoroInterval || existingTask.pomodoroInterval || 25,
           updatedAt: new Date().toISOString(),
         };
       } else {
@@ -189,6 +194,8 @@ router.post('/tasks', (req, res) => {
           timeSpent: 0,
           completedAt: null,
           links: links || [],
+          pomodoroMode: pomodoroMode || false,
+          pomodoroInterval: pomodoroInterval || 25,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
@@ -214,6 +221,8 @@ router.post('/tasks', (req, res) => {
         timeSpent: 0,
         completedAt: null,
         links: links || [],
+        pomodoroMode: pomodoroMode || false,
+        pomodoroInterval: pomodoroInterval || 25,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -353,6 +362,8 @@ router.post('/tasks/:id/complete', (req, res) => {
         timeSpent: 0,
         completedAt: null,
         links: task.links || [],
+        pomodoroMode: task.pomodoroMode || false,
+        pomodoroInterval: task.pomodoroInterval || 25,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };

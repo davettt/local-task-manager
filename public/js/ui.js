@@ -7,6 +7,17 @@
 
 class UI {
   /**
+   * Escape HTML special characters
+   * @param {string} text - Text to escape
+   * @returns {string} Escaped text
+   */
+  static escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  /**
    * Show modal
    * @param {boolean} isEditing - Whether we're editing an existing task
    */

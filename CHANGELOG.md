@@ -5,6 +5,47 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.0] - 2026-01-18
+
+### Added
+
+- **Timer Redesign** - Separate timer display showing overall tracked time and Pomodoro countdown with visual progress bar
+- **Focus Mode** - New full-screen immersive overlay that auto-activates when Pomodoro is enabled
+  - Displays task details prominently (title, description, links)
+  - Large Pomodoro countdown timer with "Total: HH:MM:SS" below
+  - Edit button to modify task while in focus mode
+  - Pause/Resume functionality for both timer and Pomodoro
+  - ESC key or STOP button to exit focus mode
+- **Persisted Pomodoro Settings** - pomodoroMode and pomodoroInterval now saved per-task
+  - Settings persist across sessions
+  - Backward compatible (existing tasks default to false/25)
+
+### Changed
+
+- Pomodoro timer now more visible with dedicated countdown display
+- Timer section redesigned with separate overall time and Pomodoro sections
+- Stop button behavior clarified: now stops Pomodoro and timer (exits focus mode)
+- Added Pause/Resume buttons for temporary timer pauses
+
+### Technical Details
+
+- New focus mode overlay with z-index 100000 for immersive experience
+- Focus mode timer updates synced with main timer display
+- Pause/Resume properly preserves Pomodoro remaining time
+- Pomodoro progress bar with segmented fill styling
+- All new features backward compatible - no breaking changes
+
+### Files Modified
+
+- public/index.html - Timer section redesign, focus mode overlay
+- public/css/style.css - Timer styles, focus mode styles, progress bar
+- public/js/app.js - Focus mode logic, pause/resume, settings persistence
+- public/js/timer.js - Progress bar update method
+- src/routes/api.js - Persist pomodoro settings with task data
+- README.md - Updated documentation
+
+---
+
 ## [1.8.0] - 2025-11-29
 
 ### Added

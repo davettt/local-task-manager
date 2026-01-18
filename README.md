@@ -12,7 +12,8 @@ A lightweight, single-focused task management application with an integrated tim
 - **Task Management**: Create, edit, delete, and complete tasks
 - **Active Task Timer**: Single-task focus with live timer display
 - **Timer Persistence**: Timer state survives browser refresh
-- **Pomodoro Timer (Optional)**: Enable flexible pomodoro intervals (25, 45, or 65 minutes) on any task with automatic break reminders and countdown
+- **Pomodoro Timer (Optional)**: Enable flexible pomodoro intervals (25, 45, or 65 minutes) on any task with automatic break reminders, countdown display, and visual progress bar
+- **Focus Mode**: Immersive full-screen mode that activates automatically when Pomodoro is enabled, hiding distractions and highlighting your current task
 - **Task Archive**: View completed tasks with time tracking
 - **Sound Alerts**: Audio notification when tasks are completed
 - **Calendar Appointments**: Mark tasks as time-critical appointments with customizable reminders
@@ -70,21 +71,23 @@ npm run dev
    - Click "Save Task"
 
 2.1 **Create a Calendar Appointment** (Optional)
-   - When adding or editing a task with a due date and time
-   - Check the "Calendar Appointment (time-sensitive)" checkbox
-   - Select reminder time (15 min, 30 min, 1 hour, 2 hours, or 1 day before)
-   - When the reminder time arrives, an alert will appear in the top-right corner with:
-     - Bell icon (🔔) and appointment details
-     - Sound notification
-     - Auto-dismisses after 10 seconds or click "Dismiss"
-   - Reminder settings carry over to recurring appointments
 
-2.2 **Create Recurring Tasks** (Optional)
-   - Select "Daily" or "Weekly" from the Recurring dropdown
-   - For daily recurring tasks, optionally check "Weekdays only (skip weekends)"
-   - When a recurring task is completed, a new instance is automatically created for the next occurrence
-   - Daily weekday-only tasks skip Saturday and Sunday, with the next instance appearing on Monday
-   - All task properties carry over to recurring instances
+- When adding or editing a task with a due date and time
+- Check the "Calendar Appointment (time-sensitive)" checkbox
+- Select reminder time (15 min, 30 min, 1 hour, 2 hours, or 1 day before)
+- When the reminder time arrives, an alert will appear in the top-right corner with:
+  - Bell icon (🔔) and appointment details
+  - Sound notification
+  - Auto-dismisses after 10 seconds or click "Dismiss"
+- Reminder settings carry over to recurring appointments
+
+  2.2 **Create Recurring Tasks** (Optional)
+
+- Select "Daily" or "Weekly" from the Recurring dropdown
+- For daily recurring tasks, optionally check "Weekdays only (skip weekends)"
+- When a recurring task is completed, a new instance is automatically created for the next occurrence
+- Daily weekday-only tasks skip Saturday and Sunday, with the next instance appearing on Monday
+- All task properties carry over to recurring instances
 
 3. **Track Your Streak**
    - Complete 3 or more tasks in a single day to start building a streak
@@ -98,15 +101,9 @@ npm run dev
    - The timer will appear at the top with live countdown
    - Only one task can be active at a time
 
-4.1 **Use Pomodoro Timer** (Optional)
-   - While timer is running, you can enable pomodoro mode for flexible work intervals
-   - Check the "Enable Pomodoro" checkbox in the active task section
-   - Select your preferred interval: 25 min (classic), 45 min, or 65 min (deep work)
-   - Timer runs normally until the selected interval completes
-   - When interval ends: timer auto-pauses and a break modal appears with 5-minute countdown
-   - During break: choose to "Skip Break" (resume immediately) or "Continue Working" (auto-start next pomodoro)
-   - You can enable/disable pomodoro or change the interval anytime while timer is running
-   - Pomodoro is fully optional - you can mix normal and pomodoro timers across different tasks
+4.1 **Use Pomodoro Timer** (Optional) - While timer is running, you can enable pomodoro mode for flexible work intervals - Check the "Enable Pomodoro" checkbox in the active task section - Select your preferred interval: 25 min (classic), 45 min, or 65 min (deep work) - Timer runs normally until the selected interval completes - When interval ends: timer auto-pauses and a break modal appears with 5-minute countdown - During break: choose to "Skip Break" (resume immediately) or "Continue Working" (auto-start next pomodoro) - You can enable/disable pomodoro or change the interval anytime while timer is running - Pomodoro is fully optional - you can mix normal and pomodoro timers across different tasks - **Pomodoro Settings are saved per-task** and restored when you restart the same task
+
+4.2 **Focus Mode** (Auto-activated with Pomodoro) - When you enable Pomodoro and start the timer, Focus Mode activates automatically - Focus Mode provides an immersive, distraction-free environment: - Full-screen overlay with dark background - Your current task details are prominently displayed (title and details) - Large timer display with Pomodoro countdown and progress bar - Exit button in the top-left corner - Press `Esc` key to exit Focus Mode at any time - Focus Mode shows: - Task title and details (fully visible and editable via the edit button) - Overall time tracked (large display) - Pomodoro progress bar with visual fill - Pomodoro countdown timer - Pause and Complete buttons - When a Pomodoro interval completes, the break modal appears within Focus Mode - Settings (Pomodoro enabled/interval) persist per-task and are restored automatically
 
 5. **Stop or Complete**
    - Click "⏹️ STOP" to pause the timer (task returns to list)
@@ -120,12 +117,13 @@ npm run dev
    - Completed tasks stay in the Completed section until moved to archive files
 
 6.1 **Archive Management** (Optional)
-   - Click "🧹 CLEAN" button next to Completed section header
-   - Select a cutoff date to move completed tasks to archive files
-   - Click "Move to Archive Files" to proceed
-   - Tasks will be saved to daily archive files: `local_data/archive_YYYYMMDD.json`
-   - Archive files older than 45 days are automatically deleted on server startup
-   - No data is lost - all completed tasks are preserved in archive files or can be restored
+
+- Click "🧹 CLEAN" button next to Completed section header
+- Select a cutoff date to move completed tasks to archive files
+- Click "Move to Archive Files" to proceed
+- Tasks will be saved to daily archive files: `local_data/archive_YYYYMMDD.json`
+- Archive files older than 45 days are automatically deleted on server startup
+- No data is lost - all completed tasks are preserved in archive files or can be restored
 
 7. **Customize Settings** (Optional)
    - Click the "⚙️" settings button in the top-right corner
@@ -226,33 +224,43 @@ local-task-manager/
 ## API Endpoints
 
 ### GET /api/tasks
+
 Returns all active (non-archived) tasks
 
 ### GET /api/tasks/archived
+
 Returns all completed (archived) tasks that are still in the active task list
 
 ### POST /api/tasks
+
 Create or update a task
 
 ### POST /api/tasks/:id/start
+
 Start task timer
 
 ### POST /api/tasks/:id/stop
+
 Stop task timer (pause)
 
 ### POST /api/tasks/:id/complete
+
 Complete and archive task
 
 ### POST /api/tasks/:id/restore
+
 Restore task from archive
 
 ### DELETE /api/tasks/:id
+
 Permanently delete task
 
 ### POST /api/archive/cleanup
+
 Move completed tasks to daily archive files. Tasks completed before the specified date are moved from `tasks.json` to organized archive files by completion date.
 
 **Request body:**
+
 ```json
 {
   "cutoffDate": "YYYY-MM-DD"
@@ -260,6 +268,7 @@ Move completed tasks to daily archive files. Tasks completed before the specifie
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -269,15 +278,18 @@ Move completed tasks to daily archive files. Tasks completed before the specifie
 ```
 
 **Behavior:**
+
 - Tasks completed before the cutoff date are moved to `local_data/archive_YYYYMMDD.json` files
 - Each task is marked with `archivedToFile: true` when moved
 - Moved tasks are removed from the Completed section (archived tasks section)
 - Archive files older than 45 days are automatically deleted on server startup
 
 ### GET /api/config
+
 Returns application configuration including the terminal mantra settings.
 
 **Response:**
+
 ```json
 {
   "mantra": {
@@ -294,9 +306,11 @@ Returns application configuration including the terminal mantra settings.
 ```
 
 ### GET /api/settings
+
 Returns user settings including timezone, localization, daily routine, and cleanup preferences.
 
 **Response:**
+
 ```json
 {
   "timezone": {
@@ -321,9 +335,11 @@ Returns user settings including timezone, localization, daily routine, and clean
 ```
 
 ### PUT /api/settings
+
 Update user settings (partial or full update).
 
 **Request body:**
+
 ```json
 {
   "timezone": { "current": "Australia/Sydney" },
@@ -334,9 +350,11 @@ Update user settings (partial or full update).
 ```
 
 ### PUT /api/settings/timezone
+
 Update timezone settings specifically.
 
 **Request body:**
+
 ```json
 {
   "current": "Australia/Sydney",
@@ -345,9 +363,11 @@ Update timezone settings specifically.
 ```
 
 ### PUT /api/settings/daily-routine
+
 Update daily routine items (validated to maximum 10 items).
 
 **Request body:**
+
 ```json
 [
   { "id": "1", "label": "Calendar", "icon": "📅", "enabled": true },
@@ -356,9 +376,11 @@ Update daily routine items (validated to maximum 10 items).
 ```
 
 ### PUT /api/config
+
 Update application configuration (terminal mantra, username, hostname).
 
 **Request body:**
+
 ```json
 {
   "mantra": {
@@ -400,6 +422,8 @@ Each task contains:
   "completedAt": "ISO_timestamp or null",
   "links": ["https://example.com"],
   "details": "Optional additional notes",
+  "pomodoroMode": false,
+  "pomodoroInterval": 25,
   "createdAt": "ISO_timestamp",
   "updatedAt": "ISO_timestamp"
 }
@@ -413,6 +437,8 @@ Each task contains:
 - **workingDaysOnly**: When true and recurring is "daily", skips Saturday and Sunday
 - **isAppointment**: When true, enables reminder notifications at specified time before due date
 - **reminderMinutes**: How many minutes before the due date/time to trigger the appointment reminder
+- **pomodoroMode**: When true, Pomodoro timer is enabled for this task
+- **pomodoroInterval**: Pomodoro interval duration in minutes (25, 45, or 65)
 
 ## Code Quality
 
@@ -428,6 +454,7 @@ Run `npm run quality` before committing changes.
 ## Browser Persistence
 
 The application automatically resumes an active timer even after:
+
 - Browser refresh
 - Page navigation
 - Server restart
@@ -444,21 +471,25 @@ The timer state is maintained server-side in the tasks.json file for reliability
 ## Troubleshooting
 
 ### Timer not persisting across refresh
+
 - Check browser console for errors
 - Verify local_data/tasks.json file exists and is valid JSON
 - Restart the server: `npm run dev`
 
 ### Port already in use
+
 - The server automatically detects if port 3000 is in use and finds the next available port
 - A warning message will be displayed showing which port is being used
 - Alternatively, you can change the default port in .env file: `PORT=3001`
 
 ### No sound on task completion
+
 - Check browser audio is enabled
 - Verify Web Audio API is supported
 - Check browser console for warnings
 
 ### Server already running error
+
 - Only one instance of the server can run at a time to prevent data corruption
 - Stop the existing server (Ctrl+C) before starting a new instance
 - If the server crashed and left a stale lock file, the new instance will automatically clean it up
