@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Persisted Pomodoro Settings** - pomodoroMode and pomodoroInterval now saved per-task
   - Settings persist across sessions
   - Backward compatible (existing tasks default to false/25)
+- **Task Time Display** (TC-94) - Total tracked time now visible on task list items
+  - Shows `⏱ HH:MM:SS` inline after due date
+  - Real-time updates while timer is running
+  - Cyan color matching Pomodoro timer theme
 
 ### Changed
 
@@ -38,9 +42,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Files Modified
 
 - public/index.html - Timer section redesign, focus mode overlay
-- public/css/style.css - Timer styles, focus mode styles, progress bar
-- public/js/app.js - Focus mode logic, pause/resume, settings persistence
+- public/css/style.css - Timer styles, focus mode styles, progress bar, task-time styling
+- public/js/app.js - Focus mode logic, pause/resume, settings persistence, task time updates
 - public/js/timer.js - Progress bar update method
+- public/js/ui.js - Task time display in task list items
 - src/routes/api.js - Persist pomodoro settings with task data
 - README.md - Updated documentation
 
