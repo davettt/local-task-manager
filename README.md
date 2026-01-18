@@ -111,7 +111,7 @@ npm run dev
 
 6. **View Completed Tasks**
    - Click "✓ Completed" to expand/collapse completed tasks
-   - See time spent and completion date/time
+   - See time spent and completion date/time 
    - Click "↩️" to restore a task back to active list
    - Click "🗑️" to permanently delete a task
    - Completed tasks stay in the Completed section until moved to archive files
