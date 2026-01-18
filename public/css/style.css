@@ -539,6 +539,11 @@ body {
   margin-right: 6px;
 }
 
+.task-time {
+  color: var(--color-accent-cyan);
+  margin-left: 8px;
+}
+
 .expand-btn {
   background: none;
   border: none;

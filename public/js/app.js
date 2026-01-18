@@ -708,6 +708,9 @@ class App {
         () => this.handlePomodoroIntervalReached()
       );
 
+      // Start task time display updates
+      this.startTaskTimeUpdate();
+
       // Update pomodoro UI
       this.updatePomodoroDisplay();
 
@@ -749,6 +752,9 @@ class App {
       // Stop timer
       this.timer.stop();
 
+      // Stop task time updates
+      this.stopTaskTimeUpdate();
+
       // Update local state
       const index = this.tasks.findIndex((t) => t.id === this.activeTaskId);
       if (index >= 0) {
@@ -783,6 +789,7 @@ class App {
       this.deactivateFocusMode();
 
       // Stop the timer
+      this.stopTaskTimeUpdate();
       const task = await this.taskManager.stopTask(this.activeTaskId);
 
       // Update local state
@@ -1410,6 +1417,52 @@ class App {
     if (this.focusModeInterval) {
       clearInterval(this.focusModeInterval);
       this.focusModeInterval = null;
+    }
+  }
+
+  /**
+   * Update task time displays in the task list
+   * Runs every second to keep times current
+   */
+  updateTaskTimeDisplays() {
+    if (!this.timer.isRunning() || !this.activeTaskId) {
+      return;
+    }
+
+    const task = this.tasks.find((t) => t.id === this.activeTaskId);
+    if (!task || !task.startedAt) {
+      return;
+    }
+
+    // Calculate current total time
+    const elapsed = Math.floor(
+      (Date.now() - new Date(task.startedAt).getTime()) / 1000
+    );
+    const totalTime = task.timeSpent + elapsed;
+    const timeStr = TaskTimer.formatTime(totalTime);
+
+    // Update the active task's time display
+    const timeDisplay = document.querySelector(
+      `[data-task-id-time="${task.id}"]`
+    );
+    if (timeDisplay) {
+      timeDisplay.textContent = `⏱ ${timeStr}`;
+    }
+  }
+
+  startTaskTimeUpdate() {
+    if (this.taskTimeInterval) {
+      clearInterval(this.taskTimeInterval);
+    }
+    this.taskTimeInterval = setInterval(() => {
+      this.updateTaskTimeDisplays();
+    }, 1000);
+  }
+
+  stopTaskTimeUpdate() {
+    if (this.taskTimeInterval) {
+      clearInterval(this.taskTimeInterval);
+      this.taskTimeInterval = null;
     }
   }
 

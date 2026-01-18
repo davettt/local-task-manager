@@ -174,12 +174,19 @@ class UI {
       ? `<span class="task-due">${dateTimeStr}</span>`
       : '';
 
-    // Escape HTML in task description
+    // Escape HTML helper function
     const escapeHtml = (text) => {
       const div = document.createElement('div');
       div.textContent = text;
       return div.innerHTML;
     };
+
+    // Format time spent
+    const timeSpent = task.timeSpent || 0;
+    const timeHtml =
+      timeSpent > 0
+        ? `<span class="task-time" data-task-id-time="${escapeHtml(task.id)}">⏱ ${TaskTimer.formatTime(timeSpent)}</span>`
+        : '';
 
     // Format links for display
     const linksHtml =
@@ -213,12 +220,13 @@ class UI {
           <span class="priority-icon priority-${task.priority || 'medium'}">${priorityIcon}</span>
           ${recurringIcon ? `<span class="priority-icon" title="Recurring: ${task.recurring}">${recurringIcon}</span>` : ''}
           ${task.isAppointment ? `<span class="appointment-badge" title="Calendar Appointment">🔔</span>` : ''}
-          <div class="task-content" style="flex: 1">
-            <div class="task-title">${escapeHtml(task.description)}</div>
-            <div class="task-meta">
-              ${dateTimeHtml}
-            </div>
-          </div>
+           <div class="task-content" style="flex: 1">
+             <div class="task-title">${escapeHtml(task.description)}</div>
+             <div class="task-meta">
+               ${dateTimeHtml}
+               ${timeHtml}
+             </div>
+           </div>
           <button class="expand-btn" data-task-id="${escapeHtml(
             task.id
           )}" title="Show details">▼</button>
