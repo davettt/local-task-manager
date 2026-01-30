@@ -49,7 +49,7 @@ class Gamification {
       } else {
         this.resetStreak();
       }
-    } catch (error) {
+    } catch (_error) {
       this.resetStreak();
     }
   }
@@ -74,7 +74,7 @@ class Gamification {
         tasksCompletedToday: this.tasksCompletedToday,
       };
       localStorage.setItem(this.streakKey, JSON.stringify(data));
-    } catch (error) {
+    } catch (_error) {
       // Silently fail if localStorage not available
     }
   }
@@ -288,7 +288,7 @@ class Gamification {
       gain3.connect(audioContext.destination);
       osc3.start(now + 0.15);
       osc3.stop(now + 0.35);
-    } catch (error) {
+    } catch (_error) {
       // Silently fail if audio context not available
     }
   }

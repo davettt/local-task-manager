@@ -178,7 +178,7 @@ class TodoistClient {
     try {
       await this.getProjects();
       return true;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   }

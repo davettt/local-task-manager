@@ -64,7 +64,7 @@ class SyncManager {
         };
       }
       return defaults;
-    } catch (error) {
+    } catch (_error) {
       return defaults;
     }
   }

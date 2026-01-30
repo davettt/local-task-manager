@@ -5,6 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.1] - 2026-01-31
+
+### Security
+
+- **ESLint Vulnerability Fix** - Upgraded ESLint to resolve moderate severity vulnerability
+  - Fixed: Stack Overflow when serializing objects with circular references ([GHSA-p5wg-g6qr-c7cg](https://github.com/advisories/GHSA-p5wg-g6qr-c7cg))
+  - Upgraded `eslint` from 8.57.1 to 9.39.2
+  - Upgraded `eslint-plugin-security` from 1.7.1 to 3.0.1
+
+### Changed
+
+- **ESLint 9 Migration** - Migrated to ESLint flat config format
+  - Replaced `.eslintrc.js` with `eslint.config.js` (new flat config)
+  - Added `@eslint/js` and `globals` packages for flat config support
+  - Updated `no-unused-vars` rule with `caughtErrorsIgnorePattern` for cleaner catch blocks
+- **Husky Update** - Fixed deprecation warning
+  - Changed prepare script from `husky install` to `husky`
+
+### Fixed
+
+- Fixed 10 lint errors across 5 files (unused catch variables now prefixed with `_`)
+- Removed 7 unused eslint-disable directives
+
+### Files Modified
+
+- `package.json` - Updated dependencies and prepare script
+- `eslint.config.js` - New flat config (replaced `.eslintrc.js`)
+- `public/js/appointmentReminder.js` - Fixed unused catch variables
+- `public/js/gamification.js` - Fixed unused catch variables
+- `src/server.js` - Fixed unused catch variables, removed unused directives
+- `src/sync-manager.js` - Fixed unused catch variables
+- `src/todoist-client.js` - Fixed unused catch variables
+- `src/routes/api.js` - Removed unused eslint-disable directive
+- `src/routes/todoist-sync.js` - Removed unused eslint-disable directives
+
+---
+
 ## [1.9.0] - 2026-01-18
 
 ### Added

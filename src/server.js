@@ -66,7 +66,7 @@ function isProcessRunning(pid) {
     // Sending signal 0 checks if process exists without actually sending a signal
     process.kill(pid, 0);
     return true;
-  } catch (e) {
+  } catch (_e) {
     return false;
   }
 }
@@ -128,9 +128,8 @@ function cleanup() {
           );
           fs.unlinkSync(LOCK_FILE);
         }
-      } catch (error) {
+      } catch (_error) {
         // Lock file is corrupted, remove it and continue
-        // eslint-disable-next-line no-console
         console.warn('Lock file corrupted, removing...');
         fs.unlinkSync(LOCK_FILE);
       }

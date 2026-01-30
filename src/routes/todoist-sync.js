@@ -68,7 +68,6 @@ router.post('/setup', (req, res) => {
       note: 'Please restart the server for changes to take full effect',
     });
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error('Setup error:', error);
     res.status(500).json({
       error: 'Failed to configure Todoist',
@@ -104,7 +103,6 @@ router.get('/status', checkTodoistConfig, async (req, res) => {
       lastSync,
     });
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error('Status check error:', error);
     res.status(500).json({
       connected: false,
@@ -130,7 +128,6 @@ router.post('/sync', checkTodoistConfig, async (req, res) => {
       report: syncReport,
     });
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error('Sync error:', error);
     res.status(500).json({
       success: false,
@@ -164,7 +161,6 @@ router.get('/sync-status', checkTodoistConfig, (req, res) => {
       taskCount: Object.keys(metadata.taskMappings).length,
     });
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error('Sync status error:', error);
     res.status(500).json({
       error: 'Failed to get sync status',
@@ -185,7 +181,6 @@ router.get('/projects', checkTodoistConfig, async (req, res) => {
       projects,
     });
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error('Projects error:', error);
     res.status(500).json({
       error: 'Failed to fetch Todoist projects',

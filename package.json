@@ -13,7 +13,7 @@
     "format:check": "prettier --check src/ public/",
     "audit:security": "npm audit",
     "quality": "npm run lint && npm run format:check && npm run audit:security",
-    "prepare": "husky install"
+    "prepare": "husky"
   },
   "keywords": [
     "task",
@@ -28,9 +28,11 @@
     "express": "^4.18.2"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.2",
     "@linear/cli": "^0.0.5",
-    "eslint": "^8.50.0",
-    "eslint-plugin-security": "^1.7.1",
+    "eslint": "^9.39.2",
+    "eslint-plugin-security": "^3.0.1",
+    "globals": "^17.2.0",
     "husky": "^9.1.7",
     "prettier": "^3.0.3"
   }

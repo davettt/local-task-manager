@@ -27,7 +27,7 @@ class AppointmentReminder {
           this.saveRemindedTasks();
         }
       }
-    } catch (error) {
+    } catch (_error) {
       // Silently fail - use empty reminder set
     }
   }
@@ -42,7 +42,7 @@ class AppointmentReminder {
         taskIds: Array.from(this.remindedTaskIds),
       };
       localStorage.setItem('appointmentReminders', JSON.stringify(reminders));
-    } catch (error) {
+    } catch (_error) {
       // Silently fail if localStorage not available
     }
   }
@@ -251,7 +251,7 @@ class AppointmentReminder {
 
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + 0.6);
-    } catch (error) {
+    } catch (_error) {
       // Silently fail if audio context not available
     }
   }

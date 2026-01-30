@@ -32,7 +32,6 @@ function validateTask(task) {
   if (task.links && Array.isArray(task.links)) {
     task.links.forEach((link) => {
       try {
-        // eslint-disable-next-line no-new
         new URL(link);
       } catch {
         throw new Error(`Invalid URL: ${link}`);
