@@ -1,4 +1,4 @@
-/* global TaskManager, TaskTimer, UI, playCompletionSound, appointmentReminder, gamification */
+/* global TaskManager, TaskTimer, UI, ClockView, ClockDrag, playCompletionSound, appointmentReminder, gamification */
 
 /**
  * Main Application Module
@@ -18,6 +18,8 @@ class App {
     this.isFocusMode = false;
     this.pomodoroSessionTotalTime = 0;
     this.pomodoroSessionStartTime = null;
+    this.clockView = new ClockView();
+    this.clockDrag = new ClockDrag();
 
     this.init();
   }
@@ -28,6 +30,16 @@ class App {
   async init() {
     this.attachEventListeners();
     UI.initDailyChecklist();
+    this.clockView.init(document.getElementById('clock-container'));
+    this.clockView.onTaskSelected = (taskId) =>
+      this.handleClockTaskSelected(taskId);
+    this.clockView.onTaskTimeNudged = (taskId, newTime, newDuration) =>
+      this.handleClockDragEnd(taskId, newTime, newDuration);
+    if (this.clockView.svg) {
+      this.clockDrag.init(this.clockView.svg, this.clockView);
+      this.clockDrag.onDragEnd = (taskId, newStartTime, newDuration) =>
+        this.handleClockDragEnd(taskId, newStartTime, newDuration);
+    }
     await this.loadConfig();
     await this.loadTasks();
   }
@@ -52,33 +64,24 @@ class App {
    * Apply configuration to the UI
    */
   applyConfig(config) {
+    // Update terminal status bar prompt
     if (config.mantra) {
-      const mantraEl = document.querySelector('.terminal-mantra');
-      const promptEl = document.querySelector('.terminal-prompt');
-      const commandEl = document.querySelector('.terminal-command');
-
-      if (config.mantra.enabled && mantraEl && commandEl) {
-        // Update username and hostname
+      const promptEl = document.getElementById('terminal-prompt');
+      if (promptEl) {
         const username = config.mantra.username || 'user';
         const hostname = config.mantra.hostname || 'matrix';
-        if (promptEl) {
-          promptEl.textContent = `${username}@${hostname}:~$`;
-        }
-
-        // Update text
-        commandEl.textContent = config.mantra.text;
-
-        // Update tooltip with descriptions
-        if (config.mantra.descriptions) {
-          const desc = config.mantra.descriptions;
-          const tooltipText = `${username}@${hostname} = ${desc.nameIt} • Trace it = ${desc.traceIt} • Fix it = ${desc.fixIt} • Share it = ${desc.shareIt}`;
-          mantraEl.setAttribute('data-tooltip', tooltipText);
-        }
-
-        mantraEl.style.display = 'flex';
-      } else if (mantraEl) {
-        mantraEl.style.display = 'none';
+        promptEl.textContent = `${username}@${hostname}:~$`;
       }
+    }
+
+    // Pass time format to clock view
+    if (config.userSettings?.localization?.timeFormat) {
+      this.clockView.setTimeFormat(config.userSettings.localization.timeFormat);
+    }
+
+    // Pass routine items to clock view
+    if (config.userSettings?.dailyRoutine) {
+      this.clockView.setRoutineItems(config.userSettings.dailyRoutine);
     }
   }
 
@@ -139,6 +142,19 @@ class App {
           this.timer.pomodoroMode
         ) {
           this.activateFocusMode();
+        }
+      });
+    }
+
+    // Modal delete button (only visible when editing)
+    const modalDeleteBtn = document.getElementById('modal-delete-btn');
+    if (modalDeleteBtn) {
+      modalDeleteBtn.addEventListener('click', () => {
+        const taskId = this.editingTaskId;
+        if (taskId) {
+          UI.hideModal();
+          this.editingTaskId = null;
+          this.handleDeleteTask(taskId);
         }
       });
     }
@@ -239,10 +255,6 @@ class App {
 
     if (pomodoroToggle) {
       pomodoroToggle.addEventListener('change', (e) => {
-        // Enable/disable interval dropdown
-        if (pomodoroInterval) {
-          pomodoroInterval.disabled = !e.target.checked;
-        }
         // Update timer if currently running
         if (this.timer.isRunning() && this.activeTaskId) {
           this.updatePomodoroSettings();
@@ -337,6 +349,55 @@ class App {
         this.deactivateFocusMode();
       }
     });
+
+    // Clock view toggle
+    const clockToggleBtn = document.getElementById('clock-toggle-btn');
+    if (clockToggleBtn) {
+      clockToggleBtn.addEventListener('click', () => {
+        this.clockView.toggle();
+        if (this.clockView.isVisible) {
+          this.clockView.updateTasks(this.tasks);
+        }
+      });
+    }
+
+    // Hide clock on narrow screens (debounced)
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (window.innerWidth < 800 && this.clockView.isVisible) {
+          this.clockView.hide();
+        }
+      }, 150);
+    });
+
+    // Clock navigation
+    const clockNavToday = document.getElementById('clock-nav-today');
+    const clockNavPrev = document.getElementById('clock-nav-prev');
+    const clockNavNext = document.getElementById('clock-nav-next');
+    if (clockNavToday) {
+      clockNavToday.addEventListener('click', () => {
+        if (this.clockView.isVisible) {
+          this.clockView.goToToday();
+          this.clockView.loadUpcomingPreviews();
+        }
+      });
+    }
+    if (clockNavPrev) {
+      clockNavPrev.addEventListener('click', () => {
+        if (this.clockView.isVisible) {
+          this.clockView.navigateDay(-1);
+        }
+      });
+    }
+    if (clockNavNext) {
+      clockNavNext.addEventListener('click', () => {
+        if (this.clockView.isVisible) {
+          this.clockView.navigateDay(1);
+        }
+      });
+    }
   }
 
   /**
@@ -379,7 +440,31 @@ class App {
         pomodoroInterval,
         () => this.handlePomodoroIntervalReached()
       );
+
+      // Sync pomodoro checkbox/select to match the resumed task's state
+      const pomodoroToggle = document.getElementById(
+        'pomodoro-toggle-checkbox'
+      );
+      const pomodoroIntervalSelect =
+        document.getElementById('pomodoro-interval');
+      if (pomodoroToggle) {
+        pomodoroToggle.checked = pomodoroMode;
+      }
+      if (pomodoroIntervalSelect) {
+        pomodoroIntervalSelect.value = pomodoroInterval;
+      }
+      this.updatePomodoroDisplay();
+
       UI.showActiveTask(activeTask);
+
+      // Update clock view with active task
+      this.clockView.setActiveTask(
+        activeTask.id,
+        activeTask.startedAt,
+        activeTask.timeSpent,
+        pomodoroMode,
+        pomodoroInterval
+      );
     }
   }
 
@@ -452,6 +537,43 @@ class App {
 
     // Attach task list event listeners
     this.attachTaskListeners();
+
+    // Update clock view if visible
+    if (this.clockView && this.clockView.isVisible) {
+      this.clockView.updateTasks(this.tasks);
+    }
+  }
+
+  /**
+   * Handle task selection from the clock view - scroll to and highlight in list.
+   */
+  handleClockTaskSelected(taskId) {
+    const taskEl = document.querySelector(
+      `.task-item[data-task-id="${taskId}"]`
+    );
+    if (taskEl) {
+      taskEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      taskEl.classList.add('task-highlighted');
+      setTimeout(() => taskEl.classList.remove('task-highlighted'), 2000);
+    }
+  }
+
+  /**
+   * Handle drag end from the clock view - update task time/duration.
+   */
+  async handleClockDragEnd(taskId, newStartTime, newDuration) {
+    const task = this.tasks.find((t) => t.id === taskId);
+    if (!task) return;
+
+    task.plannedStartTime = newStartTime;
+    task.plannedDuration = newDuration;
+
+    try {
+      await this.taskManager.saveTask(task);
+      this.render();
+    } catch (error) {
+      console.error('Error saving dragged task:', error);
+    }
   }
 
   /**
@@ -482,16 +604,6 @@ class App {
         e.preventDefault();
         const taskId = btn.getAttribute('data-task-id');
         this.handleStartTask(taskId);
-      });
-    });
-
-    // Delete buttons in task list
-    const deleteButtons = document.querySelectorAll('.task-item .delete-btn');
-    deleteButtons.forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        const taskId = btn.getAttribute('data-task-id');
-        this.handleDeleteTask(taskId);
       });
     });
 
@@ -530,20 +642,13 @@ class App {
     // Expand task details - click on task header to toggle
     const taskHeaders = document.querySelectorAll('.task-item-header');
     taskHeaders.forEach((header) => {
-      header.addEventListener('click', (e) => {
-        // Don't toggle if clicking on the expand button itself
-        if (e.target.classList.contains('expand-btn')) {
-          e.preventDefault();
-          e.stopPropagation();
-        }
+      header.addEventListener('click', () => {
         const taskItem = header.closest('.task-item');
         if (taskItem) {
           const taskId = taskItem.getAttribute('data-task-id');
           UI.toggleTaskDetails(taskId);
         }
       });
-      // Add cursor pointer style to indicate the entire header is clickable
-      header.style.cursor = 'pointer';
     });
 
     // Checkboxes in task list (mark as complete)
@@ -598,8 +703,11 @@ class App {
       // Reset reminder for this task in case it was edited
       appointmentReminder.resetTaskReminder(task.id);
 
+      const statusAction = this.editingTaskId ? 'task updated' : 'task created';
       UI.hideModal();
       this.editingTaskId = null;
+
+      UI.showStatus(`${statusAction}: ${task.description}`);
 
       // If editing active task, update display without full re-render (keeps timer running)
       if (this.editingActiveTask) {
@@ -711,6 +819,19 @@ class App {
       // Start task time display updates
       this.startTaskTimeUpdate();
 
+      // Sync pomodoro checkbox/select to match the new task's state
+      const pomodoroToggle = document.getElementById(
+        'pomodoro-toggle-checkbox'
+      );
+      const pomodoroIntervalSelect =
+        document.getElementById('pomodoro-interval');
+      if (pomodoroToggle) {
+        pomodoroToggle.checked = pomodoroMode;
+      }
+      if (pomodoroIntervalSelect) {
+        pomodoroIntervalSelect.value = pomodoroInterval;
+      }
+
       // Update pomodoro UI
       this.updatePomodoroDisplay();
 
@@ -720,6 +841,16 @@ class App {
       }
 
       UI.showActiveTask(task);
+      UI.showStatus(`timer started: ${task.description}`);
+
+      // Update clock view with active task
+      this.clockView.setActiveTask(
+        task.id,
+        task.startedAt,
+        task.timeSpent,
+        pomodoroMode,
+        pomodoroInterval
+      );
 
       // Scroll to top to show active task
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -764,6 +895,11 @@ class App {
       // Reset active task
       this.activeTaskId = null;
 
+      // Clear clock active task
+      this.clockView.clearActiveTask();
+
+      UI.showStatus(`timer stopped: ${task.description}`);
+
       // Hide active task section and re-render
       UI.hideActiveTask();
       this.render();
@@ -800,6 +936,9 @@ class App {
 
       // Reset active task
       this.activeTaskId = null;
+
+      // Clear clock active task
+      this.clockView.clearActiveTask();
 
       // Hide active task section and re-render
       UI.hideActiveTask();
@@ -969,10 +1108,13 @@ class App {
       // Reset active task if it was the one being completed
       if (targetTaskId === this.activeTaskId) {
         this.activeTaskId = null;
+        this.clockView.clearActiveTask();
         UI.hideActiveTask();
         // Deactivate focus mode when task is completed
         this.deactivateFocusMode();
       }
+
+      UI.showStatus(`task completed: ${task.description}`);
 
       // Record gamification (streak + celebration)
       gamification.recordTaskCompletion();
@@ -993,6 +1135,12 @@ class App {
    * Handle delete task
    */
   async handleDeleteTask(taskId) {
+    // Find task description before deleting
+    const taskToDelete =
+      this.tasks.find((t) => t.id === taskId) ||
+      this.archivedTasks.find((t) => t.id === taskId);
+    const taskDesc = taskToDelete ? taskToDelete.description : '';
+
     const confirmDelete = window.confirm(
       'Are you sure you want to delete this task?'
     );
@@ -1013,6 +1161,8 @@ class App {
         this.activeTaskId = null;
         UI.hideActiveTask();
       }
+
+      UI.showStatus(`task deleted: ${taskDesc}`);
 
       // Re-render
       this.render();
@@ -1148,6 +1298,16 @@ class App {
 
     this.updateFocusModeUI();
     this.startFocusModeTimerUpdate();
+
+    // Render mini clock in focus mode
+    const miniContainer = document.getElementById('mini-clock-container');
+    if (miniContainer) {
+      this.clockView.renderMiniClock(miniContainer);
+      // Update mini clock every 30 seconds
+      this._miniClockInterval = setInterval(() => {
+        this.clockView.renderMiniClock(miniContainer);
+      }, 30000);
+    }
   }
 
   deactivateFocusMode() {
@@ -1155,6 +1315,16 @@ class App {
     document.body.classList.remove('focus-mode');
     this.stopFocusModeTimerUpdate();
     this.updateFocusModeUI();
+
+    // Clear mini clock
+    if (this._miniClockInterval) {
+      clearInterval(this._miniClockInterval);
+      this._miniClockInterval = null;
+    }
+    const miniContainer = document.getElementById('mini-clock-container');
+    if (miniContainer) {
+      this.clockView.clearMiniClock(miniContainer);
+    }
   }
 
   renderFocusModeTask(task) {
@@ -1165,8 +1335,10 @@ class App {
 
     // Add meta info row
     const metaParts = [];
-    if (task.priority && task.priority !== 'medium') {
-      metaParts.push(`Priority: ${task.priority}`);
+    if (task.priority) {
+      metaParts.push(
+        `<span class="active-priority-${task.priority}">${task.priority}</span>`
+      );
     }
     if (task.dueDate) {
       const formattedDate = TaskManager.formatDateTime(
@@ -1174,15 +1346,16 @@ class App {
         task.dueTime
       );
       if (formattedDate) {
-        metaParts.push(`Due: ${formattedDate}`);
+        metaParts.push(formattedDate);
       }
     }
     if (task.recurring) {
-      metaParts.push(`Recurring: ${task.recurring}`);
+      const recurringIcon = TaskManager.getRecurringIcon(task.recurring);
+      metaParts.push(`${recurringIcon} ${task.recurring}`);
     }
 
     if (metaParts.length > 0) {
-      html += `<div class="focus-task-meta">${metaParts.join(' | ')}</div>`;
+      html += `<div class="focus-task-meta">${metaParts.join(' &middot; ')}</div>`;
     }
 
     if (task.details) {
@@ -1192,7 +1365,7 @@ class App {
     if (task.links && task.links.length > 0) {
       html += `<div class="focus-task-links">`;
       task.links.forEach((link) => {
-        html += `<a href="${UI.escapeHtml(link)}" target="_blank" class="focus-link">🔗 ${UI.escapeHtml(link)}</a>`;
+        html += `<a href="${UI.escapeHtml(link)}" target="_blank" class="focus-link">${UI.escapeHtml(link)}</a>`;
       });
       html += `</div>`;
     }

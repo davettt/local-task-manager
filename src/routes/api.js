@@ -97,6 +97,34 @@ router.get('/tasks', (_req, res) => {
 });
 
 /**
+ * GET /api/tasks/upcoming
+ * Returns tasks for the next N days (default 3), grouped by date.
+ */
+router.get('/tasks/upcoming', (req, res) => {
+  try {
+    const days = parseInt(req.query.days, 10) || 3;
+    const tasks = readTasks();
+    const activeTasks = tasks.filter(
+      (task) => !task.archived && !task.completed
+    );
+
+    const result = {};
+    const today = new Date();
+    for (let i = 0; i < days; i++) {
+      const d = new Date(today);
+      d.setDate(d.getDate() + i);
+      const dateStr = d.toISOString().split('T')[0];
+      result[dateStr] = activeTasks.filter((t) => t.dueDate === dateStr);
+    }
+
+    res.json(result);
+  } catch (error) {
+    console.error('Error fetching upcoming tasks:', error);
+    res.status(500).json({ error: 'Failed to fetch upcoming tasks' });
+  }
+});
+
+/**
  * GET /api/tasks/archived
  * Returns all archived (completed) tasks from both tasks.json and archive files
  */
@@ -134,6 +162,8 @@ router.post('/tasks', (req, res) => {
       workingDaysOnly,
       pomodoroMode,
       pomodoroInterval,
+      plannedStartTime,
+      plannedDuration,
     } = req.body;
 
     // Validate required fields
@@ -170,6 +200,11 @@ router.post('/tasks', (req, res) => {
           pomodoroMode: pomodoroMode ?? existingTask.pomodoroMode ?? false,
           pomodoroInterval:
             pomodoroInterval || existingTask.pomodoroInterval || 25,
+          plannedStartTime:
+            plannedStartTime ?? existingTask.plannedStartTime ?? null,
+          plannedDuration:
+            plannedDuration ?? existingTask.plannedDuration ?? 60,
+          clockRing: existingTask.clockRing ?? null,
           updatedAt: new Date().toISOString(),
         };
       } else {
@@ -195,6 +230,9 @@ router.post('/tasks', (req, res) => {
           links: links || [],
           pomodoroMode: pomodoroMode || false,
           pomodoroInterval: pomodoroInterval || 25,
+          plannedStartTime: plannedStartTime || null,
+          plannedDuration: plannedDuration || 60,
+          clockRing: null,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
@@ -222,6 +260,9 @@ router.post('/tasks', (req, res) => {
         links: links || [],
         pomodoroMode: pomodoroMode || false,
         pomodoroInterval: pomodoroInterval || 25,
+        plannedStartTime: plannedStartTime || null,
+        plannedDuration: plannedDuration || 60,
+        clockRing: null,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -363,6 +404,9 @@ router.post('/tasks/:id/complete', (req, res) => {
         links: task.links || [],
         pomodoroMode: task.pomodoroMode || false,
         pomodoroInterval: task.pomodoroInterval || 25,
+        plannedStartTime: task.plannedStartTime || null,
+        plannedDuration: task.plannedDuration || 60,
+        clockRing: null,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };

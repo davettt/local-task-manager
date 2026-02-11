@@ -37,4 +37,25 @@ module.exports = [
       'no-implicit-globals': 'error',
     },
   },
+  {
+    files: ['public/js/**/*.js'],
+    languageOptions: {
+      sourceType: 'script',
+      globals: {
+        ...globals.browser,
+        ClockMath: 'writable',
+        ClockView: 'writable',
+        ClockDrag: 'writable',
+        TaskManager: 'writable',
+        UI: 'writable',
+        Settings: 'writable',
+        AppointmentReminder: 'writable',
+        Gamification: 'writable',
+        TaskTimer: 'writable',
+      },
+    },
+    rules: {
+      'no-redeclare': 'off',
+    },
+  },
 ];

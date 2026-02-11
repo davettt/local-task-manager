@@ -54,84 +54,61 @@ body {
   flex-direction: column;
   border-left: 1px solid var(--color-base-medium);
   border-right: 1px solid var(--color-base-medium);
+  overflow-x: hidden;
 }
 
-/* Terminal Mantra */
-.terminal-mantra {
-  background-color: var(--color-base-dark);
+/* Unified Header Bar */
+.header-bar {
   padding: 4px 8px;
   border-bottom: 1px solid var(--color-base-medium);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 8px;
   font-family: 'Courier New', monospace;
   font-size: 11px;
-  line-height: 1.4;
-  color: var(--color-text-secondary);
+}
+
+.header-left {
   display: flex;
   align-items: center;
   gap: 6px;
-  position: relative;
-  cursor: help;
-  transition: background-color 150ms ease;
+  min-width: 0;
 }
 
-.terminal-mantra:hover {
-  background-color: var(--color-base-medium);
-}
-
-.terminal-mantra::before {
-  content: attr(data-tooltip);
-  position: fixed;
-  bottom: auto;
-  top: 30px;
-  left: 10px;
-  right: 10px;
-  max-width: 600px;
-  background-color: var(--color-base-medium);
-  color: var(--color-accent-cyan);
-  padding: 8px 10px;
-  border: 1px solid var(--color-accent-cyan);
-  border-radius: 3px;
-  font-size: 11px;
-  line-height: 1.6;
-  white-space: normal;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition:
-    opacity 200ms ease,
-    visibility 200ms ease;
-  z-index: 10000;
-  box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.5),
-    0 0 20px rgba(42, 161, 152, 0.4);
-}
-
-.terminal-mantra:hover::before {
-  opacity: 1;
-  visibility: visible;
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  flex-wrap: wrap;
 }
 
 .terminal-prompt {
   color: var(--color-accent-green);
   font-weight: bold;
   white-space: nowrap;
+  font-size: 11px;
 }
 
-.terminal-command {
-  color: var(--color-text-primary);
-  font-style: italic;
+.terminal-message {
+  color: var(--color-text-secondary);
   letter-spacing: 0.3px;
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Active Task Section */
 .active-task-section {
-  background-color: var(--color-base-medium);
+  background-color: var(--color-base-dark);
   color: var(--color-accent-cyan);
-  padding: 6px 8px;
-  margin-bottom: 6px;
-  border-top: 1px solid var(--color-accent-cyan);
-  border-bottom: 1px solid var(--color-accent-cyan);
+  padding: 10px 12px;
+  margin: 0 6px 6px;
+  border-left: 3px solid var(--color-accent-green);
+  border-radius: 2px;
   animation: slideDown 300ms ease-out;
-  box-shadow: 0 0 10px rgba(42, 161, 152, 0.3);
 }
 
 .active-task-section.hidden {
@@ -149,25 +126,43 @@ body {
   }
 }
 
+.active-top-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.active-task-info {
+  flex: 1;
+  min-width: 0;
+}
+
 .active-header {
   color: var(--color-accent-green);
   font-weight: bold;
-  font-size: 13px;
-  margin-bottom: 2px;
+  font-size: 10px;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
+  margin-bottom: 2px;
 }
 
 .active-task-title {
-  color: var(--color-accent-cyan);
-  font-size: 15px;
-  margin-bottom: 4px;
+  color: var(--color-text-primary);
+  font-size: 14px;
   font-weight: bold;
+  word-break: break-word;
+}
+
+.active-timer-compact {
+  flex-shrink: 0;
+  text-align: right;
 }
 
 .active-task-details {
-  font-size: 13px;
-  margin-bottom: 4px;
+  font-size: 12px;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--color-base-medium);
 }
 
 .active-task-details.hidden {
@@ -175,12 +170,15 @@ body {
 }
 
 .active-task-meta {
-  color: var(--color-text-primary);
-  margin-bottom: 2px;
+  color: var(--color-text-secondary);
+  margin-bottom: 4px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .active-task-links {
-  margin-top: 2px;
+  margin-top: 4px;
 }
 
 .active-link {
@@ -196,22 +194,29 @@ body {
   text-decoration: underline;
 }
 
-.active-priority {
+.active-priority-high {
+  color: var(--color-accent-red);
+}
+.active-priority-medium {
   color: var(--color-accent-yellow);
-  margin-right: 6px;
-  display: inline-block;
+}
+.active-priority-low {
+  color: var(--color-accent-cyan);
+}
+
+.active-recurring {
+  color: var(--color-secondary);
 }
 
 .active-due {
   color: var(--color-accent-red);
-  display: inline-block;
 }
 
 .active-task-extended-details {
   margin-top: 4px;
-  padding: 4px;
-  background-color: rgba(42, 161, 152, 0.1);
-  border-left: 2px solid var(--color-accent-cyan);
+  padding: 4px 6px;
+  background-color: rgba(42, 161, 152, 0.05);
+  border-left: 2px solid var(--color-base-medium);
   color: var(--color-text-primary);
   font-size: 12px;
   line-height: 1.5;
@@ -221,6 +226,15 @@ body {
   white-space: pre-wrap;
   word-break: break-word;
   overflow-wrap: break-word;
+}
+
+.active-bottom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid var(--color-base-medium);
 }
 
 .task-details-section {
@@ -253,8 +267,6 @@ body {
   color: var(--color-accent-cyan);
   font-size: 16px;
   font-weight: bold;
-  text-align: center;
-  margin: 4px 0;
   font-family: 'Courier New', monospace;
   letter-spacing: 2px;
   text-shadow: 0 0 10px rgba(42, 161, 152, 0.5);
@@ -263,62 +275,74 @@ body {
 .action-buttons {
   display: flex;
   gap: 4px;
-  justify-content: center;
-  margin-top: 4px;
 }
 
-.stop-btn,
-.complete-btn {
-  padding: 2px 6px;
-  background-color: var(--color-base-medium);
-  color: var(--color-accent-cyan);
-  border: 1px solid var(--color-accent-cyan);
+.active-action-btn {
+  padding: 3px 8px;
+  background-color: transparent;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-base-darker);
   border-radius: 2px;
   cursor: pointer;
   font-family: 'Courier New', monospace;
-  font-size: 12px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   transition: all 150ms ease;
 }
 
-.stop-btn:hover,
-.complete-btn:hover {
-  background-color: var(--color-accent-cyan);
+.active-action-btn:hover {
+  color: var(--color-accent-cyan);
+  border-color: var(--color-accent-cyan);
+}
+
+.active-action-done {
+  color: var(--color-accent-green);
+  border-color: var(--color-accent-green);
+}
+
+.active-action-done:hover {
+  background-color: var(--color-accent-green);
   color: var(--color-base-dark);
-  box-shadow: 0 0 8px rgba(42, 161, 152, 0.4);
 }
 
-/* Header Section */
-.header-section {
-  padding: 6px 8px;
-  border-bottom: 1px solid var(--color-base-medium);
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+/* Header Button (shared style for Settings, Clock, Routine) */
+.header-btn {
+  padding: 2px 6px;
+  background-color: transparent;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-base-darker);
+  border-radius: 2px;
+  cursor: pointer;
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 150ms ease;
+  white-space: nowrap;
 }
 
-.header-section > :first-child {
-  display: flex;
-  gap: 4px;
-  align-items: center;
-  justify-content: space-between;
+.header-btn:hover {
+  color: var(--color-accent-cyan);
+  border-color: var(--color-accent-cyan);
 }
 
-.header-controls {
-  display: flex;
-  gap: 4px;
-  align-items: center;
-  flex: 1;
+.header-btn.active {
+  color: var(--color-accent-cyan);
+  border-color: var(--color-accent-cyan);
+  background-color: rgba(42, 161, 152, 0.1);
 }
 
 .search-input {
-  flex: 1;
-  padding: 4px 8px;
+  width: 100px;
+  min-width: 60px;
+  padding: 2px 6px;
   background-color: var(--color-base-light);
   color: var(--color-text-primary);
   border: 1px solid var(--color-base-darker);
   border-radius: 2px;
   font-family: 'Courier New', monospace;
-  font-size: 12px;
+  font-size: 11px;
   transition: all 150ms ease;
 }
 
@@ -329,19 +353,18 @@ body {
 .search-input:focus {
   outline: none;
   border-color: var(--color-accent-cyan);
-  box-shadow: 0 0 6px rgba(42, 161, 152, 0.3);
   color: var(--color-accent-cyan);
 }
 
 .add-button {
-  padding: 4px 12px;
-  background-color: var(--color-base-medium);
+  padding: 2px 8px;
+  background-color: transparent;
   color: var(--color-accent-green);
   border: 1px solid var(--color-accent-green);
   border-radius: 2px;
   cursor: pointer;
   font-family: 'Courier New', monospace;
-  font-size: 12px;
+  font-size: 10px;
   font-weight: bold;
   text-transform: uppercase;
   transition: all 150ms ease;
@@ -352,23 +375,13 @@ body {
 .add-button:hover {
   background-color: var(--color-accent-green);
   color: var(--color-base-dark);
-  box-shadow: 0 0 8px rgba(133, 153, 0, 0.4);
 }
 
 .streak-display {
-  padding: 0;
-  background-color: transparent;
   color: var(--color-accent-red);
-  border: none;
   font-family: 'Courier New', monospace;
   font-size: 10px;
-  font-weight: normal;
-  text-align: center;
-  min-height: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  letter-spacing: 0.3px;
+  white-space: nowrap;
   opacity: 0.7;
 }
 
@@ -391,12 +404,32 @@ body {
   }
 }
 
-/* Daily Checklist Section */
-.daily-checklist-section {
-  border-bottom: 1px solid var(--color-base-medium);
+/* Daily Routine Dropdown */
+.routine-dropdown-wrapper {
+  position: relative;
 }
 
+.routine-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background-color: var(--color-base-dark);
+  border: 1px solid var(--color-base-darker);
+  border-radius: 2px;
+  padding: 6px 8px;
+  min-width: 220px;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.routine-dropdown.hidden {
+  display: none;
+}
+
+/* Legacy .daily-checklist-header kept for JS references */
 .daily-checklist-header {
+  display: none;
   padding: 4px 8px;
   background-color: var(--color-base-medium);
   color: var(--color-accent-green);
@@ -461,7 +494,10 @@ body {
 }
 
 .task-list {
-  padding: 4px 0;
+  padding: 6px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .empty-state {
@@ -474,50 +510,43 @@ body {
 
 /* Task Items */
 .task-item {
-  border-bottom: 1px solid var(--color-base-medium);
+  border-left: 3px solid transparent;
   padding: 0;
-  margin: 0;
+  margin: 0 6px;
+  border-radius: 2px;
   transition: all 150ms ease;
+}
+
+.task-item.priority-high {
+  border-left-color: var(--color-accent-red);
+}
+
+.task-item.priority-medium {
+  border-left-color: var(--color-accent-yellow);
+}
+
+.task-item.priority-low {
+  border-left-color: var(--color-accent-cyan);
 }
 
 .task-item:hover {
   background-color: var(--color-base-medium);
 }
 
-.task-item:hover .task-actions {
-  background-color: var(--color-base-medium);
-}
-
 .task-item-header {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
+  padding: 8px 10px;
   cursor: pointer;
-}
-
-.priority-icon {
-  min-width: 12px;
-  color: var(--color-accent-yellow);
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.priority-icon.priority-high {
-  color: var(--color-accent-red);
-}
-
-.priority-icon.priority-medium {
-  color: var(--color-accent-yellow);
-}
-
-.priority-icon.priority-low {
-  color: var(--color-accent-cyan);
 }
 
 .task-content {
   flex: 1;
   min-width: 0;
+}
+
+.task-item.expanded {
+  background-color: var(--color-base-medium);
 }
 
 .task-title {
@@ -531,50 +560,28 @@ body {
 .task-meta {
   color: var(--color-text-secondary);
   font-size: 12px;
-  margin-top: 1px;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .task-due {
   color: var(--color-accent-red);
-  margin-right: 6px;
+}
+
+.recurring-badge {
+  color: var(--color-text-secondary);
+  font-size: 11px;
 }
 
 .task-time {
   color: var(--color-accent-cyan);
-  margin-left: 8px;
-}
-
-.expand-btn {
-  background: none;
-  border: none;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  padding: 2px 4px;
-  font-size: 11px;
-  transition: color 150ms ease;
-}
-
-.expand-btn:hover {
-  color: var(--color-text-primary);
-}
-
-.appointment-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--color-accent-red);
-  color: var(--color-base-darkest);
-  border-radius: 50%;
-  width: 16px;
-  height: 16px;
-  font-size: 10px;
-  font-weight: bold;
-  margin-left: 4px;
-  flex-shrink: 0;
+  margin-left: auto;
 }
 
 .task-item-details {
-  padding: 0 8px 4px 28px;
+  padding: 2px 10px 6px 16px;
   background-color: var(--color-base-medium);
   display: none;
 }
@@ -607,10 +614,9 @@ body {
 
 .task-actions {
   display: flex;
-  gap: 2px;
-  padding: 2px 8px;
-  background-color: var(--color-base-darkest);
-  justify-content: flex-end;
+  gap: 4px;
+  padding: 4px 0 2px;
+  justify-content: flex-start;
 }
 
 .start-btn,
@@ -990,14 +996,19 @@ body {
   color: var(--color-text-primary);
 }
 
+.modal-delete-btn {
+  padding: 4px 10px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
 /* Pomodoro Controls */
 .pomodoro-controls {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin: 4px 0;
-  padding: 4px 0;
-  flex-wrap: wrap;
 }
 
 .pomodoro-toggle {
@@ -1053,8 +1064,7 @@ body {
 
 /* Break Modal */
 .break-modal {
-  border-color: var(--color-accent-red) !important;
-  box-shadow: 0 0 20px rgba(220, 50, 47, 0.4) !important;
+  border-color: var(--color-base-darker) !important;
   padding: 12px !important;
 }
 
@@ -1083,7 +1093,6 @@ body {
   margin: 12px 0;
   font-family: 'Courier New', monospace;
   letter-spacing: 2px;
-  text-shadow: 0 0 10px rgba(42, 161, 152, 0.5);
 }
 
 .break-buttons {
@@ -1125,21 +1134,7 @@ body {
   box-shadow: 0 0 8px rgba(42, 161, 152, 0.4);
 }
 
-/* Timer Container */
-.timer-container {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 8px 0;
-}
-
-.overall-time-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-
+/* Timer */
 .overall-time-label {
   font-size: 10px;
   color: var(--color-text-secondary);
@@ -1152,10 +1147,11 @@ body {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 8px;
-  background-color: rgba(42, 161, 152, 0.1);
-  border-radius: 4px;
-  border: 1px solid rgba(42, 161, 152, 0.3);
+  padding: 6px 8px;
+  margin-top: 6px;
+  background-color: rgba(42, 161, 152, 0.05);
+  border-radius: 2px;
+  border: 1px solid var(--color-base-medium);
 }
 
 .pomodoro-display.hidden {
@@ -1287,8 +1283,8 @@ body.focus-mode .container {
   gap: 24px;
   min-height: 80vh;
   background-color: var(--color-base-darkest);
-  border-radius: 8px;
-  border: 1px solid var(--color-accent-cyan);
+  border-radius: 4px;
+  border-left: 3px solid var(--color-accent-green);
 }
 
 .focus-mode-header-bar {
@@ -1302,40 +1298,28 @@ body.focus-mode .container {
   gap: 8px;
 }
 
-.focus-exit-btn {
-  padding: 8px 16px;
+.focus-exit-btn,
+.focus-edit-btn {
+  padding: 4px 10px;
   background-color: transparent;
-  color: var(--color-accent-cyan);
-  border: 2px solid var(--color-accent-cyan);
-  border-radius: 4px;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-base-darker);
+  border-radius: 2px;
   cursor: pointer;
   font-family: 'Courier New', monospace;
-  font-size: 13px;
-  font-weight: bold;
+  font-size: 12px;
+  text-transform: uppercase;
   transition: all 150ms ease;
 }
 
 .focus-exit-btn:hover {
-  background-color: var(--color-accent-cyan);
-  color: var(--color-base-dark);
-  box-shadow: 0 0 10px rgba(42, 161, 152, 0.5);
-}
-
-.focus-edit-btn {
-  padding: 8px 16px;
-  background-color: transparent;
-  color: var(--color-accent-cyan);
-  border: 1px solid var(--color-accent-cyan);
-  border-radius: 4px;
-  cursor: pointer;
-  font-family: 'Courier New', monospace;
-  font-size: 13px;
-  transition: all 150ms ease;
+  color: var(--color-accent-red);
+  border-color: var(--color-accent-red);
 }
 
 .focus-edit-btn:hover {
-  background-color: var(--color-accent-cyan);
-  color: var(--color-base-dark);
+  color: var(--color-accent-cyan);
+  border-color: var(--color-accent-cyan);
 }
 
 #focus-pomodoro-timer {
@@ -1345,17 +1329,16 @@ body.focus-mode .container {
 
 .focus-task-container {
   background-color: var(--color-base-medium);
-  border-radius: 8px;
-  padding: 20px;
-  border: 1px solid var(--color-accent-cyan);
-  box-shadow: 0 0 20px rgba(42, 161, 152, 0.2);
+  border-radius: 2px;
+  padding: 16px;
+  border: 1px solid var(--color-base-darker);
 }
 
 .focus-task-title {
-  font-size: 24px;
-  color: var(--color-accent-cyan);
+  font-size: 20px;
+  color: var(--color-text-primary);
   font-weight: bold;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   word-break: break-word;
   overflow-wrap: break-word;
 }
@@ -1406,7 +1389,6 @@ body.focus-mode .container {
   font-weight: bold;
   font-family: 'Courier New', monospace;
   letter-spacing: 2px;
-  text-shadow: 0 0 20px rgba(42, 161, 152, 0.5);
 }
 
 .focus-total-time {
@@ -1423,25 +1405,18 @@ body.focus-mode .container {
 
 .focus-pomodoro-progress-container {
   width: 100%;
-  height: 16px;
+  height: 4px;
   background-color: var(--color-base-dark);
-  border-radius: 8px;
+  border-radius: 2px;
   overflow: hidden;
-  border: 1px solid var(--color-base-darker);
-  margin: 16px 0;
+  margin: 12px 0;
 }
 
 .focus-pomodoro-progress {
   height: 100%;
   width: 0%;
-  background: repeating-linear-gradient(
-    90deg,
-    var(--color-accent-cyan),
-    var(--color-accent-cyan) 10px,
-    rgba(42, 161, 152, 0.7) 10px,
-    rgba(42, 161, 152, 0.7) 12px
-  );
-  border-radius: 7px;
+  background-color: var(--color-accent-cyan);
+  border-radius: 2px;
   transition: width 0.5s ease;
 }
 
@@ -1452,32 +1427,16 @@ body.focus-mode .container {
 }
 
 .focus-btn {
-  padding: 12px 32px;
-  border-radius: 4px;
+  padding: 8px 24px;
+  border-radius: 2px;
   cursor: pointer;
   font-family: 'Courier New', monospace;
-  font-size: 14px;
-  font-weight: bold;
+  font-size: 13px;
   text-transform: uppercase;
   transition: all 150ms ease;
-}
-
-.focus-btn-stop {
   background-color: transparent;
-  color: var(--color-accent-cyan);
-  border: 2px solid var(--color-accent-cyan);
-}
-
-.focus-btn-stop:hover {
-  background-color: var(--color-accent-cyan);
-  color: var(--color-base-dark);
-  box-shadow: 0 0 20px rgba(42, 161, 152, 0.5);
-}
-
-.focus-btn-pause {
-  background-color: transparent;
+  border: 1px solid var(--color-base-darker);
   color: var(--color-text-secondary);
-  border: 2px solid var(--color-base-darker);
 }
 
 .focus-btn-pause:hover {
@@ -1486,32 +1445,25 @@ body.focus-mode .container {
 }
 
 .focus-btn-resume {
-  background-color: transparent;
   color: var(--color-accent-green);
-  border: 2px solid var(--color-accent-green);
+  border-color: var(--color-accent-green);
 }
 
 .focus-btn-resume:hover {
   background-color: var(--color-accent-green);
   color: var(--color-base-dark);
-  box-shadow: 0 0 20px rgba(133, 153, 0, 0.5);
-}
-
-.focus-btn-complete {
-  background-color: var(--color-accent-green);
-  color: var(--color-base-dark);
-  border: 2px solid var(--color-accent-green);
 }
 
 .focus-btn-complete:hover {
-  box-shadow: 0 0 20px rgba(133, 153, 0, 0.5);
+  color: var(--color-accent-green);
+  border-color: var(--color-accent-green);
 }
 
 /* Focus Mode Break Modal */
 .focus-mode-overlay .break-modal {
   background-color: rgba(0, 26, 35, 0.95);
-  border: 2px solid var(--color-accent-red);
-  border-radius: 8px;
+  border: 1px solid var(--color-base-darker);
+  border-radius: 4px;
   padding: 32px !important;
   max-width: 400px;
 }
@@ -1559,39 +1511,11 @@ body.focus-mode .container {
   background: var(--color-base-darker);
 }
 
-/* Header Right Section (Time + Settings) */
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
 .current-time {
-  font-size: 12px;
-  color: var(--color-text-secondary);
+  font-size: 10px;
+  color: var(--color-text-muted);
   font-family: 'Courier New', monospace;
-  min-width: 45px;
-  text-align: right;
-}
-
-.settings-btn {
-  padding: 4px 8px;
-  background-color: transparent;
-  border: 1px solid var(--color-base-medium);
-  color: var(--color-text-primary);
-  border-radius: 2px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: all 150ms ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.settings-btn:hover {
-  border-color: var(--color-accent-cyan);
-  color: var(--color-accent-cyan);
-  background-color: rgba(42, 161, 152, 0.1);
+  white-space: nowrap;
 }
 
 /* Settings Modal */
@@ -1789,5 +1713,860 @@ body.focus-mode .container {
   to {
     transform: translateX(400px);
     opacity: 0;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   24-Hour Clock View
+   ═══════════════════════════════════════════════════════════ */
+
+/* App Layout - Side by Side */
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--color-base-darkest);
+}
+
+.task-panel {
+  width: 100%;
+  flex-shrink: 0;
+  overflow-y: auto;
+  min-height: 100vh;
+}
+
+.app-layout.clock-active .task-panel {
+  width: 400px;
+  max-width: 400px;
+}
+
+/* Hide header time when clock panel is visible */
+.app-layout.clock-active #current-time {
+  display: none;
+}
+
+/* Clock Panel */
+.clock-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 20px 20px 20px;
+  background-color: var(--color-base-darkest);
+  border-left: 1px solid var(--color-base-medium);
+  min-height: 100vh;
+  position: sticky;
+  top: 0;
+  max-height: 100vh;
+  overflow-y: auto;
+}
+
+.clock-time {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  text-align: center;
+  margin-bottom: 12px;
+  letter-spacing: 1px;
+}
+
+.clock-container {
+  width: 100%;
+  max-width: 600px;
+  aspect-ratio: 1;
+}
+
+/* Clock SVG */
+.day-clock {
+  width: 100%;
+  height: 100%;
+}
+
+.clock-bg {
+  fill: var(--color-base-dark);
+  stroke: var(--color-base-medium);
+  stroke-width: 2;
+}
+
+.clock-ring-bg {
+  fill: none;
+  stroke: var(--color-base-medium);
+  opacity: 0.2;
+}
+
+.clock-hour-mark {
+  stroke: var(--color-text-secondary);
+  stroke-width: 1;
+}
+
+.clock-hour-mark-major {
+  stroke: var(--color-text-primary);
+  stroke-width: 2.5;
+}
+
+.clock-hour-label {
+  fill: var(--color-text-primary);
+  font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+  font-size: 14px;
+  font-weight: bold;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.clock-hand {
+  stroke: var(--color-accent-red);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.clock-hand-dot {
+  fill: var(--color-accent-red);
+}
+
+/* Clock toggle uses .header-btn + .header-btn.active */
+
+/* Routine Settings Editor */
+.routine-item-time-fields {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.routine-time-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.routine-time-group label {
+  font-size: 10px;
+  color: var(--color-text-muted);
+}
+
+.routine-start-time,
+.routine-duration {
+  padding: 3px 4px;
+  background-color: var(--color-base-dark);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-base-darker);
+  border-radius: 2px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+}
+
+.routine-item-days {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.routine-day-label {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 10px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.routine-day-label input {
+  margin: 0;
+}
+
+/* Routine Blocks (background arcs inside clock edge) */
+.routine-arc {
+  fill: rgba(38, 139, 210, 0.2);
+  stroke: rgba(38, 139, 210, 0.45);
+  stroke-width: 1;
+  cursor: pointer;
+}
+
+.routine-arc:hover {
+  fill: rgba(38, 139, 210, 0.35);
+  stroke: rgba(38, 139, 210, 0.7);
+}
+
+.routine-dot {
+  fill: var(--color-accent-blue);
+  opacity: 0.7;
+  cursor: pointer;
+}
+
+.routine-dot:hover {
+  opacity: 1;
+}
+
+/* Task Arcs on Priority Rings */
+.task-arc {
+  cursor: pointer;
+  transition: opacity 150ms ease;
+  stroke-width: 1;
+}
+
+.task-arc:hover {
+  opacity: 0.85;
+  filter: brightness(1.2);
+}
+
+.task-arc-high {
+  fill: rgba(220, 50, 47, 0.5);
+  stroke: var(--color-accent-red);
+}
+
+.task-arc-medium {
+  fill: rgba(181, 137, 0, 0.5);
+  stroke: var(--color-accent-yellow);
+}
+
+.task-arc-low {
+  fill: rgba(42, 161, 152, 0.5);
+  stroke: var(--color-accent-cyan);
+}
+
+.task-arc-selected {
+  stroke-width: 3;
+  filter: drop-shadow(0 0 6px currentColor);
+}
+
+.task-arc-conflict {
+  stroke: var(--color-accent-red);
+  stroke-width: 2;
+  stroke-dasharray: 4 2;
+}
+
+.task-arc-appointment-conflict {
+  stroke: var(--color-accent-yellow);
+  stroke-width: 2;
+  stroke-dasharray: 6 3;
+}
+
+.task-arc-label {
+  fill: var(--color-text-primary);
+  font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+  font-size: 10px;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+}
+
+/* Task highlight in list (from clock selection) */
+.task-highlighted {
+  background-color: rgba(42, 161, 152, 0.15) !important;
+  border-left: 3px solid var(--color-accent-cyan) !important;
+  transition: background-color 2s ease-out;
+}
+
+/* Appointment Arcs (inside clock face) */
+.appointment-arc {
+  fill: rgba(42, 161, 152, 0.25);
+  stroke: var(--color-accent-cyan);
+  stroke-width: 2;
+  cursor: pointer;
+}
+
+.appointment-arc:hover {
+  fill: rgba(42, 161, 152, 0.4);
+}
+
+.appointment-label {
+  fill: var(--color-accent-cyan);
+  font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+  font-size: 11px;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+}
+
+/* Active Task Arc */
+.task-arc-active {
+  animation: arcPulse 2s ease-in-out infinite;
+}
+
+@keyframes arcPulse {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.4);
+  }
+}
+
+/* Progress fill within active arc */
+.task-arc-progress {
+  fill: rgba(133, 153, 0, 0.5);
+  stroke: none;
+  pointer-events: none;
+}
+
+/* Overrun indicator (elapsed > planned) */
+.task-arc-overrun {
+  fill: rgba(181, 137, 0, 0.5);
+  stroke: var(--color-accent-yellow);
+  stroke-width: 1;
+  stroke-dasharray: 4 2;
+  pointer-events: none;
+}
+
+/* Pomodoro segment dividers */
+.pomodoro-segment-marker {
+  stroke: var(--color-base-darkest);
+  stroke-width: 2;
+  pointer-events: none;
+}
+
+/* Ghost Arc (drag feedback) */
+.task-arc-ghost {
+  fill: rgba(147, 161, 161, 0.2);
+  stroke: var(--color-text-secondary);
+  stroke-width: 2;
+  stroke-dasharray: 6 3;
+  pointer-events: none;
+}
+
+/* Blocked Zones on Rings (during appointments) */
+.blocked-zone {
+  fill: rgba(7, 54, 66, 0.5);
+  stroke: none;
+  pointer-events: none;
+}
+
+/* Clock Info Panel (shows selected task details) */
+.clock-info-panel {
+  width: 100%;
+  max-width: 600px;
+  min-height: 50px;
+  margin-top: 12px;
+  padding: 10px 14px;
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  font-size: 12px;
+  box-sizing: border-box;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+.clock-info-panel.active {
+  background-color: var(--color-base-dark);
+  border-color: var(--color-base-medium);
+}
+
+.clock-info-placeholder {
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+.clock-info-title {
+  color: var(--color-text-primary);
+  font-weight: bold;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.clock-info-meta {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+
+.clock-info-meta span {
+  margin-right: 12px;
+}
+
+.clock-info-priority-high {
+  color: var(--color-accent-red);
+}
+.clock-info-priority-medium {
+  color: var(--color-accent-yellow);
+}
+.clock-info-priority-low {
+  color: var(--color-accent-cyan);
+}
+
+/* Clock Navigation */
+.clock-nav {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.clock-nav-btn {
+  padding: 3px 10px;
+  background-color: transparent;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-base-darker);
+  border-radius: 2px;
+  cursor: pointer;
+  font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+  font-size: 11px;
+  transition: all 150ms ease;
+}
+
+.clock-nav-btn:hover:not(:disabled) {
+  color: var(--color-accent-cyan);
+  border-color: var(--color-accent-cyan);
+}
+
+.clock-nav-btn:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
+/* Preview Clocks Row */
+.clock-preview-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.clock-preview {
+  width: 120px;
+  height: 120px;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 200ms ease;
+}
+
+.clock-preview:hover {
+  opacity: 1;
+}
+
+.clock-preview:empty {
+  display: none;
+}
+
+.preview-clock {
+  width: 100%;
+  height: 100%;
+}
+
+.preview-clock-label {
+  fill: var(--color-text-secondary);
+  font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+  font-size: 42px;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+/* Mini Clock in Focus Mode */
+.mini-clock-container {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 120px;
+  height: 120px;
+  opacity: 0.5;
+  transition: opacity 200ms ease;
+}
+
+.mini-clock-container:hover {
+  opacity: 0.85;
+}
+
+.mini-clock-container:empty {
+  display: none;
+}
+
+.mini-clock {
+  width: 100%;
+  height: 100%;
+}
+
+/* Task arc transitions */
+.task-arc,
+.appointment-arc {
+  transition:
+    opacity 200ms ease,
+    filter 200ms ease;
+}
+
+/* Focus indicator for keyboard navigation */
+.task-arc:focus,
+.appointment-arc:focus {
+  outline: 2px solid var(--color-accent-cyan);
+  outline-offset: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Font Size Settings
+   ═══════════════════════════════════════════════════════════ */
+
+/* Medium Font Size (+2px on most elements) */
+body.font-medium {
+  font-size: 16px;
+}
+body.font-medium .header-bar {
+  font-size: 13px;
+}
+body.font-medium .active-header {
+  font-size: 15px;
+}
+body.font-medium .active-task-title {
+  font-size: 17px;
+}
+body.font-medium .active-task-details {
+  font-size: 15px;
+}
+body.font-medium .active-link {
+  font-size: 14px;
+}
+body.font-medium .active-task-extended-details {
+  font-size: 14px;
+}
+body.font-medium .task-details-label {
+  font-size: 13px;
+}
+body.font-medium .task-details-text {
+  font-size: 14px;
+}
+body.font-medium .timer-display {
+  font-size: 18px;
+}
+body.font-medium .overall-time-label {
+  font-size: 12px;
+}
+body.font-medium .search-input {
+  font-size: 14px;
+}
+body.font-medium .add-button {
+  font-size: 14px;
+}
+body.font-medium .streak-display {
+  font-size: 12px;
+}
+body.font-medium .routine-dropdown {
+  font-size: 14px;
+}
+body.font-medium .checklist-item {
+  font-size: 15px;
+}
+body.font-medium .task-title {
+  font-size: 15px;
+}
+body.font-medium .task-meta {
+  font-size: 14px;
+}
+body.font-medium .task-link {
+  font-size: 13px;
+}
+body.font-medium .start-btn,
+body.font-medium .complete-task-btn,
+body.font-medium .edit-btn,
+body.font-medium .delete-btn,
+body.font-medium .restore-btn {
+  font-size: 13px;
+}
+body.font-medium .archived-task-title {
+  font-size: 15px;
+}
+body.font-medium .archived-task-time {
+  font-size: 14px;
+}
+body.font-medium .archive-header {
+  font-size: 14px;
+}
+body.font-medium .clean-archive-btn {
+  font-size: 13px;
+}
+body.font-medium .empty-state {
+  font-size: 14px;
+}
+body.font-medium .current-time {
+  font-size: 14px;
+}
+body.font-medium .modal-header h3 {
+  font-size: 15px;
+}
+body.font-medium .form-group label {
+  font-size: 13px;
+}
+body.font-medium .form-group input,
+body.font-medium .form-group textarea,
+body.font-medium .form-group select {
+  font-size: 14px;
+}
+body.font-medium .field-hint {
+  font-size: 12px;
+}
+body.font-medium .btn {
+  font-size: 14px;
+}
+body.font-medium .active-action-btn {
+  font-size: 13px;
+}
+body.font-medium .pomodoro-toggle {
+  font-size: 14px;
+}
+body.font-medium .pomodoro-countdown {
+  font-size: 20px;
+}
+body.font-medium .break-title {
+  font-size: 18px;
+}
+body.font-medium .break-message {
+  font-size: 15px;
+}
+body.font-medium .break-countdown {
+  font-size: 36px;
+}
+body.font-medium .settings-tab-btn {
+  font-size: 13px;
+}
+body.font-medium .clock-hour-label {
+  font-size: 18px;
+}
+body.font-medium .task-arc-label {
+  font-size: 13px;
+}
+body.font-medium .appointment-label {
+  font-size: 14px;
+}
+body.font-medium .header-btn {
+  font-size: 12px;
+}
+body.font-medium .clock-nav-btn {
+  font-size: 13px;
+}
+body.font-medium .clock-info-title {
+  font-size: 15px;
+}
+body.font-medium .clock-info-meta {
+  font-size: 14px;
+}
+body.font-medium .clock-info-placeholder {
+  font-size: 15px;
+}
+body.font-medium .preview-clock-label {
+  font-size: 54px;
+}
+body.font-medium .focus-task-title {
+  font-size: 22px;
+}
+body.font-medium .focus-task-details {
+  font-size: 16px;
+}
+body.font-medium .focus-task-meta {
+  font-size: 14px;
+}
+body.font-medium .focus-pomodoro-timer {
+  font-size: 52px;
+}
+body.font-medium .focus-total-time {
+  font-size: 14px;
+}
+body.font-medium .focus-btn {
+  font-size: 15px;
+}
+body.font-medium .focus-exit-btn,
+body.font-medium .focus-edit-btn {
+  font-size: 14px;
+}
+body.font-medium .focus-mode-overlay .break-title {
+  font-size: 26px;
+}
+body.font-medium .focus-mode-overlay .break-countdown {
+  font-size: 68px;
+}
+body.font-medium .focus-mode-overlay .break-message {
+  font-size: 18px;
+}
+
+/* Large Font Size (+4px on most elements) */
+body.font-large {
+  font-size: 18px;
+}
+body.font-large .header-bar {
+  font-size: 15px;
+}
+body.font-large .active-header {
+  font-size: 17px;
+}
+body.font-large .active-task-title {
+  font-size: 19px;
+}
+body.font-large .active-task-details {
+  font-size: 17px;
+}
+body.font-large .active-link {
+  font-size: 16px;
+}
+body.font-large .active-task-extended-details {
+  font-size: 16px;
+}
+body.font-large .task-details-label {
+  font-size: 15px;
+}
+body.font-large .task-details-text {
+  font-size: 16px;
+}
+body.font-large .timer-display {
+  font-size: 20px;
+}
+body.font-large .overall-time-label {
+  font-size: 14px;
+}
+body.font-large .search-input {
+  font-size: 16px;
+}
+body.font-large .add-button {
+  font-size: 16px;
+}
+body.font-large .streak-display {
+  font-size: 14px;
+}
+body.font-large .routine-dropdown {
+  font-size: 16px;
+}
+body.font-large .checklist-item {
+  font-size: 17px;
+}
+body.font-large .task-title {
+  font-size: 17px;
+}
+body.font-large .task-meta {
+  font-size: 16px;
+}
+body.font-large .task-link {
+  font-size: 15px;
+}
+body.font-large .start-btn,
+body.font-large .complete-task-btn,
+body.font-large .edit-btn,
+body.font-large .delete-btn,
+body.font-large .restore-btn {
+  font-size: 15px;
+}
+body.font-large .archived-task-title {
+  font-size: 17px;
+}
+body.font-large .archived-task-time {
+  font-size: 16px;
+}
+body.font-large .archive-header {
+  font-size: 16px;
+}
+body.font-large .clean-archive-btn {
+  font-size: 15px;
+}
+body.font-large .empty-state {
+  font-size: 16px;
+}
+body.font-large .current-time {
+  font-size: 16px;
+}
+body.font-large .modal-header h3 {
+  font-size: 17px;
+}
+body.font-large .form-group label {
+  font-size: 15px;
+}
+body.font-large .form-group input,
+body.font-large .form-group textarea,
+body.font-large .form-group select {
+  font-size: 16px;
+}
+body.font-large .field-hint {
+  font-size: 14px;
+}
+body.font-large .btn {
+  font-size: 16px;
+}
+body.font-large .active-action-btn {
+  font-size: 15px;
+}
+body.font-large .pomodoro-toggle {
+  font-size: 16px;
+}
+body.font-large .pomodoro-countdown {
+  font-size: 22px;
+}
+body.font-large .break-title {
+  font-size: 20px;
+}
+body.font-large .break-message {
+  font-size: 17px;
+}
+body.font-large .break-countdown {
+  font-size: 40px;
+}
+body.font-large .settings-tab-btn {
+  font-size: 15px;
+}
+body.font-large .clock-hour-label {
+  font-size: 22px;
+}
+body.font-large .task-arc-label {
+  font-size: 16px;
+}
+body.font-large .appointment-label {
+  font-size: 16px;
+}
+body.font-large .header-btn {
+  font-size: 14px;
+}
+body.font-large .clock-nav-btn {
+  font-size: 15px;
+}
+body.font-large .clock-info-title {
+  font-size: 17px;
+}
+body.font-large .clock-info-meta {
+  font-size: 16px;
+}
+body.font-large .clock-info-placeholder {
+  font-size: 17px;
+}
+body.font-large .preview-clock-label {
+  font-size: 64px;
+}
+body.font-large .focus-task-title {
+  font-size: 24px;
+}
+body.font-large .focus-task-details {
+  font-size: 18px;
+}
+body.font-large .focus-task-meta {
+  font-size: 16px;
+}
+body.font-large .focus-pomodoro-timer {
+  font-size: 56px;
+}
+body.font-large .focus-total-time {
+  font-size: 16px;
+}
+body.font-large .focus-btn {
+  font-size: 17px;
+}
+body.font-large .focus-exit-btn,
+body.font-large .focus-edit-btn {
+  font-size: 16px;
+}
+body.font-large .focus-mode-overlay .break-title {
+  font-size: 28px;
+}
+body.font-large .focus-mode-overlay .break-countdown {
+  font-size: 72px;
+}
+body.font-large .focus-mode-overlay .break-message {
+  font-size: 20px;
+}
+
+/* Responsive: hide clock below 800px */
+@media (max-width: 800px) {
+  .clock-panel {
+    display: none !important;
+  }
+
+  .app-layout.clock-active .task-panel {
+    width: 100%;
+    max-width: none;
+  }
+
+  #clock-toggle-btn {
+    display: none;
   }
 }

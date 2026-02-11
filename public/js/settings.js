@@ -185,41 +185,65 @@ class SettingsManager {
     document.getElementById('time-format-select').value =
       localization.timeFormat;
 
+    // Font size
+    const fontSizeSelect = document.getElementById('font-size-select');
+    if (fontSizeSelect) {
+      fontSizeSelect.value = localization.fontSize || 'small';
+    }
+    this.applyFontSize(localization.fontSize || 'small');
+
     // Daily routine items
     this.renderRoutineItems(dailyRoutine);
 
     // Cleanup days
     document.getElementById('cleanup-days').value = cleanup.defaultCutoffDays;
 
-    // Terminal mantra (loaded from config, not settings)
-    this.loadMantraSettings();
+    // Terminal username/hostname (loaded from config)
+    this.loadTerminalPromptSettings();
   }
 
   /**
-   * Load mantra settings from config
+   * Load terminal prompt settings from config
    */
-  async loadMantraSettings() {
+  async loadTerminalPromptSettings() {
     try {
       const response = await fetch('/api/config');
-      if (!response.ok) throw new Error('Failed to fetch config');
+      if (!response.ok) return;
       const config = await response.json();
-      const { mantra } = config;
-
-      document.getElementById('terminal-username').value =
-        mantra.username || 'user';
-      document.getElementById('terminal-hostname').value =
-        mantra.hostname || 'matrix';
-      document.getElementById('mantra-text').value = mantra.text;
-      document.getElementById('mantra-desc-1').value =
-        mantra.descriptions?.nameIt || '';
-      document.getElementById('mantra-desc-2').value =
-        mantra.descriptions?.traceIt || '';
-      document.getElementById('mantra-desc-3').value =
-        mantra.descriptions?.fixIt || '';
-      document.getElementById('mantra-desc-4').value =
-        mantra.descriptions?.shareIt || '';
+      const usernameInput = document.getElementById('terminal-username');
+      const hostnameInput = document.getElementById('terminal-hostname');
+      if (usernameInput)
+        usernameInput.value = config.mantra?.username || 'user';
+      if (hostnameInput)
+        hostnameInput.value = config.mantra?.hostname || 'matrix';
     } catch (error) {
-      console.error('Error loading mantra settings:', error);
+      console.error('Error loading terminal prompt settings:', error);
+    }
+  }
+
+  /**
+   * Save terminal prompt settings to config
+   */
+  async saveTerminalPromptSettings() {
+    try {
+      const response = await fetch('/api/config');
+      if (!response.ok) return;
+      const config = await response.json();
+
+      const usernameInput = document.getElementById('terminal-username');
+      const hostnameInput = document.getElementById('terminal-hostname');
+      config.mantra.username = usernameInput ? usernameInput.value : 'user';
+      config.mantra.hostname = hostnameInput ? hostnameInput.value : 'matrix';
+
+      const saveResponse = await fetch('/api/config', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(config),
+      });
+
+      if (!saveResponse.ok) throw new Error('Failed to save prompt settings');
+    } catch (error) {
+      console.error('Error saving terminal prompt settings:', error);
     }
   }
 
@@ -239,6 +263,13 @@ class SettingsManager {
     items.forEach((item, index) => {
       const itemEl = document.createElement('div');
       itemEl.className = 'routine-item-editor';
+      const daysHtml = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
+        .map(
+          (d) =>
+            `<label class="routine-day-label"><input type="checkbox" class="routine-day" data-day="${d}" ${(item.days || ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']).includes(d) ? 'checked' : ''} />${d.charAt(0).toUpperCase()}</label>`
+        )
+        .join('');
+
       itemEl.innerHTML = `
         <div class="routine-item-header">
           <label class="routine-item-checkbox">
@@ -251,12 +282,34 @@ class SettingsManager {
           <input type="text" class="routine-label" value="${item.label}" placeholder="Item label" />
           <input type="text" class="routine-icon" value="${item.icon}" placeholder="Icon" maxlength="2" />
         </div>
+        <div class="routine-item-time-fields">
+          <div class="routine-time-group">
+            <label>Time</label>
+            <input type="time" class="routine-start-time" value="${item.startTime || ''}" />
+          </div>
+          <div class="routine-time-group">
+            <label>Duration</label>
+            <select class="routine-duration">
+              <option value="0" ${!item.duration ? 'selected' : ''}>None</option>
+              <option value="15" ${item.duration === 15 ? 'selected' : ''}>15 min</option>
+              <option value="30" ${item.duration === 30 ? 'selected' : ''}>30 min</option>
+              <option value="45" ${item.duration === 45 ? 'selected' : ''}>45 min</option>
+              <option value="60" ${item.duration === 60 ? 'selected' : ''}>1 hr</option>
+              <option value="90" ${item.duration === 90 ? 'selected' : ''}>1.5 hr</option>
+              <option value="120" ${item.duration === 120 ? 'selected' : ''}>2 hr</option>
+            </select>
+          </div>
+        </div>
+        <div class="routine-item-days">${daysHtml}</div>
       `;
 
       // Event listeners for this item
       const enableCheckbox = itemEl.querySelector('.routine-enable');
       const labelInput = itemEl.querySelector('.routine-label');
       const iconInput = itemEl.querySelector('.routine-icon');
+      const startTimeInput = itemEl.querySelector('.routine-start-time');
+      const durationSelect = itemEl.querySelector('.routine-duration');
+      const dayCheckboxes = itemEl.querySelectorAll('.routine-day');
       const deleteBtn = itemEl.querySelector('.routine-item-delete');
 
       enableCheckbox.addEventListener('change', () => {
@@ -269,6 +322,24 @@ class SettingsManager {
 
       iconInput.addEventListener('change', () => {
         items[index].icon = iconInput.value || '◦';
+      });
+
+      startTimeInput.addEventListener('change', () => {
+        items[index].startTime = startTimeInput.value || null;
+      });
+
+      durationSelect.addEventListener('change', () => {
+        items[index].duration = parseInt(durationSelect.value, 10) || 0;
+      });
+
+      dayCheckboxes.forEach((cb) => {
+        cb.addEventListener('change', () => {
+          const checkedDays = [];
+          dayCheckboxes.forEach((dcb) => {
+            if (dcb.checked) checkedDays.push(dcb.dataset.day);
+          });
+          items[index].days = checkedDays;
+        });
       });
 
       deleteBtn.addEventListener('click', () => {
@@ -289,6 +360,9 @@ class SettingsManager {
       label: `New Item`,
       icon: '○',
       enabled: true,
+      startTime: null,
+      duration: 0,
+      days: ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'],
     };
 
     if (!this.currentSettings.dailyRoutine) {
@@ -314,6 +388,7 @@ class SettingsManager {
       localization: {
         dateFormat: document.getElementById('date-format-select').value,
         timeFormat: document.getElementById('time-format-select').value,
+        fontSize: document.getElementById('font-size-select').value,
       },
       dailyRoutine: this.currentSettings.dailyRoutine,
       cleanup: {
@@ -335,10 +410,11 @@ class SettingsManager {
       const updates = this.getCurrentFormValues();
       await this.saveSettings(updates);
 
-      // Save mantra settings separately
-      await this.saveMantraSettings();
+      // Save terminal prompt settings to config
+      await this.saveTerminalPromptSettings();
 
       this.showNotification('Settings saved. Refreshing app...');
+      UI.showStatus('settings saved');
 
       // Reload config to update UI
       if (window.app && window.app.loadConfig) {
@@ -358,39 +434,6 @@ class SettingsManager {
     } catch (error) {
       console.error('Error saving settings:', error);
       this.showNotification('Error saving settings', 'error');
-    }
-  }
-
-  /**
-   * Save mantra settings to config
-   */
-  async saveMantraSettings() {
-    try {
-      const response = await fetch('/api/config');
-      if (!response.ok) throw new Error('Failed to fetch config');
-      const config = await response.json();
-
-      config.mantra.username =
-        document.getElementById('terminal-username').value;
-      config.mantra.hostname =
-        document.getElementById('terminal-hostname').value;
-      config.mantra.text = document.getElementById('mantra-text').value;
-      config.mantra.descriptions = {
-        nameIt: document.getElementById('mantra-desc-1').value,
-        traceIt: document.getElementById('mantra-desc-2').value,
-        fixIt: document.getElementById('mantra-desc-3').value,
-        shareIt: document.getElementById('mantra-desc-4').value,
-      };
-
-      const saveResponse = await fetch('/api/config', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(config),
-      });
-
-      if (!saveResponse.ok) throw new Error('Failed to save mantra settings');
-    } catch (error) {
-      console.error('Error saving mantra settings:', error);
     }
   }
 
@@ -581,6 +624,12 @@ class SettingsManager {
     }
 
     timeEl.textContent = timeStr;
+
+    // Also update clock panel time
+    const clockTimeEl = document.getElementById('clock-time');
+    if (clockTimeEl) {
+      clockTimeEl.textContent = timeStr;
+    }
   }
 
   /**
@@ -641,6 +690,16 @@ class SettingsManager {
   }
 
   /**
+   * Apply font size setting to body
+   */
+  applyFontSize(size) {
+    document.body.classList.remove('font-small', 'font-medium', 'font-large');
+    if (size && size !== 'small') {
+      document.body.classList.add(`font-${size}`);
+    }
+  }
+
+  /**
    * Open settings modal
    */
   openModal() {
@@ -696,6 +755,7 @@ class SettingsManager {
         dateFormat: 'MM/DD/YYYY',
         timeFormat: '12h',
         firstDayOfWeek: 0,
+        fontSize: 'small',
       },
       dailyRoutine: [
         { id: '1', label: 'Calendar', icon: '📅', enabled: true },

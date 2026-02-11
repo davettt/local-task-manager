@@ -1,11 +1,12 @@
 # Local Task Manager
 
-A lightweight, single-focused task management application with an integrated timer system. Built with Node.js, Express, and Vanilla JavaScript.
+A lightweight, single-focused task management application with an integrated timer system and analog clock view. Built with Node.js, Express, and Vanilla JavaScript.
 
 ## Features
 
-- **Terminal Mantra**: High-agency problem-solving framework displayed as terminal prompt at the top
-- **Customizable Settings**: Configure timezone, date format, time format, daily routine items, terminal prompt, and cleanup defaults
+- **Analog Clock Panel**: Interactive clock view with task arcs, routine blocks, mini preview clocks, and day navigation
+- **Status Bar**: Terminal-style prompt showing contextual action feedback (task created, timer started, etc.)
+- **Customizable Settings**: Configure timezone, date format, time format, font size, daily routine items, and cleanup defaults
 - **Timezone Auto-Detection**: Automatically detects browser timezone with change prompts when traveling
 - **Date/Time Localization**: Support for multiple date formats (MM/DD/YYYY, DD/MM/YYYY, YYYY-MM-DD) and time formats (12h/24h)
 - **Customizable Daily Routine**: Create up to 10 personalized daily checklist items that reset each day
@@ -17,13 +18,13 @@ A lightweight, single-focused task management application with an integrated tim
 - **Task Archive**: View completed tasks with time tracking
 - **Sound Alerts**: Audio notification when tasks are completed
 - **Calendar Appointments**: Mark tasks as time-critical appointments with customizable reminders
-- **Appointment Reminders**: In-app alerts (15 min to 1 day before) with bell icon and sound notification
+- **Appointment Reminders**: In-app alerts (15 min to 1 day before) with sound notification
 - **Recurring Tasks**: Create daily or weekly recurring tasks
 - **Working Days Only**: Daily recurring tasks can skip weekends (Saturday/Sunday)
 - **Gamification**: Streak counter for completing 3+ tasks per day with celebration notifications
 - **Archive Management**: Clean old archived tasks with configurable cutoff period
 - **Data Persistence**: All tasks and settings saved to local JSON files
-- **Responsive Design**: Clean, narrow panel UI (300-500px width)
+- **Responsive Design**: Clean, narrow panel UI with flexible layout
 - **Server Reliability**: Single instance protection prevents data corruption from concurrent server processes
 - **Smart Port Detection**: Automatically finds available port if default (3000) is in use
 - **Todoist Sync (Optional)**: Bidirectional sync with Todoist for managing tasks across platforms
@@ -65,7 +66,7 @@ npm run dev
    - Navigate to `http://localhost:3000` in your browser
 
 2. **Add a Task**
-   - Click "➕ Add New Task" button
+   - Click "+ NEW" button in the header
    - Fill in the task description (required)
    - Optionally add due date, time, priority, details, and links
    - Click "Save Task"
@@ -75,10 +76,8 @@ npm run dev
 - When adding or editing a task with a due date and time
 - Check the "Calendar Appointment (time-sensitive)" checkbox
 - Select reminder time (15 min, 30 min, 1 hour, 2 hours, or 1 day before)
-- When the reminder time arrives, an alert will appear in the top-right corner with:
-  - Bell icon (🔔) and appointment details
-  - Sound notification
-  - Auto-dismisses after 10 seconds or click "Dismiss"
+- When the reminder time arrives, an alert will appear with appointment details and sound notification
+- Auto-dismisses after 10 seconds or click "Dismiss"
 - Reminder settings carry over to recurring appointments
 
   2.2 **Create Recurring Tasks** (Optional)
@@ -91,81 +90,98 @@ npm run dev
 
 3. **Track Your Streak**
    - Complete 3 or more tasks in a single day to start building a streak
-   - The streak counter appears in the header with a fire emoji (🔥)
+   - The streak counter appears in the header bar next to the terminal prompt
    - Each day you complete 3+ tasks, your streak continues
    - Miss a day and your streak resets
-   - Celebrate each task completion with an ASCII modal and matrix-themed sound effects
 
 4. **Start Working**
-   - Click the "▶️ START" button next to any task
-   - The timer will appear at the top with live countdown
+   - Expand a task by clicking on it, then click the "START" button
+   - The timer will appear at the top with live display
    - Only one task can be active at a time
 
-4.1 **Use Pomodoro Timer** (Optional) - While timer is running, you can enable pomodoro mode for flexible work intervals - Check the "Enable Pomodoro" checkbox in the active task section - Select your preferred interval: 25 min (classic), 45 min, or 65 min (deep work) - Timer runs normally until the selected interval completes - When interval ends: timer auto-pauses and a break modal appears with 5-minute countdown - During break: choose to "Skip Break" (resume immediately) or "Continue Working" (auto-start next pomodoro) - You can enable/disable pomodoro or change the interval anytime while timer is running - Pomodoro is fully optional - you can mix normal and pomodoro timers across different tasks - **Pomodoro Settings are saved per-task** and restored when you restart the same task
+4.1 **Use Pomodoro Timer** (Optional)
+   - While timer is running, you can enable pomodoro mode for flexible work intervals
+   - Select your preferred interval: 25 min (classic), 45 min, or 65 min (deep work)
+   - Check the "Enable Pomodoro" checkbox in the active task section
+   - Timer runs normally until the selected interval completes
+   - When interval ends: timer auto-pauses and a break modal appears with 5-minute countdown
+   - During break: choose to "Skip Break" (resume immediately) or "Continue Working" (auto-start next pomodoro)
+   - You can enable/disable pomodoro or change the interval anytime while timer is running
+   - Pomodoro is fully optional — you can mix normal and pomodoro timers across different tasks
+   - Pomodoro settings are saved per-task and restored when you restart the same task
 
-4.2 **Focus Mode** (Auto-activated with Pomodoro) - When you enable Pomodoro and start the timer, Focus Mode activates automatically - Focus Mode provides an immersive, distraction-free environment: - Full-screen overlay with dark background - Your current task details are prominently displayed (title and details) - Large timer display with Pomodoro countdown and progress bar - Exit button in the top-left corner - Press `Esc` key to exit Focus Mode at any time - Focus Mode shows: - Task title and details (fully visible and editable via the edit button) - Overall time tracked (large display) - Pomodoro progress bar with visual fill - Pomodoro countdown timer - Pause and Complete buttons - When a Pomodoro interval completes, the break modal appears within Focus Mode - Settings (Pomodoro enabled/interval) persist per-task and are restored automatically
+4.2 **Focus Mode** (Auto-activated with Pomodoro)
+   - When you enable Pomodoro and start the timer, Focus Mode activates automatically
+   - Full-screen overlay with dark background and your current task displayed prominently
+   - Large timer display with Pomodoro countdown and progress bar
+   - STOP, EDIT, PAUSE/RESUME, and DONE buttons available
+   - Press `Esc` key to exit Focus Mode at any time
+   - Break modal appears within Focus Mode when a Pomodoro interval completes
 
 5. **Stop or Complete**
-   - Click "⏹️ STOP" to pause the timer (task returns to list)
-   - Click "✅ COMPLETE" to finish the task (moves to archive)
+   - Click "STOP" to pause the timer (task returns to list)
+   - Click "DONE" to finish the task (moves to archive)
 
 6. **View Completed Tasks**
-   - Click "✓ Completed" to expand/collapse completed tasks
-   - See time spent and completion date/time 
-   - Click "↩️" to restore a task back to active list
-   - Click "🗑️" to permanently delete a task
+   - Click "Completed" to expand/collapse completed tasks
+   - See time spent and completion date/time
+   - Restore a task back to active list or permanently delete it
    - Completed tasks stay in the Completed section until moved to archive files
 
 6.1 **Archive Management** (Optional)
 
-- Click "🧹 CLEAN" button next to Completed section header
+- Click "CLEAN" button next to Completed section header
 - Select a cutoff date to move completed tasks to archive files
-- Click "Move to Archive Files" to proceed
 - Tasks will be saved to daily archive files: `local_data/archive_YYYYMMDD.json`
 - Archive files older than 45 days are automatically deleted on server startup
-- No data is lost - all completed tasks are preserved in archive files or can be restored
 
-7. **Customize Settings** (Optional)
-   - Click the "⚙️" settings button in the top-right corner
-   - Choose from 4 tabs to customize your experience:
+7. **Use the Clock Panel** (Optional)
+   - Click the "Clock" button in the header to toggle the analog clock view
+   - Tasks with scheduled times appear as colored arcs on the clock face
+   - Daily routine items are shown as blocks on the clock
+   - Mini preview clocks show upcoming days — click them to navigate
+   - Use forward/back arrows to browse days, or click "Today" to reset
+   - Digital time display moves to the clock panel when it's active
 
-   **7.1 General Tab**
+8. **Customize Settings** (Optional)
+   - Click the "Settings" button in the header
+   - Choose from 3 tabs to customize your experience:
+
+   **8.1 General Tab**
    - **Timezone**: Select your timezone (auto-detected from browser)
      - When you travel, the app detects timezone changes and prompts you to update
-     - Choose "Keep Current" to save the detected timezone with auto-detected date format
-     - Choose "Update All" to shift existing task times to the new timezone
-   - **Date Format**: Choose how dates are displayed
-     - MM/DD/YYYY (US format)
-     - DD/MM/YYYY (EU/UK format)
-     - YYYY-MM-DD (ISO format)
+   - **Date Format**: Choose how dates are displayed (MM/DD/YYYY, DD/MM/YYYY, YYYY-MM-DD)
    - **Time Format**: Choose between 12-hour (AM/PM) or 24-hour display
+   - **Font Size**: Adjust the UI font size
    - Changes apply to all task dates/times throughout the app
 
-   **7.2 Daily Routine Tab**
+   **8.2 Daily Routine Tab**
    - Create up to 10 customizable daily checklist items
    - Each item has: label, emoji icon, and enabled/disabled toggle
-   - Add new items with the "+ Add Item" button
-   - Delete items with the "×" button
-   - Delete old items with the "×" button
-   - These items reset daily and help you track your daily workflow
+   - Add new items with "+ Add Item", delete with the "x" button
+   - Items reset daily and help track your daily workflow
 
-   **7.3 Terminal Mantra Tab**
-   - **Terminal Username**: Customize the username in the terminal prompt (default: "user")
-   - **Terminal Hostname**: Customize the hostname in the terminal prompt (default: "matrix")
-   - **Mantra Text**: Customize the main problem-solving framework displayed at the top
-   - **Mantra Descriptions**: Add detailed hover tooltips for each part of your mantra
-   - Example: Terminal shows `user@matrix:~$ Name it. Trace it. Fix it. Share it.`
-
-   **7.4 Cleanup Tab**
+   **8.3 Cleanup Tab**
    - **Default Cleanup Period**: Set how many days old completed tasks should be before the "CLEAN" button can move them to archive files
    - Default is 30 days
-   - Helps keep your active task list focused on recent work
-   - Archived tasks are never deleted - they're preserved in daily archive files
+   - Archived tasks are preserved in daily archive files
 
-8. **Save and Reset Settings**
+9. **Delete a Task**
+   - Open a task for editing (click EDIT when task is expanded)
+   - Click the "DELETE" button (red, left side of modal) to delete
+
+10. **Save and Reset Settings**
    - Click "Save Settings" to apply all changes (app will refresh automatically)
    - Click "Reset All to Defaults" to restore all settings to their original values
    - Settings are saved server-side in `local_data/config.json` and persist across sessions
+
+## UI Design
+
+- **Header Bar**: Single responsive row with terminal prompt, status feedback, streak, search, +NEW, Routine dropdown, Settings, Clock, and time display
+- **Priority Indicators**: Colored left border on task items (red = high, yellow = medium, cyan = low)
+- **Task Actions**: START, DONE, and EDIT buttons appear only when a task is expanded
+- **Status Bar**: Terminal prompt shows feedback after actions (e.g., "task created: Review PR")
+- **Daily Routine**: Accessible via "Routine" dropdown in the header
 
 ## Development
 
@@ -212,9 +228,12 @@ local-task-manager/
 │       ├── timer.js        # Timer functionality
 │       ├── taskManager.js  # API client
 │       ├── ui.js           # UI components
+│       ├── clockView.js    # Analog clock rendering and navigation
+│       ├── clockMath.js    # Clock geometry calculations
+│       ├── clockDrag.js    # Clock drag interaction
 │       ├── appointmentReminder.js # Calendar appointment reminders
-│       ├── gamification.js # Streak counter and celebration modals
-│       └── settings.js     # Settings manager and customization
+│       ├── gamification.js # Streak counter and celebrations
+│       └── settings.js     # Settings manager
 ├── local_data/
 │   └── tasks.json          # Task storage
 └── .claude/
@@ -277,126 +296,29 @@ Move completed tasks to daily archive files. Tasks completed before the specifie
 }
 ```
 
-**Behavior:**
-
-- Tasks completed before the cutoff date are moved to `local_data/archive_YYYYMMDD.json` files
-- Each task is marked with `archivedToFile: true` when moved
-- Moved tasks are removed from the Completed section (archived tasks section)
-- Archive files older than 45 days are automatically deleted on server startup
-
 ### GET /api/config
 
-Returns application configuration including the terminal mantra settings.
-
-**Response:**
-
-```json
-{
-  "mantra": {
-    "enabled": true,
-    "text": "Name it. Trace it. Fix it. Share it.",
-    "descriptions": {
-      "nameIt": "What's the issue?",
-      "traceIt": "Why is it happening?",
-      "fixIt": "What's the solution + execute it",
-      "shareIt": "Keep people in the loop"
-    }
-  }
-}
-```
+Returns application configuration including terminal prompt settings.
 
 ### GET /api/settings
 
 Returns user settings including timezone, localization, daily routine, and cleanup preferences.
 
-**Response:**
-
-```json
-{
-  "timezone": {
-    "current": "Australia/Sydney",
-    "autoDetect": true,
-    "lastDetected": "ISO_timestamp"
-  },
-  "localization": {
-    "dateFormat": "DD/MM/YYYY",
-    "timeFormat": "24h",
-    "firstDayOfWeek": 0
-  },
-  "dailyRoutine": [
-    { "id": "1", "label": "Calendar", "icon": "📅", "enabled": true },
-    { "id": "2", "label": "Asana", "icon": "✓", "enabled": true }
-  ],
-  "cleanup": {
-    "defaultCutoffDays": 30,
-    "lastCleanup": "ISO_timestamp or null"
-  }
-}
-```
-
 ### PUT /api/settings
 
 Update user settings (partial or full update).
-
-**Request body:**
-
-```json
-{
-  "timezone": { "current": "Australia/Sydney" },
-  "localization": { "dateFormat": "DD/MM/YYYY", "timeFormat": "24h" },
-  "dailyRoutine": [...],
-  "cleanup": { "defaultCutoffDays": 45 }
-}
-```
 
 ### PUT /api/settings/timezone
 
 Update timezone settings specifically.
 
-**Request body:**
-
-```json
-{
-  "current": "Australia/Sydney",
-  "autoDetect": true
-}
-```
-
 ### PUT /api/settings/daily-routine
 
 Update daily routine items (validated to maximum 10 items).
 
-**Request body:**
-
-```json
-[
-  { "id": "1", "label": "Calendar", "icon": "📅", "enabled": true },
-  { "id": "2", "label": "Email", "icon": "✉️", "enabled": true }
-]
-```
-
 ### PUT /api/config
 
-Update application configuration (terminal mantra, username, hostname).
-
-**Request body:**
-
-```json
-{
-  "mantra": {
-    "enabled": true,
-    "username": "user",
-    "hostname": "matrix",
-    "text": "Name it. Trace it. Fix it. Share it.",
-    "descriptions": {
-      "nameIt": "What's the issue?",
-      "traceIt": "Why is it happening?",
-      "fixIt": "What's the solution + execute it",
-      "shareIt": "Keep people in the loop"
-    }
-  }
-}
-```
+Update application configuration.
 
 ## Task Data Model
 
@@ -444,10 +366,11 @@ Each task contains:
 
 This project follows strict code quality standards:
 
-- **ESLint**: JavaScript linting with security plugin
+- **ESLint**: JavaScript linting with security plugin (flat config format)
 - **Prettier**: Consistent code formatting
-- **Pre-commit Hooks**: Automated quality checks on commit
+- **Pre-commit Hooks**: Automated quality checks on commit (Husky)
 - **npm audit**: Dependency security scanning
+- **Dependabot**: Automated dependency vulnerability monitoring
 
 Run `npm run quality` before committing changes.
 
@@ -506,88 +429,19 @@ This project uses:
 
 ## Customization
 
-All settings can be customized through the Settings UI (⚙️ button in the top-right corner) or by directly editing `local_data/config.json`.
-
-### Terminal Mantra
-
-The terminal mantra at the top of the interface displays a high-agency problem-solving framework. Customize via the Settings UI (Terminal Mantra tab) or by editing `local_data/config.json`:
-
-```json
-{
-  "mantra": {
-    "enabled": true,
-    "username": "user",
-    "hostname": "matrix",
-    "text": "Name it. Trace it. Fix it. Share it.",
-    "descriptions": {
-      "nameIt": "What's the issue?",
-      "traceIt": "Why is it happening?",
-      "fixIt": "What's the solution + execute it",
-      "shareIt": "Keep people in the loop"
-    }
-  }
-}
-```
-
-- **enabled**: Set to `false` to hide the mantra
-- **username**: Username displayed in terminal prompt (default: "user")
-- **hostname**: Hostname displayed in terminal prompt (default: "matrix")
-- **text**: The main mantra text displayed in the terminal prompt
-- **descriptions**: Detailed explanations shown in the hover tooltip
-
-Restart the server after manual file edits to see updates. Settings saved via UI apply immediately.
+All settings can be customized through the Settings UI (Settings button in the header) or by directly editing `local_data/config.json`.
 
 ### Timezone and Localization
 
-Customize timezone, date format, and time format via Settings UI (General tab). Settings auto-sync with browser timezone detection for travel scenarios:
-
-```json
-{
-  "userSettings": {
-    "timezone": {
-      "current": "Australia/Sydney",
-      "autoDetect": true,
-      "lastDetected": "2025-11-29T12:00:00Z"
-    },
-    "localization": {
-      "dateFormat": "DD/MM/YYYY",
-      "timeFormat": "24h",
-      "firstDayOfWeek": 0
-    }
-  }
-}
-```
+Customize timezone, date format, and time format via Settings UI (General tab). Settings auto-sync with browser timezone detection for travel scenarios.
 
 ### Daily Routine
 
-Create up to 10 customizable daily checklist items via Settings UI (Daily Routine tab):
-
-```json
-{
-  "userSettings": {
-    "dailyRoutine": [
-      { "id": "1", "label": "Calendar", "icon": "📅", "enabled": true },
-      { "id": "2", "label": "Asana", "icon": "✓", "enabled": true },
-      { "id": "3", "label": "Email", "icon": "✉️", "enabled": true }
-    ]
-  }
-}
-```
+Create up to 10 customizable daily checklist items via Settings UI (Daily Routine tab). Items appear in a dropdown accessible from the "Routine" button in the header.
 
 ### Cleanup Configuration
 
-Set default cleanup period (days) via Settings UI (Cleanup tab):
-
-```json
-{
-  "userSettings": {
-    "cleanup": {
-      "defaultCutoffDays": 30,
-      "lastCleanup": null
-    }
-  }
-}
-```
+Set default cleanup period (days) via Settings UI (Cleanup tab).
 
 ### Todoist Sync (Optional)
 
@@ -615,7 +469,6 @@ Potential features for future versions:
 - Calendar grid view
 - Multiple simultaneous timers
 - Email/Slack notifications for appointments
-- Auto-delete archived tasks after specified period
 
 ## License
 

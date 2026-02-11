@@ -33,11 +33,41 @@ function readTasks() {
     initializeTasksFile();
     const data = fs.readFileSync(TASKS_FILE, 'utf8');
     const parsed = JSON.parse(data);
-    return parsed.tasks || [];
+    const tasks = parsed.tasks || [];
+
+    // Migrate clock view fields if needed
+    if (migrateTaskFields(tasks)) {
+      writeTasks(tasks);
+    }
+
+    return tasks;
   } catch (error) {
     console.error('Error reading tasks file:', error);
     return [];
   }
+}
+
+/**
+ * Migrate tasks to include clock view fields (plannedStartTime, plannedDuration, clockRing).
+ * Returns true if any tasks were migrated.
+ */
+function migrateTaskFields(tasks) {
+  let migrated = false;
+  tasks.forEach((task) => {
+    if (task.plannedStartTime === undefined) {
+      task.plannedStartTime = task.dueTime || null;
+      migrated = true;
+    }
+    if (task.plannedDuration === undefined) {
+      task.plannedDuration = 60;
+      migrated = true;
+    }
+    if (task.clockRing === undefined) {
+      task.clockRing = null;
+      migrated = true;
+    }
+  });
+  return migrated;
 }
 
 /**
@@ -201,6 +231,7 @@ function getDefaultUserSettings() {
       dateFormat: 'MM/DD/YYYY', // MM/DD/YYYY, DD/MM/YYYY, YYYY-MM-DD
       timeFormat: '12h', // 12h or 24h
       firstDayOfWeek: 0, // 0=Sunday, 1=Monday
+      fontSize: 'small', // small, medium, large
     },
     dailyRoutine: [
       { id: '1', label: 'Calendar', icon: '📅', enabled: true },
@@ -254,6 +285,17 @@ function migrateConfig(config) {
   if (!config.mantra.hostname) {
     config.mantra.hostname = 'matrix';
   }
+
+  // Migrate daily routine items to include clock view fields
+  if (config.userSettings.dailyRoutine) {
+    config.userSettings.dailyRoutine.forEach((item) => {
+      if (item.startTime === undefined) item.startTime = null;
+      if (item.duration === undefined) item.duration = 0;
+      if (item.days === undefined)
+        item.days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+    });
+  }
+
   return config;
 }
 

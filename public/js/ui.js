@@ -24,9 +24,14 @@ class UI {
   static showModal(isEditing = false) {
     const modal = document.getElementById('task-modal');
     const title = document.getElementById('modal-title');
+    const deleteBtn = document.getElementById('modal-delete-btn');
 
     if (title) {
       title.textContent = isEditing ? 'Edit Task' : 'Add New Task';
+    }
+
+    if (deleteBtn) {
+      deleteBtn.style.display = isEditing ? 'inline-block' : 'none';
     }
 
     if (modal) {
@@ -73,12 +78,11 @@ class UI {
       // Build meta information
       let metaHtml = '';
       if (task.priority) {
-        const icon = TaskManager.getPriorityIcon(task.priority);
-        metaHtml += `<span class="active-priority">${icon} ${task.priority}</span>`;
+        metaHtml += `<span class="active-priority-${task.priority}">${task.priority}</span>`;
       }
       if (task.recurring) {
         const recurringIcon = TaskManager.getRecurringIcon(task.recurring);
-        metaHtml += `<span class="active-priority">${recurringIcon} ${task.recurring}</span>`;
+        metaHtml += `<span class="active-recurring">${recurringIcon} ${task.recurring}</span>`;
       }
       if (task.dueDate || task.dueTime) {
         const dateTimeStr = TaskManager.formatDateTime(
@@ -167,11 +171,16 @@ class UI {
    * @returns {string} HTML string
    */
   static createTaskElement(task) {
-    const priorityIcon = TaskManager.getPriorityIcon(task.priority);
     const recurringIcon = TaskManager.getRecurringIcon(task.recurring);
     const dateTimeStr = TaskManager.formatDateTime(task.dueDate, task.dueTime);
+    const appointmentIndicator = task.isAppointment ? ' 🔔' : '';
     const dateTimeHtml = dateTimeStr
-      ? `<span class="task-due">${dateTimeStr}</span>`
+      ? `<span class="task-due">${dateTimeStr}${appointmentIndicator}</span>`
+      : task.isAppointment
+        ? `<span class="task-due">🔔</span>`
+        : '';
+    const recurringHtml = recurringIcon
+      ? `<span class="recurring-badge" title="Recurring: ${task.recurring}">${recurringIcon} ${task.recurring}</span>`
       : '';
 
     // Escape HTML helper function
@@ -214,40 +223,34 @@ class UI {
            </div>`
         : '';
 
+    const priority = task.priority || 'medium';
+
     return `
-      <div class="task-item" data-task-id="${escapeHtml(task.id)}">
+      <div class="task-item priority-${priority}" data-task-id="${escapeHtml(task.id)}">
         <div class="task-item-header">
-          <span class="priority-icon priority-${task.priority || 'medium'}">${priorityIcon}</span>
-          ${recurringIcon ? `<span class="priority-icon" title="Recurring: ${task.recurring}">${recurringIcon}</span>` : ''}
-          ${task.isAppointment ? `<span class="appointment-badge" title="Calendar Appointment">🔔</span>` : ''}
-           <div class="task-content" style="flex: 1">
+           <div class="task-content">
              <div class="task-title">${escapeHtml(task.description)}</div>
              <div class="task-meta">
                ${dateTimeHtml}
+               ${recurringHtml}
                ${timeHtml}
              </div>
            </div>
-          <button class="expand-btn" data-task-id="${escapeHtml(
-            task.id
-          )}" title="Show details">▼</button>
         </div>
         <div class="task-item-details hidden">
           ${detailsHtml}
           ${linksHtml}
-        </div>
-        <div class="task-actions">
-          <button class="start-btn" data-task-id="${escapeHtml(
-            task.id
-          )}" title="Start timer">▸ START</button>
-          <button class="complete-task-btn" data-task-id="${escapeHtml(
-            task.id
-          )}" title="Complete task">✓ DONE</button>
-          <button class="edit-btn" data-task-id="${escapeHtml(
-            task.id
-          )}" title="Edit task">◇ EDIT</button>
-          <button class="delete-btn" data-task-id="${escapeHtml(
-            task.id
-          )}" title="Delete task">✗ DEL</button>
+          <div class="task-actions">
+            <button class="start-btn" data-task-id="${escapeHtml(
+              task.id
+            )}" title="Start timer">START</button>
+            <button class="complete-task-btn" data-task-id="${escapeHtml(
+              task.id
+            )}" title="Complete task">DONE</button>
+            <button class="edit-btn" data-task-id="${escapeHtml(
+              task.id
+            )}" title="Edit task">EDIT</button>
+          </div>
         </div>
       </div>
     `;
@@ -423,6 +426,13 @@ class UI {
       document.getElementById('working-days-only').checked;
     const links = TaskManager.parseLinks(linksInput);
 
+    const plannedStartTime =
+      document.getElementById('planned-start-time').value;
+    const plannedDuration = parseInt(
+      document.getElementById('planned-duration').value,
+      10
+    );
+
     const formData = {
       description,
       dueDate: dueDate || null,
@@ -434,6 +444,8 @@ class UI {
       reminderMinutes: isAppointment ? reminderMinutes : null,
       workingDaysOnly: recurring === 'daily' ? workingDaysOnly : false,
       links,
+      plannedStartTime: plannedStartTime || null,
+      plannedDuration: plannedDuration || 60,
     };
 
     return formData;
@@ -462,6 +474,23 @@ class UI {
     document.getElementById('links').value = TaskManager.linksToString(
       task.links
     );
+    document.getElementById('planned-start-time').value =
+      task.plannedStartTime || '';
+    const durationSelect = document.getElementById('planned-duration');
+    const durationVal = String(task.plannedDuration || 60);
+    // If the duration from a clock drag isn't a standard option, add it
+    if (!durationSelect.querySelector(`option[value="${durationVal}"]`)) {
+      const mins = parseInt(durationVal, 10);
+      const label =
+        mins >= 60
+          ? `${(mins / 60).toFixed(1).replace('.0', '')} hours`
+          : `${mins} min`;
+      const opt = document.createElement('option');
+      opt.value = durationVal;
+      opt.textContent = label;
+      durationSelect.appendChild(opt);
+    }
+    durationSelect.value = durationVal;
   }
 
   /**
@@ -475,11 +504,12 @@ class UI {
     if (!taskItem) return;
 
     const details = taskItem.querySelector('.task-item-details');
-    const expandBtn = taskItem.querySelector('.expand-btn');
-
     if (details) {
       details.classList.toggle('hidden');
-      expandBtn.textContent = details.classList.contains('hidden') ? '▼' : '▲';
+      taskItem.classList.toggle(
+        'expanded',
+        !details.classList.contains('hidden')
+      );
     }
   }
 
@@ -579,12 +609,29 @@ class UI {
   }
 
   /**
-   * Toggle daily checklist visibility
+   * Toggle daily routine dropdown visibility
    */
   static toggleDailyChecklist() {
-    const checklistContent = document.getElementById('daily-checklist-list');
-    if (checklistContent) {
-      checklistContent.classList.toggle('hidden');
+    const dropdown = document.getElementById('daily-checklist-list');
+    const btn = document.getElementById('daily-checklist-toggle');
+    if (dropdown) {
+      const isHidden = dropdown.classList.toggle('hidden');
+      if (btn) {
+        if (isHidden) {
+          btn.classList.remove('active');
+        } else {
+          btn.classList.add('active');
+          // Close when clicking outside
+          const closeHandler = (e) => {
+            if (!dropdown.contains(e.target) && e.target !== btn) {
+              dropdown.classList.add('hidden');
+              btn.classList.remove('active');
+              document.removeEventListener('click', closeHandler);
+            }
+          };
+          setTimeout(() => document.addEventListener('click', closeHandler), 0);
+        }
+      }
     }
   }
 
@@ -661,6 +708,17 @@ class UI {
         // Save the reset state
         UI.saveChecklistState();
       }
+    }
+  }
+
+  /**
+   * Show a status message in the terminal status bar
+   * @param {string} message - Status message to display
+   */
+  static showStatus(message) {
+    const messageEl = document.getElementById('terminal-message');
+    if (messageEl) {
+      messageEl.textContent = message;
     }
   }
 }

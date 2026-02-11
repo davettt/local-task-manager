@@ -5,6 +5,68 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.10.0] - 2026-02-11
+
+### Added
+
+- **Analog Clock Panel** — Interactive clock view with day navigation and task visualization
+  - Large analog clock with hour/minute/second hands
+  - Tasks rendered as arc blocks on the clock face based on scheduled time
+  - Daily routine blocks shown as colored arcs
+  - Mini preview clocks showing upcoming days (clickable to navigate)
+  - Forward/back day navigation with "Today" reset button
+  - Digital time display moves to clock panel when active
+  - Draggable clock interaction support (`clockDrag.js`)
+- **Status Bar** — Terminal prompt now shows contextual action feedback
+  - Displays messages like "task created: ...", "task deleted: ...", "timer started: ..." after each action
+  - Replaces the static terminal mantra with dynamic, useful status updates
+- **DELETE in Edit Modal** — Delete button now accessible only from the task edit modal (left-aligned, red)
+
+### Changed
+
+- **Header Decluttered** — Merged terminal bar + header controls into a single responsive flex row
+  - Search, +NEW, Routine dropdown, Settings, Clock, and time all in one row
+  - Streak display integrated into left side with terminal prompt
+  - `flex-wrap` for responsive layout on smaller screens
+  - Unified `.header-btn` style for Settings, Clock, and Routine buttons
+- **Daily Routine → Dropdown** — Moved from full-width section to compact header dropdown with close-on-outside-click
+- **Priority: Colored Left Border** — Replaced floating priority icons with colored left borders on task items
+  - High = red, Medium = yellow, Low = cyan
+- **Action Buttons Inside Details** — START, DONE, EDIT buttons only appear when a task is expanded (no longer always visible)
+- **Appointment Badge in Meta Line** — Moved appointment indicator into the date/time meta line instead of floating separately
+- **Focus Mode Polish** — Removed emoji from all buttons, removed glow/shadow effects, outlined button style, green left border, simplified 4px progress bar
+- **Pomodoro UX** — Interval select is always enabled (no longer disabled until checkbox is checked); checkbox state properly synced per task
+- **Active Task Priority Colors** — High/medium/low priority now show distinct colors (was all yellow)
+- **Settings: Removed Terminal Mantra Tab** — Settings reduced from 4 tabs to 3 (General, Daily Routine, Cleanup)
+- **Font Size Setting** — Added configurable font size option in General settings
+
+### Fixed
+
+- Active task priority display: high and medium were showing the same color
+- Pomodoro checkbox retaining state from previous tasks
+- Recurring badge in active task sharing wrong CSS class with priority
+- Mini preview clocks not updating when navigating days on the clock panel
+- Duplicate `.search-input:focus` CSS blocks merged
+
+### Security
+
+- Fixed axios high severity vulnerability (GHSA-43fc-jf86-j433) via `npm audit fix`
+
+### Files Modified
+
+- `public/index.html` — Header restructure, status bar, modal delete button, clock panel time display, focus mode button cleanup
+- `public/css/style.css` — Header bar, priority borders, status bar, routine dropdown, clock panel, focus mode polish
+- `public/js/ui.js` — Actions in details, showStatus(), priority border class, appointment in meta, dropdown toggle, modal delete visibility
+- `public/js/app.js` — Wire modal delete, call showStatus() from handlers, pomodoro sync, focus mode priority colors
+- `public/js/settings.js` — Remove mantra tab, sync clock-time display, font size setting
+- `public/js/clockView.js` — New: analog clock rendering, day navigation, preview clocks, routine blocks
+- `public/js/clockMath.js` — New: clock geometry calculations
+- `public/js/clockDrag.js` — New: clock drag interaction
+- `src/routes/api.js` — Font size setting support
+- `src/utils/fileManager.js` — Font size in default settings
+
+---
+
 ## [1.9.1] - 2026-01-31
 
 ### Security

@@ -9,181 +9,198 @@
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
-    <div class="container">
-      <!-- Terminal Mantra -->
-      <div
-        class="terminal-mantra"
-        data-tooltip="Name it = What's the issue? • Trace it = Why is it happening? • Fix it = What's the solution + execute it • Share it = Keep people in the loop"
-      >
-        <span class="terminal-prompt">user@matrix:~$</span>
-        <span class="terminal-command"
-          >Name it. Trace it. Fix it. Share it.</span
-        >
-      </div>
-
-      <!-- Active Task Section (conditional) -->
-      <div id="active-task-section" class="active-task-section hidden">
-        <div id="focus-mode-header" class="focus-mode-header hidden">
-          <button
-            id="exit-focus-btn"
-            class="exit-focus-btn"
-            title="Exit Focus Mode (Esc)"
-          >
-            ✕ Exit Focus
-          </button>
-          <div
-            id="focus-pomodoro-countdown"
-            class="focus-pomodoro-countdown"
-          ></div>
-        </div>
-        <div class="active-header">▸ ACTIVE TASK</div>
-        <div id="active-task-title" class="active-task-title">
-          No active task
-        </div>
-        <div id="active-task-details" class="active-task-details hidden">
-          <div id="active-task-meta" class="active-task-meta"></div>
-          <div
-            id="active-task-extended-details"
-            class="active-task-extended-details"
-          ></div>
-          <div id="active-task-links" class="active-task-links"></div>
-        </div>
-        <div class="timer-container">
-          <div class="overall-time-container">
-            <span class="overall-time-label">Time Tracked</span>
-            <div id="timer-display" class="timer-display">00:00:00</div>
-          </div>
-          <div id="pomodoro-display" class="pomodoro-display hidden">
-            <div class="pomodoro-header">
-              <span class="pomodoro-icon">🍅</span>
-              <span id="pomodoro-label" class="pomodoro-label"
-                >Pomodoro Session</span
+    <div class="app-layout">
+      <div class="task-panel">
+        <div class="container">
+          <!-- Unified Header Bar -->
+          <div class="header-bar">
+            <div class="header-left">
+              <span class="terminal-prompt" id="terminal-prompt"
+                >user@matrix:~$</span
               >
-              <span
-                id="pomodoro-interval-label"
-                class="pomodoro-interval-label"
-              ></span>
+              <span class="terminal-message" id="terminal-message">ready</span>
+              <span id="streak-display" class="streak-display"></span>
             </div>
-            <div class="progress-bar-container">
-              <div id="pomodoro-progress" class="progress-bar-fill"></div>
+            <div class="header-right">
+              <input
+                type="text"
+                id="search-input"
+                class="search-input"
+                placeholder="Search..."
+              />
+              <button id="add-task-btn" class="add-button">+ NEW</button>
+              <div class="routine-dropdown-wrapper">
+                <button
+                  id="daily-checklist-toggle"
+                  class="header-btn"
+                  title="Daily Routine"
+                >
+                  Routine
+                </button>
+                <div
+                  class="routine-dropdown hidden"
+                  id="daily-checklist-list"
+                ></div>
+              </div>
+              <button id="settings-btn" class="header-btn" title="Settings">
+                Settings
+              </button>
+              <button
+                id="clock-toggle-btn"
+                class="header-btn"
+                title="Toggle Clock View"
+              >
+                Clock
+              </button>
+              <div id="current-time" class="current-time"></div>
             </div>
-            <div id="pomodoro-countdown" class="pomodoro-countdown"></div>
+          </div>
+
+          <!-- Active Task Section (conditional) -->
+          <div id="active-task-section" class="active-task-section hidden">
+            <div id="focus-mode-header" class="focus-mode-header hidden">
+              <button
+                id="exit-focus-btn"
+                class="exit-focus-btn"
+                title="Exit Focus Mode (Esc)"
+              >
+                Exit Focus
+              </button>
+              <div
+                id="focus-pomodoro-countdown"
+                class="focus-pomodoro-countdown"
+              ></div>
+            </div>
+            <div class="active-top-row">
+              <div class="active-task-info">
+                <div class="active-header">ACTIVE</div>
+                <div id="active-task-title" class="active-task-title">
+                  No active task
+                </div>
+              </div>
+              <div class="active-timer-compact">
+                <div id="timer-display" class="timer-display">00:00:00</div>
+              </div>
+            </div>
+            <div id="active-task-details" class="active-task-details hidden">
+              <div id="active-task-meta" class="active-task-meta"></div>
+              <div
+                id="active-task-extended-details"
+                class="active-task-extended-details"
+              ></div>
+              <div id="active-task-links" class="active-task-links"></div>
+            </div>
+            <div id="pomodoro-display" class="pomodoro-display hidden">
+              <div class="pomodoro-header">
+                <span id="pomodoro-label" class="pomodoro-label">Pomodoro</span>
+                <span
+                  id="pomodoro-interval-label"
+                  class="pomodoro-interval-label"
+                ></span>
+              </div>
+              <div class="progress-bar-container">
+                <div id="pomodoro-progress" class="progress-bar-fill"></div>
+              </div>
+              <div id="pomodoro-countdown" class="pomodoro-countdown"></div>
+            </div>
+            <div class="active-bottom-row">
+              <div id="pomodoro-controls" class="pomodoro-controls">
+                <label class="pomodoro-toggle">
+                  <input type="checkbox" id="pomodoro-toggle-checkbox" />
+                  <span>Pomodoro</span>
+                </label>
+                <select id="pomodoro-interval" class="pomodoro-interval">
+                  <option value="25">25 min</option>
+                  <option value="45">45 min</option>
+                  <option value="65">65 min</option>
+                </select>
+              </div>
+              <div class="action-buttons">
+                <button id="edit-active-btn" class="active-action-btn">
+                  EDIT
+                </button>
+                <button id="stop-btn" class="active-action-btn">STOP</button>
+                <button
+                  id="complete-btn"
+                  class="active-action-btn active-action-done"
+                >
+                  DONE
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Task List Section -->
+          <div class="task-list-section">
+            <div id="task-list" class="task-list">
+              <div class="empty-state">
+                No tasks yet. Create one to get started!
+              </div>
+            </div>
+          </div>
+
+          <!-- Completed Section -->
+          <div class="archive-section">
+            <div class="archive-header">
+              <div id="archive-toggle" style="flex: 1; cursor: pointer">
+                ✓ Completed
+                <span id="archive-count" class="archive-count"></span>
+              </div>
+              <button
+                id="clean-archive-btn"
+                class="clean-archive-btn"
+                title="Move completed tasks to archive files"
+              >
+                🧹 CLEAN
+              </button>
+            </div>
+            <div class="archive-content hidden" id="archive-list"></div>
           </div>
         </div>
-        <div id="pomodoro-controls" class="pomodoro-controls">
-          <label class="pomodoro-toggle">
-            <input type="checkbox" id="pomodoro-toggle-checkbox" />
-            <span>Enable Pomodoro</span>
-          </label>
-          <select id="pomodoro-interval" class="pomodoro-interval" disabled>
-            <option value="25">25 min</option>
-            <option value="45">45 min</option>
-            <option value="65">65 min</option>
-          </select>
-        </div>
-        <div class="action-buttons">
-          <button id="edit-active-btn" class="stop-btn">◇ EDIT</button>
-          <button id="stop-btn" class="stop-btn">⏹ STOP</button>
-          <button id="complete-btn" class="complete-btn">✓ DONE</button>
-        </div>
       </div>
+      <!-- /.task-panel -->
 
-      <!-- Header Section -->
-      <div class="header-section">
-        <div class="header-controls">
-          <input
-            type="text"
-            id="search-input"
-            class="search-input"
-            placeholder="🔍 Search tasks..."
-          />
-          <button id="add-task-btn" class="add-button">+ NEW</button>
-        </div>
-        <div class="header-right">
-          <div id="current-time" class="current-time"></div>
-          <button id="settings-btn" class="settings-btn" title="Settings">
-            ⚙️
-          </button>
-        </div>
-        <div id="streak-display" class="streak-display"></div>
-      </div>
-
-      <!-- Daily Checklist Section -->
-      <div class="daily-checklist-section">
-        <div class="daily-checklist-header" id="daily-checklist-toggle">
-          📋 Daily Routine
-        </div>
-        <div class="daily-checklist-content hidden" id="daily-checklist-list">
-          <label class="checklist-item">
-            <input
-              type="checkbox"
-              class="checklist-checkbox"
-              data-item="calendar"
-            />
-            📅 Calendar
-          </label>
-          <label class="checklist-item">
-            <input
-              type="checkbox"
-              class="checklist-checkbox"
-              data-item="asana"
-            />
-            ✓ Asana (ok2build, EPD roadmap)
-          </label>
-          <label class="checklist-item">
-            <input
-              type="checkbox"
-              class="checklist-checkbox"
-              data-item="email"
-            />
-            ✉️ Email
-          </label>
-          <label class="checklist-item">
-            <input
-              type="checkbox"
-              class="checklist-checkbox"
-              data-item="slack-dms"
-            />
-            💬 Slack DMs & threads
-          </label>
-          <label class="checklist-item">
-            <input
-              type="checkbox"
-              class="checklist-checkbox"
-              data-item="slack-channels"
-            />
-            📢 Slack channels & enablement docs
-          </label>
-        </div>
-      </div>
-
-      <!-- Task List Section -->
-      <div class="task-list-section">
-        <div id="task-list" class="task-list">
-          <div class="empty-state">
-            No tasks yet. Create one to get started!
-          </div>
-        </div>
-      </div>
-
-      <!-- Completed Section -->
-      <div class="archive-section">
-        <div class="archive-header">
-          <div id="archive-toggle" style="flex: 1; cursor: pointer">
-            ✓ Completed
-            <span id="archive-count" class="archive-count"></span>
-          </div>
+      <!-- Clock View Panel -->
+      <div id="clock-panel" class="clock-panel hidden">
+        <div id="clock-time" class="clock-time"></div>
+        <div class="clock-nav">
           <button
-            id="clean-archive-btn"
-            class="clean-archive-btn"
-            title="Move completed tasks to archive files"
+            id="clock-nav-prev"
+            class="clock-nav-btn"
+            title="Previous day"
           >
-            🧹 CLEAN
+            &lt;
+          </button>
+          <button
+            id="clock-nav-today"
+            class="clock-nav-btn"
+            title="Go to today"
+          >
+            Today
+          </button>
+          <button id="clock-nav-next" class="clock-nav-btn" title="Next day">
+            &gt;
           </button>
         </div>
-        <div class="archive-content hidden" id="archive-list"></div>
+        <div class="clock-preview-row">
+          <div
+            id="clock-preview-1"
+            class="clock-preview"
+            title="Tomorrow"
+          ></div>
+          <div
+            id="clock-preview-2"
+            class="clock-preview"
+            title="Day after tomorrow"
+          ></div>
+        </div>
+        <div id="clock-container" class="clock-container"></div>
+        <div id="clock-info-panel" class="clock-info-panel">
+          <div class="clock-info-placeholder">Click an arc for details</div>
+        </div>
       </div>
     </div>
+    <!-- /.app-layout -->
 
     <!-- Task Modal -->
     <div id="task-modal" class="modal hidden">
@@ -208,6 +225,26 @@
           <div class="form-group">
             <label for="due-time">Due Time</label>
             <input type="time" id="due-time" />
+          </div>
+          <div class="form-group">
+            <label for="planned-start-time">Planned Start Time</label>
+            <input type="time" id="planned-start-time" />
+            <small class="field-hint"
+              >When you plan to work on this (shown on clock view)</small
+            >
+          </div>
+          <div class="form-group">
+            <label for="planned-duration">Planned Duration</label>
+            <select id="planned-duration">
+              <option value="15">15 min</option>
+              <option value="30">30 min</option>
+              <option value="45">45 min</option>
+              <option value="60" selected>1 hour</option>
+              <option value="90">1.5 hours</option>
+              <option value="120">2 hours</option>
+              <option value="180">3 hours</option>
+              <option value="240">4 hours</option>
+            </select>
           </div>
           <div class="form-group">
             <label for="priority">Priority</label>
@@ -263,6 +300,15 @@
             </select>
           </div>
           <div class="form-actions">
+            <button
+              type="button"
+              class="delete-btn modal-delete-btn"
+              id="modal-delete-btn"
+              style="display: none"
+            >
+              ✗ DELETE
+            </button>
+            <div style="flex: 1"></div>
             <button type="submit" class="save-btn">Save Task</button>
             <button type="button" class="cancel-btn" id="modal-cancel">
               Cancel
@@ -313,7 +359,7 @@
     <!-- Break Modal -->
     <div id="break-modal" class="modal hidden">
       <div class="modal-content break-modal">
-        <div class="break-title">🎉 Pomodoro Complete!</div>
+        <div class="break-title">Pomodoro Complete!</div>
         <div class="break-message">Time for a 5-minute stretch break</div>
         <div id="break-countdown" class="break-countdown">5:00</div>
         <div class="break-buttons">
@@ -338,9 +384,6 @@
           </button>
           <button class="settings-tab-btn" data-tab="routine">
             Daily Routine
-          </button>
-          <button class="settings-tab-btn" data-tab="mantra">
-            Terminal Mantra
           </button>
           <button class="settings-tab-btn" data-tab="cleanup">Cleanup</button>
         </div>
@@ -369,6 +412,23 @@
                 <option value="24h">24-hour</option>
               </select>
             </div>
+            <div class="form-group">
+              <label for="font-size-select">Font Size</label>
+              <select id="font-size-select">
+                <option value="small">Small (Default)</option>
+                <option value="medium">Medium</option>
+                <option value="large">Large</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="terminal-username">Terminal Username</label>
+              <input type="text" id="terminal-username" placeholder="user" />
+              <small class="field-hint">Shown in the status bar prompt</small>
+            </div>
+            <div class="form-group">
+              <label for="terminal-hostname">Terminal Hostname</label>
+              <input type="text" id="terminal-hostname" placeholder="matrix" />
+            </div>
           </div>
 
           <!-- Daily Routine Tab -->
@@ -381,64 +441,6 @@
             >
               + Add Item
             </button>
-          </div>
-
-          <!-- Terminal Mantra Tab -->
-          <div id="mantra-tab" class="settings-tab-content">
-            <div class="form-group">
-              <label for="terminal-username">Terminal Username</label>
-              <input
-                type="text"
-                id="terminal-username"
-                class="terminal-username"
-                placeholder="user"
-              />
-            </div>
-            <div class="form-group">
-              <label for="terminal-hostname">Terminal Hostname</label>
-              <input
-                type="text"
-                id="terminal-hostname"
-                class="terminal-hostname"
-                placeholder="matrix"
-              />
-            </div>
-            <div class="form-group">
-              <label for="mantra-text">Mantra Text</label>
-              <input
-                type="text"
-                id="mantra-text"
-                class="mantra-text"
-                placeholder="Name it. Trace it. Fix it. Share it."
-              />
-            </div>
-            <div class="form-group">
-              <label>Mantra Descriptions (Optional)</label>
-              <input
-                type="text"
-                id="mantra-desc-1"
-                class="mantra-desc-1"
-                placeholder="Name it = What's the issue?"
-              />
-              <input
-                type="text"
-                id="mantra-desc-2"
-                class="mantra-desc-2"
-                placeholder="Trace it = Why is it happening?"
-              />
-              <input
-                type="text"
-                id="mantra-desc-3"
-                class="mantra-desc-3"
-                placeholder="Fix it = What's the solution + execute it"
-              />
-              <input
-                type="text"
-                id="mantra-desc-4"
-                class="mantra-desc-4"
-                placeholder="Share it = Keep people in the loop"
-              />
-            </div>
           </div>
 
           <!-- Cleanup Tab -->
@@ -513,15 +515,15 @@
               class="focus-exit-btn"
               title="Stop Pomodoro and timer"
             >
-              ⏹ STOP
+              STOP
             </button>
-            <button id="focus-edit-btn" class="focus-edit-btn">✎ EDIT</button>
+            <button id="focus-edit-btn" class="focus-edit-btn">EDIT</button>
           </div>
         </div>
         <div id="focus-task-container" class="focus-task-container"></div>
         <div class="focus-timer-section">
           <div class="focus-pomodoro-timer">
-            🍅 <span id="focus-pomodoro-timer"></span>
+            <span id="focus-pomodoro-timer"></span>
           </div>
           <div class="focus-total-time">
             Total: <span id="focus-timer-display">00:00:00</span>
@@ -536,27 +538,28 @@
             ></div>
           </div>
         </div>
+        <div id="mini-clock-container" class="mini-clock-container"></div>
         <div class="focus-controls">
           <button
             id="focus-pause-btn"
             class="focus-btn focus-btn-pause"
             title="Temporarily pause the timer"
           >
-            ⏸ PAUSE
+            PAUSE
           </button>
           <button
             id="focus-resume-btn"
             class="focus-btn focus-btn-resume hidden"
             title="Resume the timer"
           >
-            ▶ RESUME
+            RESUME
           </button>
           <button
             id="focus-complete-btn"
             class="focus-btn focus-btn-complete"
             title="Complete this task"
           >
-            ✓ DONE
+            DONE
           </button>
         </div>
       </div>
@@ -569,6 +572,9 @@
     <script src="js/appointmentReminder.js"></script>
     <script src="js/gamification.js"></script>
     <script src="js/settings.js"></script>
+    <script src="js/clockMath.js"></script>
+    <script src="js/clockView.js"></script>
+    <script src="js/clockDrag.js"></script>
     <script src="js/app.js"></script>
   </body>
 </html>
