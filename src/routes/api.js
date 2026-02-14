@@ -9,6 +9,8 @@ const {
   readConfig,
   writeConfig,
   updateUserSettings,
+  readArchivedTasks,
+  clearAllArchiveFiles,
 } = require('../utils/fileManager');
 
 const router = express.Router();
@@ -139,6 +141,20 @@ router.get('/tasks/archived', (_req, res) => {
   } catch (error) {
     console.error('Error fetching archived tasks:', error);
     res.status(500).json({ error: 'Failed to fetch archived tasks' });
+  }
+});
+
+/**
+ * GET /api/tasks/archive-files
+ * Returns all tasks from archive_*.json files (tasks moved out of tasks.json by cleanup)
+ */
+router.get('/tasks/archive-files', (_req, res) => {
+  try {
+    const archivedTasks = readArchivedTasks();
+    res.json(archivedTasks);
+  } catch (error) {
+    console.error('Error fetching archive file tasks:', error);
+    res.status(500).json({ error: 'Failed to fetch archive file tasks' });
   }
 });
 
@@ -642,6 +658,68 @@ router.put('/settings/daily-routine', (req, res) => {
   } catch (error) {
     console.error('Error updating daily routine:', error);
     res.status(500).json({ error: 'Failed to update daily routine' });
+  }
+});
+
+/**
+ * POST /api/backup/import
+ * Import backup data (tasks + config) from an exported JSON file
+ */
+router.post('/backup/import', (req, res) => {
+  try {
+    const { tasks, config } = req.body;
+
+    if (!tasks || !Array.isArray(tasks)) {
+      return res
+        .status(400)
+        .json({ error: 'Invalid backup: tasks must be an array' });
+    }
+
+    if (!config || typeof config !== 'object') {
+      return res
+        .status(400)
+        .json({ error: 'Invalid backup: config must be an object' });
+    }
+
+    // Clear existing archive files before restoring
+    clearAllArchiveFiles();
+
+    // Separate tasks: those that were in archive files go back to archive files
+    const tasksJsonTasks = tasks.filter((t) => !t.archivedToFile);
+    const archiveFileTasks = tasks.filter((t) => t.archivedToFile);
+
+    // Write tasks.json tasks
+    writeTasks(tasksJsonTasks);
+
+    // Restore archive file tasks to their respective archive files by completion date
+    if (archiveFileTasks.length > 0) {
+      const tasksByDate = {};
+      archiveFileTasks.forEach((task) => {
+        const completedDate = task.completedAt
+          ? new Date(task.completedAt).toISOString().split('T')[0]
+          : new Date().toISOString().split('T')[0];
+        if (!tasksByDate[completedDate]) {
+          tasksByDate[completedDate] = [];
+        }
+        tasksByDate[completedDate].push(task);
+      });
+
+      Object.entries(tasksByDate).forEach(([dateStr, tasksForDate]) => {
+        archiveTasks(dateStr, tasksForDate);
+      });
+    }
+
+    // Write config (full replace)
+    writeConfig(config);
+
+    res.json({
+      success: true,
+      taskCount: tasks.length,
+      message: `Imported ${tasksJsonTasks.length} tasks and ${archiveFileTasks.length} archived tasks`,
+    });
+  } catch (error) {
+    console.error('Error importing backup:', error);
+    res.status(500).json({ error: 'Failed to import backup' });
   }
 });
 

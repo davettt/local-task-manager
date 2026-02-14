@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.11.0] - 2026-02-14
+
+### Added
+
+- **Backup Export/Import** — New "Backup" tab in Settings modal (TC-238)
+  - Export downloads a single `taskmanager-backup-YYYYMMDD.json` file containing all active tasks, archived tasks, archive-file tasks, and full config/settings
+  - Import via file picker with preview showing task counts and backup date
+  - Confirmation dialog before overwriting existing data
+  - Import correctly restores archive-file tasks back to their respective `archive_*.json` files
+  - Status bar feedback on export and import actions
+- **Archive Files API** — `GET /api/tasks/archive-files` endpoint to read tasks from `archive_*.json` files
+- **Backup Import API** — `POST /api/backup/import` endpoint to restore tasks and config from backup
+
+### Security
+
+- Fixed qs low severity vulnerability (GHSA-w7fw-mjwx-w883) via `npm audit fix`
+
+### Files Modified
+
+- `public/index.html` — Backup tab in settings modal with export button, file picker, preview/confirm UI
+- `public/css/style.css` — Backup section styles (file input, preview panel, warning text, error display)
+- `public/js/settings.js` — Export/import logic (fetch, Blob download, file validation, preview, confirm)
+- `src/routes/api.js` — Backup import endpoint, archive-files endpoint
+- `src/utils/fileManager.js` — `clearAllArchiveFiles()` utility
+
+---
+
 ## [1.10.0] - 2026-02-11
 
 ### Added

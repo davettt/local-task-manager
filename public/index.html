@@ -386,6 +386,7 @@
             Daily Routine
           </button>
           <button class="settings-tab-btn" data-tab="cleanup">Cleanup</button>
+          <button class="settings-tab-btn" data-tab="backup">Backup</button>
         </div>
         <div class="settings-content">
           <!-- General Tab -->
@@ -459,6 +460,50 @@
                 days to archive files (archive_YYYYMMDD.json). This keeps your
                 active task list clean while preserving your history.</small
               >
+            </div>
+          </div>
+          <!-- Backup Tab -->
+          <div id="backup-tab" class="settings-tab-content">
+            <div class="backup-section">
+              <h4 class="backup-section-title">Export Backup</h4>
+              <p class="backup-description">
+                Download a JSON file containing all your tasks and settings.
+              </p>
+              <button
+                id="backup-export-btn"
+                class="btn btn-primary"
+                style="width: 100%"
+              >
+                Export Backup
+              </button>
+            </div>
+            <div class="backup-section">
+              <h4 class="backup-section-title">Import Backup</h4>
+              <p class="backup-description">
+                Restore tasks and settings from a previously exported backup
+                file. This will replace all current data.
+              </p>
+              <div class="backup-file-input-wrapper">
+                <input type="file" id="backup-file-input" accept=".json" />
+              </div>
+              <div id="backup-preview" class="backup-preview hidden">
+                <div id="backup-preview-content"></div>
+                <div class="backup-preview-actions">
+                  <button
+                    id="backup-import-cancel-btn"
+                    class="btn btn-secondary"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    id="backup-import-confirm-btn"
+                    class="btn btn-primary"
+                  >
+                    Confirm Import
+                  </button>
+                </div>
+              </div>
+              <div id="backup-error" class="backup-error hidden"></div>
             </div>
           </div>
         </div>

@@ -117,6 +117,24 @@ class SettingsManager {
       if (e.target === this.timezonePromptModal) this.closeTimezonePrompt();
     });
 
+    // Backup event listeners
+    document
+      .getElementById('backup-export-btn')
+      .addEventListener('click', () => this.handleExportBackup());
+
+    document
+      .getElementById('backup-file-input')
+      .addEventListener('change', (e) => this.handleBackupFileSelect(e));
+
+    document
+      .getElementById('backup-import-confirm-btn')
+      .addEventListener('click', () => this.handleImportBackup());
+
+    document
+      .getElementById('backup-import-cancel-btn')
+      .addEventListener('click', () => this.clearBackupPreview());
+
+    this.pendingBackupData = null;
     this.isInitializing = false;
   }
 
@@ -739,6 +757,173 @@ class SettingsManager {
       notification.style.animation = 'slideOut 0.3s ease-out';
       setTimeout(() => notification.remove(), 300);
     }, 3000);
+  }
+
+  /**
+   * Handle export backup
+   */
+  async handleExportBackup() {
+    try {
+      const [activeRes, archivedRes, archiveFilesRes, configRes] =
+        await Promise.all([
+          fetch('/api/tasks'),
+          fetch('/api/tasks/archived'),
+          fetch('/api/tasks/archive-files'),
+          fetch('/api/config'),
+        ]);
+
+      if (
+        !activeRes.ok ||
+        !archivedRes.ok ||
+        !archiveFilesRes.ok ||
+        !configRes.ok
+      ) {
+        throw new Error('Failed to fetch data for backup');
+      }
+
+      const activeTasks = await activeRes.json();
+      const archivedTasks = await archivedRes.json();
+      const archiveFileTasks = await archiveFilesRes.json();
+
+      // Combine all tasks: active + archived in tasks.json + archived in archive files
+      const allTasks = [...activeTasks, ...archivedTasks, ...archiveFileTasks];
+      const config = await configRes.json();
+
+      const backup = {
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        tasks: allTasks,
+        config: config,
+      };
+
+      const blob = new Blob([JSON.stringify(backup, null, 2)], {
+        type: 'application/json',
+      });
+
+      const now = new Date();
+      const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+      const filename = `taskmanager-backup-${dateStr}.json`;
+
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+
+      UI.showStatus('backup exported');
+      this.showNotification(`Backup exported: ${filename}`);
+    } catch (error) {
+      console.error('Error exporting backup:', error);
+      this.showNotification('Failed to export backup', 'error');
+    }
+  }
+
+  /**
+   * Handle backup file selection
+   */
+  handleBackupFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const errorEl = document.getElementById('backup-error');
+    const previewEl = document.getElementById('backup-preview');
+    const previewContentEl = document.getElementById('backup-preview-content');
+
+    // Reset state
+    errorEl.classList.add('hidden');
+    previewEl.classList.add('hidden');
+    this.pendingBackupData = null;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+
+        // Validate structure
+        if (!data.tasks || !Array.isArray(data.tasks)) {
+          throw new Error('Invalid backup file: missing tasks array');
+        }
+        if (!data.config || typeof data.config !== 'object') {
+          throw new Error('Invalid backup file: missing config object');
+        }
+
+        this.pendingBackupData = data;
+
+        const activeTasks = data.tasks.filter((t) => !t.archived);
+        const archivedTasks = data.tasks.filter((t) => t.archived);
+        const exportDate = data.exportedAt
+          ? new Date(data.exportedAt).toLocaleString()
+          : 'Unknown';
+
+        previewContentEl.innerHTML = `
+          <p><strong>Backup date:</strong> ${exportDate}</p>
+          <p><strong>Active tasks:</strong> ${activeTasks.length}</p>
+          <p><strong>Archived tasks:</strong> ${archivedTasks.length}</p>
+          <p><strong>Settings:</strong> included</p>
+          <p class="backup-warning">This will replace all current tasks and settings.</p>
+        `;
+        previewEl.classList.remove('hidden');
+      } catch (err) {
+        errorEl.textContent = err.message;
+        errorEl.classList.remove('hidden');
+      }
+    };
+
+    reader.onerror = () => {
+      errorEl.textContent = 'Failed to read file';
+      errorEl.classList.remove('hidden');
+    };
+
+    reader.readAsText(file);
+  }
+
+  /**
+   * Handle import backup confirmation
+   */
+  async handleImportBackup() {
+    if (!this.pendingBackupData) return;
+
+    try {
+      const response = await fetch('/api/backup/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tasks: this.pendingBackupData.tasks,
+          config: this.pendingBackupData.config,
+        }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || 'Import failed');
+      }
+
+      const result = await response.json();
+      UI.showStatus(`backup imported: ${result.taskCount} tasks`);
+      this.showNotification(`Backup imported: ${result.taskCount} tasks`);
+
+      this.clearBackupPreview();
+
+      // Reload page to reflect imported data
+      setTimeout(() => location.reload(), 500);
+    } catch (error) {
+      console.error('Error importing backup:', error);
+      const errorEl = document.getElementById('backup-error');
+      errorEl.textContent = error.message;
+      errorEl.classList.remove('hidden');
+    }
+  }
+
+  /**
+   * Clear backup preview state
+   */
+  clearBackupPreview() {
+    this.pendingBackupData = null;
+    document.getElementById('backup-preview').classList.add('hidden');
+    document.getElementById('backup-error').classList.add('hidden');
+    document.getElementById('backup-file-input').value = '';
   }
 
   /**

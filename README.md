@@ -22,6 +22,7 @@ A lightweight, single-focused task management application with an integrated tim
 - **Recurring Tasks**: Create daily or weekly recurring tasks
 - **Working Days Only**: Daily recurring tasks can skip weekends (Saturday/Sunday)
 - **Gamification**: Streak counter for completing 3+ tasks per day with celebration notifications
+- **Backup Export/Import**: Download a full JSON backup of all tasks and settings, or restore from a previous backup with preview and confirmation
 - **Archive Management**: Clean old archived tasks with configurable cutoff period
 - **Data Persistence**: All tasks and settings saved to local JSON files
 - **Responsive Design**: Clean, narrow panel UI with flexible layout

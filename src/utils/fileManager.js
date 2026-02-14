@@ -217,6 +217,23 @@ function cleanupOldArchives(daysOld = 45) {
 }
 
 /**
+ * Delete all archive_*.json files
+ */
+function clearAllArchiveFiles() {
+  try {
+    ensureDataDir();
+    const files = fs.readdirSync(DATA_DIR);
+    files.forEach((file) => {
+      if (file.startsWith('archive_') && file.endsWith('.json')) {
+        fs.unlinkSync(path.join(DATA_DIR, file));
+      }
+    });
+  } catch (error) {
+    console.error('Error clearing archive files:', error);
+  }
+}
+
+/**
  * Get default user settings
  * @returns {Object} Default user settings
  */
@@ -422,6 +439,7 @@ module.exports = {
   archiveTasks,
   getArchiveFilePath,
   cleanupOldArchives,
+  clearAllArchiveFiles,
   ensureDataDir,
   initializeTasksFile,
   readConfig,
