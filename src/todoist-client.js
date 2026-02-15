@@ -1,7 +1,7 @@
 /**
  * Todoist API Client
- * Provides methods to interact with Todoist REST API v2
- * https://developer.todoist.com/rest/v2/
+ * Provides methods to interact with Todoist API v1
+ * https://developer.todoist.com/api/v1/
  */
 
 const axios = require('axios');
@@ -13,7 +13,7 @@ class TodoistClient {
     }
 
     this.apiToken = apiToken;
-    this.baseUrl = 'https://api.todoist.com/rest/v2';
+    this.baseUrl = 'https://api.todoist.com/api/v1';
     this.client = axios.create({
       baseURL: this.baseUrl,
       headers: {
@@ -24,13 +24,44 @@ class TodoistClient {
   }
 
   /**
+   * Fetch all pages from a paginated endpoint
+   * @param {string} path - API path
+   * @param {Object} params - Query parameters
+   * @returns {Promise<Array>} All results across pages
+   */
+  async _fetchAllPages(path, params = {}) {
+    const allResults = [];
+    let cursor = null;
+
+    do {
+      const queryParams = { ...params };
+      if (cursor) queryParams.cursor = cursor;
+
+      const response = await this.client.get(path, { params: queryParams });
+      const data = response.data;
+
+      if (data.results && Array.isArray(data.results)) {
+        allResults.push(...data.results);
+        cursor = data.next_cursor || null;
+      } else if (Array.isArray(data)) {
+        // Fallback if API returns flat array
+        allResults.push(...data);
+        cursor = null;
+      } else {
+        cursor = null;
+      }
+    } while (cursor);
+
+    return allResults;
+  }
+
+  /**
    * Get all active tasks from Todoist
    * @returns {Promise<Array>} Array of task objects
    */
   async getAllTasks() {
     try {
-      const response = await this.client.get('/tasks');
-      return response.data || [];
+      return await this._fetchAllPages('/tasks');
     } catch (error) {
       throw new Error(`Failed to fetch tasks: ${error.message}`);
     }
@@ -132,8 +163,7 @@ class TodoistClient {
    */
   async getProjects() {
     try {
-      const response = await this.client.get('/projects');
-      return response.data || [];
+      return await this._fetchAllPages('/projects');
     } catch (error) {
       throw new Error(`Failed to fetch projects: ${error.message}`);
     }
@@ -146,10 +176,9 @@ class TodoistClient {
    */
   async getSections(projectId) {
     try {
-      const response = await this.client.get('/sections', {
-        params: { project_id: projectId },
+      return await this._fetchAllPages('/sections', {
+        project_id: projectId,
       });
-      return response.data || [];
     } catch (error) {
       throw new Error(
         `Failed to fetch sections for project ${projectId}: ${error.message}`
@@ -163,8 +192,7 @@ class TodoistClient {
    */
   async getLabels() {
     try {
-      const response = await this.client.get('/labels');
-      return response.data || [];
+      return await this._fetchAllPages('/labels');
     } catch (error) {
       throw new Error(`Failed to fetch labels: ${error.message}`);
     }

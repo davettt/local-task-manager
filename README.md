@@ -479,6 +479,8 @@ Enable bidirectional sync with Todoist to manage tasks across platforms:
 
 When enabled, tasks sync between Local Task Manager and Todoist. Leave `TODOIST_API_TOKEN` empty to disable.
 
+> **Upgrading from v1.12.0 or earlier?** Todoist deprecated their REST API v2 on 2026-02-10. Version 1.12.1 migrates to the new API v1. If you have existing synced tasks, you must reset your sync metadata after updating — see the [CHANGELOG](CHANGELOG.md) for step-by-step instructions.
+
 ## Future Enhancements
 
 Potential features for future versions:

@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.1] - 2026-02-15
+
+### Fixed
+
+- **Todoist Sync — API v1 Migration** — Todoist deprecated their REST API v2 on 2026-02-10 (all endpoints return HTTP 410 Gone). Migrated to the new API v1.
+  - Base URL updated from `rest/v2` to `api/v1`
+  - Added cursor-based pagination for all list endpoints (`getAllTasks`, `getProjects`, `getSections`, `getLabels`)
+  - Task completion field changed from `is_completed` to `checked`
+  - Task completion timestamp now uses Todoist's `completed_at` field
+  - Task IDs changed from numeric strings to alphanumeric strings (existing mappings handled gracefully)
+
+### Migration Required (Todoist Sync Users)
+
+If you use Todoist sync and are upgrading from v1.12.0 or earlier, you **must** reset your sync metadata after updating:
+
+1. Stop the server
+2. Replace `local_data/todoist-metadata.json` with:
+   ```json
+   { "lastSync": null, "taskMappings": {}, "localChecksums": {}, "todoistChecksums": {} }
+   ```
+3. Restart the server
+4. Run a sync (`POST /api/todoist/sync`) — this will re-establish all task mappings with the new Todoist IDs
+5. **Check for duplicates** — the first sync after reset may create duplicate tasks (one local copy + one pulled from Todoist). Review and delete any duplicates manually.
+
+### Files Modified
+
+- `src/todoist-client.js` — Base URL, `_fetchAllPages()` pagination helper, all list methods updated
+- `src/sync-manager.js` — `is_completed` → `checked` in checksum generation, completion detection, and task conversion
+
+---
+
 ## [1.12.0] - 2026-02-15
 
 ### Added

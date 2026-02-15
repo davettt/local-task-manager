@@ -124,7 +124,7 @@ class SyncManager {
   generateTodoistTaskChecksum(todoistTask) {
     const relevant = {
       content: todoistTask.content,
-      is_completed: todoistTask.is_completed,
+      checked: todoistTask.checked,
       priority: todoistTask.priority,
       due: todoistTask.due,
       description: todoistTask.description,
@@ -273,7 +273,7 @@ class SyncManager {
           const storedTodoistTask = storedTodoistChecksum
             ? JSON.parse(storedTodoistChecksum)
             : null;
-          const wasCompleted = storedTodoistTask?.is_completed || false;
+          const wasCompleted = storedTodoistTask?.checked || false;
 
           if (task.completed && !wasCompleted) {
             // Mark as completed
@@ -518,12 +518,14 @@ class SyncManager {
       isAppointment: false,
       reminderMinutes: null,
       workingDaysOnly: false,
-      completed: todoistTask.is_completed || false,
+      completed: todoistTask.checked || false,
       archived: false,
       inProgress: false,
       startedAt: null,
       timeSpent: 0,
-      completedAt: todoistTask.is_completed ? new Date().toISOString() : null,
+      completedAt: todoistTask.checked
+        ? todoistTask.completed_at || new Date().toISOString()
+        : null,
       links: [],
       createdAt: todoistTask.created_at || new Date().toISOString(),
       updatedAt: todoistTask.updated_at || new Date().toISOString(),
