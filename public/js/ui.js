@@ -7,6 +7,42 @@
 
 class UI {
   /**
+   * Project badge color palette (solarized-compatible)
+   */
+  static PROJECT_COLORS = [
+    '#d33682', // magenta
+    '#6c71c4', // violet
+    '#268bd2', // blue
+    '#2aa198', // cyan
+    '#859900', // green
+    '#b58900', // yellow
+    '#cb4b16', // orange
+    '#dc322f', // red
+  ];
+
+  /**
+   * Get a consistent color index for a project name via simple hash
+   * @param {string} name - Project name
+   * @returns {number} Color index (0-7)
+   */
+  static getProjectColorIndex(name) {
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = ((hash << 5) - hash + name.charCodeAt(i)) | 0;
+    }
+    return Math.abs(hash) % UI.PROJECT_COLORS.length;
+  }
+
+  /**
+   * Get the color hex for a project name
+   * @param {string} name - Project name
+   * @returns {string} Color hex string
+   */
+  static getProjectColor(name) {
+    return UI.PROJECT_COLORS[UI.getProjectColorIndex(name)];
+  }
+
+  /**
    * Escape HTML special characters
    * @param {string} text - Text to escape
    * @returns {string} Escaped text
@@ -225,11 +261,16 @@ class UI {
 
     const priority = task.priority || 'medium';
 
+    // Format project badge
+    const projectBadgeHtml = task.project
+      ? `<span class="project-badge" style="--badge-color: ${UI.getProjectColor(task.project)}">${escapeHtml(task.project)}</span>`
+      : '';
+
     return `
       <div class="task-item priority-${priority}" data-task-id="${escapeHtml(task.id)}">
         <div class="task-item-header">
            <div class="task-content">
-             <div class="task-title">${escapeHtml(task.description)}</div>
+             <div class="task-title">${escapeHtml(task.description)}${projectBadgeHtml ? `<span class="task-title-badge-right">${projectBadgeHtml}</span>` : ''}</div>
              <div class="task-meta">
                ${dateTimeHtml}
                ${recurringHtml}
@@ -326,11 +367,16 @@ class UI {
       return div.innerHTML;
     };
 
+    const projectBadgeHtml = task.project
+      ? `<span class="project-badge" style="--badge-color: ${UI.getProjectColor(task.project)}">${escapeHtml(task.project)}</span>`
+      : '';
+
     return `
       <div class="archived-task" data-task-id="${escapeHtml(task.id)}">
         <div class="archived-task-info">
           <div class="archived-task-title">
             ${escapeHtml(task.description)}
+            ${projectBadgeHtml}
             ${task.isAppointment ? `<span class="appointment-badge" title="Calendar Appointment">🔔</span>` : ''}
           </div>
           <div class="archived-task-time">
@@ -433,6 +479,8 @@ class UI {
       10
     );
 
+    const project = document.getElementById('project').value.trim();
+
     const formData = {
       description,
       dueDate: dueDate || null,
@@ -446,6 +494,7 @@ class UI {
       links,
       plannedStartTime: plannedStartTime || null,
       plannedDuration: plannedDuration || 60,
+      project: project || null,
     };
 
     return formData;
@@ -471,6 +520,7 @@ class UI {
       task.workingDaysOnly || false;
     document.getElementById('working-days-only').disabled =
       task.recurring !== 'daily';
+    document.getElementById('project').value = task.project || '';
     document.getElementById('links').value = TaskManager.linksToString(
       task.links
     );

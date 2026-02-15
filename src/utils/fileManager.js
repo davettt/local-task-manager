@@ -66,6 +66,10 @@ function migrateTaskFields(tasks) {
       task.clockRing = null;
       migrated = true;
     }
+    if (task.project === undefined) {
+      task.project = null;
+      migrated = true;
+    }
   });
   return migrated;
 }

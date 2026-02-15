@@ -5,6 +5,41 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.0] - 2026-02-15
+
+### Added
+
+- **Project Categories** — Tasks can now be assigned to a project (e.g. "Personal", "Acme Corp", "Portfolio Site")
+  - Colored badge/tag displayed on each task, auto-colored from an 8-color solarized palette based on project name
+  - Project field in task form with datalist auto-populated from existing project names
+  - Project badge shown in task list, archived tasks, and clock view info panel
+  - Search bar filters by project name as well as task description
+- **Task Import (Additive)** — New "Import Tasks" section in Settings > Backup tab
+  - Import tasks from a JSON file alongside existing tasks (does not replace)
+  - LLM-friendly format: only `description` required per task, all other fields optional with sensible defaults
+  - Preview panel shows project name, task count, and priority breakdown before confirming
+  - Supports all task fields: priority, due date/time, recurring, appointments, pomodoro, planned times, links
+  - `IMPORT-SCHEMA.md` reference doc for generating import files in new LLM sessions
+- **Task Import API** — `POST /api/tasks/import` endpoint accepting `{ project, tasks[] }` format
+- **`project` field** added to task data model with auto-migration (existing tasks default to `null`)
+
+### Changed
+
+- **Import Backup** section renamed to "Import Backup (Full Replace)" to distinguish from additive task import
+
+### Files Modified
+
+- `src/routes/api.js` — `project` field in task create/update, new `/api/tasks/import` endpoint
+- `src/utils/fileManager.js` — `project: null` auto-migration in `migrateTaskFields()`
+- `public/index.html` — Project field in task form (with datalist), Import Tasks UI in backup tab
+- `public/js/ui.js` — Project badge rendering, `getProjectColor()` hash function, form data handling
+- `public/js/settings.js` — Import tasks file selection, preview, and confirmation handlers
+- `public/js/app.js` — Project name search filtering, datalist population from existing tasks
+- `public/js/clockView.js` — Project badge in clock info panel
+- `public/css/style.css` — `.project-badge` styles, `.task-title` flex layout for right-aligned badge
+
+---
+
 ## [1.11.0] - 2026-02-14
 
 ### Added

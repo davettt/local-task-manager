@@ -22,6 +22,8 @@ A lightweight, single-focused task management application with an integrated tim
 - **Recurring Tasks**: Create daily or weekly recurring tasks
 - **Working Days Only**: Daily recurring tasks can skip weekends (Saturday/Sunday)
 - **Gamification**: Streak counter for completing 3+ tasks per day with celebration notifications
+- **Project Categories**: Assign tasks to projects (e.g. "Personal", "Acme Corp") with auto-colored badges and searchable project names
+- **Task Import**: Import tasks from LLM-generated JSON files alongside existing tasks (additive, not replacing)
 - **Backup Export/Import**: Download a full JSON backup of all tasks and settings, or restore from a previous backup with preview and confirmation
 - **Archive Management**: Clean old archived tasks with configurable cutoff period
 - **Data Persistence**: All tasks and settings saved to local JSON files
@@ -180,6 +182,7 @@ npm run dev
 
 - **Header Bar**: Single responsive row with terminal prompt, status feedback, streak, search, +NEW, Routine dropdown, Settings, Clock, and time display
 - **Priority Indicators**: Colored left border on task items (red = high, yellow = medium, cyan = low)
+- **Project Badges**: Colored pill badges on tasks showing their project name, right-aligned in the title row
 - **Task Actions**: START, DONE, and EDIT buttons appear only when a task is expanded
 - **Status Bar**: Terminal prompt shows feedback after actions (e.g., "task created: Review PR")
 - **Daily Routine**: Accessible via "Routine" dropdown in the header
@@ -317,6 +320,23 @@ Update timezone settings specifically.
 
 Update daily routine items (validated to maximum 10 items).
 
+### POST /api/tasks/import
+
+Import tasks additively (merges with existing tasks). Accepts LLM-friendly format.
+
+**Request body:**
+
+```json
+{
+  "project": "Project Name",
+  "tasks": [
+    { "description": "Task title", "priority": "high", "dueDate": "2026-03-01" }
+  ]
+}
+```
+
+See `IMPORT-SCHEMA.md` for full field reference.
+
 ### PUT /api/config
 
 Update application configuration.
@@ -347,6 +367,7 @@ Each task contains:
   "details": "Optional additional notes",
   "pomodoroMode": false,
   "pomodoroInterval": 25,
+  "project": "Project name or null",
   "createdAt": "ISO_timestamp",
   "updatedAt": "ISO_timestamp"
 }
@@ -362,6 +383,7 @@ Each task contains:
 - **reminderMinutes**: How many minutes before the due date/time to trigger the appointment reminder
 - **pomodoroMode**: When true, Pomodoro timer is enabled for this task
 - **pomodoroInterval**: Pomodoro interval duration in minutes (25, 45, or 65)
+- **project**: Project/category name for grouping tasks (displayed as colored badge)
 
 ## Code Quality
 
@@ -461,9 +483,7 @@ When enabled, tasks sync between Local Task Manager and Todoist. Leave `TODOIST_
 
 Potential features for future versions:
 
-- Task categories/tags
 - Bulk task operations
-- Export/import functionality
 - Keyboard shortcuts
 - Dark/light theme toggle
 - Time tracking analytics

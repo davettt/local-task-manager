@@ -134,7 +134,21 @@ class SettingsManager {
       .getElementById('backup-import-cancel-btn')
       .addEventListener('click', () => this.clearBackupPreview());
 
+    // Import Tasks event listeners
+    document
+      .getElementById('import-tasks-file-input')
+      .addEventListener('change', (e) => this.handleImportTasksFileSelect(e));
+
+    document
+      .getElementById('import-tasks-confirm-btn')
+      .addEventListener('click', () => this.handleImportTasks());
+
+    document
+      .getElementById('import-tasks-cancel-btn')
+      .addEventListener('click', () => this.clearImportTasksPreview());
+
     this.pendingBackupData = null;
+    this.pendingImportData = null;
     this.isInitializing = false;
   }
 
@@ -924,6 +938,122 @@ class SettingsManager {
     document.getElementById('backup-preview').classList.add('hidden');
     document.getElementById('backup-error').classList.add('hidden');
     document.getElementById('backup-file-input').value = '';
+  }
+
+  /**
+   * Handle import tasks file selection
+   */
+  handleImportTasksFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const errorEl = document.getElementById('import-tasks-error');
+    const previewEl = document.getElementById('import-tasks-preview');
+    const previewContentEl = document.getElementById(
+      'import-tasks-preview-content'
+    );
+
+    errorEl.classList.add('hidden');
+    previewEl.classList.add('hidden');
+    this.pendingImportData = null;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+
+        if (
+          !data.tasks ||
+          !Array.isArray(data.tasks) ||
+          data.tasks.length === 0
+        ) {
+          throw new Error(
+            'Invalid import file: must contain a non-empty "tasks" array'
+          );
+        }
+
+        // Validate each task has a description
+        for (let i = 0; i < data.tasks.length; i++) {
+          if (!data.tasks[i].description || !data.tasks[i].description.trim()) {
+            throw new Error(`Task at index ${i} is missing a description`);
+          }
+        }
+
+        this.pendingImportData = data;
+
+        const projectName = data.project || 'No project';
+        const taskCount = data.tasks.length;
+        const priorities = { high: 0, medium: 0, low: 0 };
+        data.tasks.forEach((t) => {
+          const p = t.priority || 'medium';
+          if (priorities[p] !== undefined) priorities[p]++;
+        });
+
+        previewContentEl.innerHTML = `
+          <p><strong>Project:</strong> ${UI.escapeHtml(projectName)}</p>
+          <p><strong>Tasks to import:</strong> ${taskCount}</p>
+          <p><strong>Priorities:</strong> ${priorities.high} high, ${priorities.medium} medium, ${priorities.low} low</p>
+          <p style="color: var(--color-accent-green);">Tasks will be added alongside your existing tasks.</p>
+        `;
+        previewEl.classList.remove('hidden');
+      } catch (err) {
+        errorEl.textContent = err.message;
+        errorEl.classList.remove('hidden');
+      }
+    };
+
+    reader.onerror = () => {
+      errorEl.textContent = 'Failed to read file';
+      errorEl.classList.remove('hidden');
+    };
+
+    reader.readAsText(file);
+  }
+
+  /**
+   * Handle import tasks confirmation
+   */
+  async handleImportTasks() {
+    if (!this.pendingImportData) return;
+
+    try {
+      const response = await fetch('/api/tasks/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          project: this.pendingImportData.project || null,
+          tasks: this.pendingImportData.tasks,
+        }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || 'Import failed');
+      }
+
+      const result = await response.json();
+      UI.showStatus(`imported ${result.imported} tasks`);
+      this.showNotification(result.message);
+
+      this.clearImportTasksPreview();
+
+      setTimeout(() => location.reload(), 500);
+    } catch (error) {
+      console.error('Error importing tasks:', error);
+      const errorEl = document.getElementById('import-tasks-error');
+      errorEl.textContent = error.message;
+      errorEl.classList.remove('hidden');
+    }
+  }
+
+  /**
+   * Clear import tasks preview state
+   */
+  clearImportTasksPreview() {
+    this.pendingImportData = null;
+    document.getElementById('import-tasks-preview').classList.add('hidden');
+    document.getElementById('import-tasks-error').classList.add('hidden');
+    document.getElementById('import-tasks-file-input').value = '';
   }
 
   /**

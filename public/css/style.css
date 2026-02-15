@@ -555,6 +555,15 @@ body {
   word-break: break-word;
   overflow-wrap: break-word;
   white-space: pre-wrap;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.task-title-badge-right {
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 .task-meta {
@@ -573,6 +582,22 @@ body {
 .recurring-badge {
   color: var(--color-text-secondary);
   font-size: 11px;
+}
+
+.project-badge {
+  display: inline-block;
+  background-color: var(--badge-color, #6c71c4);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 8px;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  opacity: 0.85;
+  vertical-align: middle;
+  position: relative;
+  top: -1px;
 }
 
 .task-time {

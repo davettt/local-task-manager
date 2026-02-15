@@ -478,8 +478,10 @@ class App {
       return tasks;
     }
 
-    return tasks.filter((task) =>
-      task.description.toLowerCase().includes(this.searchQuery)
+    return tasks.filter(
+      (task) =>
+        task.description.toLowerCase().includes(this.searchQuery) ||
+        (task.project && task.project.toLowerCase().includes(this.searchQuery))
     );
   }
 
@@ -532,6 +534,9 @@ class App {
     // Render archive
     UI.renderArchive(this.archivedTasks);
 
+    // Populate project name suggestions datalist
+    this.updateProjectSuggestions();
+
     // Update streak display
     this.updateStreakDisplay();
 
@@ -542,6 +547,23 @@ class App {
     if (this.clockView && this.clockView.isVisible) {
       this.clockView.updateTasks(this.tasks);
     }
+  }
+
+  /**
+   * Update the project name suggestions datalist from all tasks
+   */
+  updateProjectSuggestions() {
+    const datalist = document.getElementById('project-suggestions');
+    if (!datalist) return;
+
+    const allTasks = [...this.tasks, ...this.archivedTasks];
+    const projectNames = [
+      ...new Set(allTasks.map((t) => t.project).filter((p) => p)),
+    ].sort();
+
+    datalist.innerHTML = projectNames
+      .map((name) => `<option value="${UI.escapeHtml(name)}">`)
+      .join('');
   }
 
   /**

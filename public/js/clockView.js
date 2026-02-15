@@ -699,8 +699,12 @@ class ClockView {
     const endMins = ClockMath.timeToMinutes(startTime) + duration;
     const endTime = ClockMath.minutesToTime(endMins % 1440);
 
+    const projectHtml = task.project
+      ? `<span class="project-badge" style="--badge-color: ${UI.getProjectColor(task.project)}">${this._escapeHtml(task.project)}</span>`
+      : '';
+
     panel.innerHTML = `
-      <div class="clock-info-title">${this._escapeHtml(task.description)}</div>
+      <div class="clock-info-title">${this._escapeHtml(task.description)}${projectHtml ? ` ${projectHtml}` : ''}</div>
       <div class="clock-info-meta">
         <span>${startTime} – ${endTime}</span>
         <span>${duration} min</span>

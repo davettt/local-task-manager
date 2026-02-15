@@ -180,6 +180,7 @@ router.post('/tasks', (req, res) => {
       pomodoroInterval,
       plannedStartTime,
       plannedDuration,
+      project,
     } = req.body;
 
     // Validate required fields
@@ -218,6 +219,10 @@ router.post('/tasks', (req, res) => {
             pomodoroInterval || existingTask.pomodoroInterval || 25,
           plannedStartTime:
             plannedStartTime ?? existingTask.plannedStartTime ?? null,
+          project:
+            project !== undefined
+              ? project || null
+              : existingTask.project || null,
           plannedDuration:
             plannedDuration ?? existingTask.plannedDuration ?? 60,
           clockRing: existingTask.clockRing ?? null,
@@ -249,6 +254,7 @@ router.post('/tasks', (req, res) => {
           plannedStartTime: plannedStartTime || null,
           plannedDuration: plannedDuration || 60,
           clockRing: null,
+          project: project || null,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
@@ -279,6 +285,7 @@ router.post('/tasks', (req, res) => {
         plannedStartTime: plannedStartTime || null,
         plannedDuration: plannedDuration || 60,
         clockRing: null,
+        project: project || null,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -720,6 +727,85 @@ router.post('/backup/import', (req, res) => {
   } catch (error) {
     console.error('Error importing backup:', error);
     res.status(500).json({ error: 'Failed to import backup' });
+  }
+});
+
+/**
+ * POST /api/tasks/import
+ * Import tasks additively (merges with existing tasks, does not replace)
+ * Accepts LLM-friendly format: { project: string, tasks: [{ description, priority?, dueDate?, ... }] }
+ */
+router.post('/tasks/import', (req, res) => {
+  try {
+    const { project, tasks: importTasks } = req.body;
+
+    if (
+      !importTasks ||
+      !Array.isArray(importTasks) ||
+      importTasks.length === 0
+    ) {
+      return res
+        .status(400)
+        .json({ error: 'Invalid import: tasks must be a non-empty array' });
+    }
+
+    // Validate each task has at least a description
+    for (let i = 0; i < importTasks.length; i++) {
+      if (
+        !importTasks[i].description ||
+        importTasks[i].description.trim().length === 0
+      ) {
+        return res
+          .status(400)
+          .json({ error: `Task at index ${i} is missing a description` });
+      }
+    }
+
+    const existingTasks = readTasks();
+    const now = Date.now();
+    const timestamp = new Date().toISOString();
+    const projectName = project && project.trim() ? project.trim() : null;
+
+    const newTasks = importTasks.map((t, index) => ({
+      id: (now + index).toString(),
+      description: t.description.trim(),
+      dueDate: t.dueDate || null,
+      dueTime: t.dueTime || null,
+      priority: t.priority || 'medium',
+      recurring: t.recurring || null,
+      details: t.details || null,
+      isAppointment: t.isAppointment || false,
+      reminderMinutes: t.isAppointment ? t.reminderMinutes || 30 : null,
+      workingDaysOnly:
+        t.recurring === 'daily' ? t.workingDaysOnly || false : false,
+      completed: false,
+      archived: false,
+      inProgress: false,
+      startedAt: null,
+      timeSpent: 0,
+      completedAt: null,
+      links: t.links || [],
+      pomodoroMode: t.pomodoroMode || false,
+      pomodoroInterval: t.pomodoroInterval || 25,
+      plannedStartTime: t.plannedStartTime || null,
+      plannedDuration: t.plannedDuration || 60,
+      clockRing: null,
+      project: projectName,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    }));
+
+    writeTasks([...existingTasks, ...newTasks]);
+
+    res.json({
+      success: true,
+      imported: newTasks.length,
+      project: projectName,
+      message: `Imported ${newTasks.length} tasks${projectName ? ` for project "${projectName}"` : ''}`,
+    });
+  } catch (error) {
+    console.error('Error importing tasks:', error);
+    res.status(500).json({ error: 'Failed to import tasks' });
   }
 });
 
