@@ -1960,6 +1960,10 @@ body.focus-mode .container {
   font-size: 11px;
 }
 
+.routine-duration {
+  width: 70px;
+}
+
 .routine-item-days {
   display: flex;
   gap: 4px;

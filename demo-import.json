@@ -1,0 +1,34 @@
+{
+  "project": "Website Redesign",
+  "tasks": [
+    {
+      "description": "Create wireframes for new landing page",
+      "priority": "high",
+      "dueDate": "2026-02-18",
+      "details": "Mobile-first approach. Include hero section, feature grid, pricing table, and testimonials.",
+      "plannedDuration": 120
+    },
+    {
+      "description": "Audit existing site for accessibility issues",
+      "priority": "medium",
+      "dueDate": "2026-02-19",
+      "details": "Run Lighthouse and axe checks. Document all WCAG 2.1 AA violations.",
+      "plannedDuration": 60
+    },
+    {
+      "description": "Set up staging environment",
+      "priority": "medium",
+      "dueDate": "2026-02-19",
+      "details": "Deploy to staging subdomain. Configure SSL and basic auth for client preview."
+    },
+    {
+      "description": "Client review call — present initial designs",
+      "priority": "high",
+      "dueDate": "2026-02-20",
+      "dueTime": "10:00",
+      "isAppointment": true,
+      "reminderMinutes": 30,
+      "plannedDuration": 45
+    }
+  ]
+}

@@ -234,17 +234,15 @@
             >
           </div>
           <div class="form-group">
-            <label for="planned-duration">Planned Duration</label>
-            <select id="planned-duration">
-              <option value="15">15 min</option>
-              <option value="30">30 min</option>
-              <option value="45">45 min</option>
-              <option value="60" selected>1 hour</option>
-              <option value="90">1.5 hours</option>
-              <option value="120">2 hours</option>
-              <option value="180">3 hours</option>
-              <option value="240">4 hours</option>
-            </select>
+            <label for="planned-duration">Planned Duration (min)</label>
+            <input
+              type="number"
+              id="planned-duration"
+              value="60"
+              min="5"
+              max="1440"
+              step="5"
+            />
           </div>
           <div class="form-group">
             <label for="priority">Priority</label>

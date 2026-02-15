@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "exportedAt": "2026-02-14T00:00:00.000Z",
+  "exportedAt": "2026-02-17T00:00:00.000Z",
   "tasks": [
     {
       "id": "demo_001",
       "description": "Launch marketing campaign for Q1 product release",
-      "dueDate": "2026-02-14",
+      "dueDate": "2026-02-17",
       "dueTime": null,
       "priority": "high",
       "recurring": null,
@@ -16,7 +16,7 @@
       "completed": false,
       "archived": false,
       "inProgress": true,
-      "startedAt": "2026-02-14T09:15:00.000Z",
+      "startedAt": "2026-02-17T09:15:00.000Z",
       "timeSpent": 2700,
       "completedAt": null,
       "links": [],
@@ -25,13 +25,14 @@
       "plannedStartTime": "09:00",
       "plannedDuration": 120,
       "clockRing": null,
-      "createdAt": "2026-02-10T08:00:00.000Z",
-      "updatedAt": "2026-02-14T09:15:00.000Z"
+      "project": "Marketing",
+      "createdAt": "2026-02-13T08:00:00.000Z",
+      "updatedAt": "2026-02-17T09:15:00.000Z"
     },
     {
       "id": "demo_002",
       "description": "Client meeting — Acme Corp project kickoff",
-      "dueDate": "2026-02-14",
+      "dueDate": "2026-02-17",
       "dueTime": "14:00",
       "priority": "high",
       "recurring": null,
@@ -51,13 +52,14 @@
       "plannedStartTime": "14:00",
       "plannedDuration": 60,
       "clockRing": null,
-      "createdAt": "2026-02-11T10:00:00.000Z",
-      "updatedAt": "2026-02-11T10:00:00.000Z"
+      "project": "Acme Corp",
+      "createdAt": "2026-02-14T10:00:00.000Z",
+      "updatedAt": "2026-02-14T10:00:00.000Z"
     },
     {
       "id": "demo_003",
       "description": "Review and merge pull requests",
-      "dueDate": "2026-02-14",
+      "dueDate": "2026-02-17",
       "dueTime": null,
       "priority": "medium",
       "recurring": "daily",
@@ -77,13 +79,14 @@
       "plannedStartTime": "08:00",
       "plannedDuration": 30,
       "clockRing": null,
+      "project": null,
       "createdAt": "2026-01-06T08:00:00.000Z",
-      "updatedAt": "2026-02-13T08:30:00.000Z"
+      "updatedAt": "2026-02-16T08:30:00.000Z"
     },
     {
       "id": "demo_004",
       "description": "Write unit tests for payment service",
-      "dueDate": "2026-02-15",
+      "dueDate": "2026-02-18",
       "dueTime": null,
       "priority": "high",
       "recurring": null,
@@ -103,13 +106,14 @@
       "plannedStartTime": "10:00",
       "plannedDuration": 180,
       "clockRing": null,
-      "createdAt": "2026-02-08T09:00:00.000Z",
-      "updatedAt": "2026-02-13T14:00:00.000Z"
+      "project": "Acme Corp",
+      "createdAt": "2026-02-11T09:00:00.000Z",
+      "updatedAt": "2026-02-16T14:00:00.000Z"
     },
     {
       "id": "demo_005",
       "description": "Update project documentation on Confluence",
-      "dueDate": "2026-02-16",
+      "dueDate": "2026-02-19",
       "dueTime": null,
       "priority": "medium",
       "recurring": null,
@@ -129,8 +133,9 @@
       "plannedStartTime": null,
       "plannedDuration": 60,
       "clockRing": null,
-      "createdAt": "2026-02-12T11:00:00.000Z",
-      "updatedAt": "2026-02-12T11:00:00.000Z"
+      "project": "Acme Corp",
+      "createdAt": "2026-02-15T11:00:00.000Z",
+      "updatedAt": "2026-02-15T11:00:00.000Z"
     },
     {
       "id": "demo_006",
@@ -155,13 +160,14 @@
       "plannedStartTime": "09:30",
       "plannedDuration": 30,
       "clockRing": null,
+      "project": null,
       "createdAt": "2026-01-13T08:00:00.000Z",
       "updatedAt": "2026-02-10T09:45:00.000Z"
     },
     {
       "id": "demo_007",
       "description": "Research competitor pricing models",
-      "dueDate": "2026-02-18",
+      "dueDate": "2026-02-20",
       "dueTime": null,
       "priority": "low",
       "recurring": null,
@@ -181,13 +187,14 @@
       "plannedStartTime": null,
       "plannedDuration": 60,
       "clockRing": null,
-      "createdAt": "2026-02-13T15:00:00.000Z",
-      "updatedAt": "2026-02-13T15:00:00.000Z"
+      "project": "Marketing",
+      "createdAt": "2026-02-16T15:00:00.000Z",
+      "updatedAt": "2026-02-16T15:00:00.000Z"
     },
     {
       "id": "demo_008",
       "description": "Prepare quarterly board presentation",
-      "dueDate": "2026-02-20",
+      "dueDate": "2026-02-23",
       "dueTime": null,
       "priority": "high",
       "recurring": null,
@@ -207,13 +214,14 @@
       "plannedStartTime": null,
       "plannedDuration": 60,
       "clockRing": null,
-      "createdAt": "2026-02-10T14:00:00.000Z",
-      "updatedAt": "2026-02-10T14:00:00.000Z"
+      "project": "Acme Corp",
+      "createdAt": "2026-02-13T14:00:00.000Z",
+      "updatedAt": "2026-02-13T14:00:00.000Z"
     },
     {
       "id": "demo_009",
       "description": "Renew SSL certificates for production servers",
-      "dueDate": "2026-02-19",
+      "dueDate": "2026-02-20",
       "dueTime": null,
       "priority": "medium",
       "recurring": null,
@@ -233,13 +241,14 @@
       "plannedStartTime": null,
       "plannedDuration": 60,
       "clockRing": null,
-      "createdAt": "2026-02-09T16:00:00.000Z",
-      "updatedAt": "2026-02-09T16:00:00.000Z"
+      "project": null,
+      "createdAt": "2026-02-12T16:00:00.000Z",
+      "updatedAt": "2026-02-12T16:00:00.000Z"
     },
     {
       "id": "demo_010",
       "description": "Organize team lunch for new hire welcome",
-      "dueDate": "2026-02-14",
+      "dueDate": "2026-02-17",
       "dueTime": "12:00",
       "priority": "low",
       "recurring": null,
@@ -259,13 +268,14 @@
       "plannedStartTime": "12:00",
       "plannedDuration": 60,
       "clockRing": null,
-      "createdAt": "2026-02-12T09:00:00.000Z",
-      "updatedAt": "2026-02-12T09:00:00.000Z"
+      "project": "Personal",
+      "createdAt": "2026-02-15T09:00:00.000Z",
+      "updatedAt": "2026-02-15T09:00:00.000Z"
     },
     {
       "id": "demo_101",
       "description": "Deploy v2.3 hotfix to production",
-      "dueDate": "2026-02-13",
+      "dueDate": "2026-02-16",
       "dueTime": null,
       "priority": "high",
       "recurring": null,
@@ -278,20 +288,21 @@
       "inProgress": false,
       "startedAt": null,
       "timeSpent": 3600,
-      "completedAt": "2026-02-13T16:30:00.000Z",
+      "completedAt": "2026-02-16T16:30:00.000Z",
       "links": [],
       "pomodoroMode": false,
       "pomodoroInterval": 25,
       "plannedStartTime": null,
       "plannedDuration": 60,
       "clockRing": null,
-      "createdAt": "2026-02-13T10:00:00.000Z",
-      "updatedAt": "2026-02-13T16:30:00.000Z"
+      "project": "Acme Corp",
+      "createdAt": "2026-02-16T10:00:00.000Z",
+      "updatedAt": "2026-02-16T16:30:00.000Z"
     },
     {
       "id": "demo_102",
       "description": "Set up monitoring alerts for new database cluster",
-      "dueDate": "2026-02-12",
+      "dueDate": "2026-02-15",
       "dueTime": null,
       "priority": "medium",
       "recurring": null,
@@ -304,20 +315,21 @@
       "inProgress": false,
       "startedAt": null,
       "timeSpent": 5400,
-      "completedAt": "2026-02-12T15:00:00.000Z",
+      "completedAt": "2026-02-15T15:00:00.000Z",
       "links": [],
       "pomodoroMode": true,
       "pomodoroInterval": 25,
       "plannedStartTime": null,
       "plannedDuration": 60,
       "clockRing": null,
-      "createdAt": "2026-02-11T09:00:00.000Z",
-      "updatedAt": "2026-02-12T15:00:00.000Z"
+      "project": null,
+      "createdAt": "2026-02-14T09:00:00.000Z",
+      "updatedAt": "2026-02-15T15:00:00.000Z"
     },
     {
       "id": "demo_103",
       "description": "Interview candidate — Senior Frontend Engineer",
-      "dueDate": "2026-02-11",
+      "dueDate": "2026-02-14",
       "dueTime": "15:00",
       "priority": "high",
       "recurring": null,
@@ -330,20 +342,21 @@
       "inProgress": false,
       "startedAt": null,
       "timeSpent": 3600,
-      "completedAt": "2026-02-11T16:15:00.000Z",
+      "completedAt": "2026-02-14T16:15:00.000Z",
       "links": [],
       "pomodoroMode": false,
       "pomodoroInterval": 25,
       "plannedStartTime": "15:00",
       "plannedDuration": 60,
       "clockRing": null,
-      "createdAt": "2026-02-07T11:00:00.000Z",
-      "updatedAt": "2026-02-11T16:15:00.000Z"
+      "project": null,
+      "createdAt": "2026-02-10T11:00:00.000Z",
+      "updatedAt": "2026-02-14T16:15:00.000Z"
     },
     {
       "id": "demo_104",
       "description": "Fix broken image uploads on mobile",
-      "dueDate": "2026-02-10",
+      "dueDate": "2026-02-13",
       "dueTime": null,
       "priority": "high",
       "recurring": null,
@@ -356,20 +369,21 @@
       "inProgress": false,
       "startedAt": null,
       "timeSpent": 7200,
-      "completedAt": "2026-02-10T17:45:00.000Z",
+      "completedAt": "2026-02-13T17:45:00.000Z",
       "links": [],
       "pomodoroMode": true,
       "pomodoroInterval": 25,
       "plannedStartTime": null,
       "plannedDuration": 60,
       "clockRing": null,
-      "createdAt": "2026-02-09T08:00:00.000Z",
-      "updatedAt": "2026-02-10T17:45:00.000Z"
+      "project": "Acme Corp",
+      "createdAt": "2026-02-12T08:00:00.000Z",
+      "updatedAt": "2026-02-13T17:45:00.000Z"
     },
     {
       "id": "demo_105",
       "description": "Submit expense report for conference travel",
-      "dueDate": "2026-02-07",
+      "dueDate": "2026-02-10",
       "dueTime": null,
       "priority": "low",
       "recurring": null,
@@ -382,20 +396,21 @@
       "inProgress": false,
       "startedAt": null,
       "timeSpent": 1800,
-      "completedAt": "2026-02-07T14:00:00.000Z",
+      "completedAt": "2026-02-10T14:00:00.000Z",
       "links": [],
       "pomodoroMode": false,
       "pomodoroInterval": 25,
       "plannedStartTime": null,
       "plannedDuration": 60,
       "clockRing": null,
-      "createdAt": "2026-02-05T09:00:00.000Z",
-      "updatedAt": "2026-02-07T14:00:00.000Z"
+      "project": "Personal",
+      "createdAt": "2026-02-08T09:00:00.000Z",
+      "updatedAt": "2026-02-10T14:00:00.000Z"
     },
     {
       "id": "demo_106",
       "description": "Migrate user auth to OAuth 2.0",
-      "dueDate": "2026-02-06",
+      "dueDate": "2026-02-09",
       "dueTime": null,
       "priority": "high",
       "recurring": null,
@@ -408,20 +423,21 @@
       "inProgress": false,
       "startedAt": null,
       "timeSpent": 14400,
-      "completedAt": "2026-02-06T18:00:00.000Z",
+      "completedAt": "2026-02-09T18:00:00.000Z",
       "links": [],
       "pomodoroMode": true,
       "pomodoroInterval": 45,
       "plannedStartTime": null,
       "plannedDuration": 60,
       "clockRing": null,
-      "createdAt": "2026-02-01T08:00:00.000Z",
-      "updatedAt": "2026-02-06T18:00:00.000Z"
+      "project": "Acme Corp",
+      "createdAt": "2026-02-04T08:00:00.000Z",
+      "updatedAt": "2026-02-09T18:00:00.000Z"
     },
     {
       "id": "demo_107",
       "description": "Design new onboarding flow wireframes",
-      "dueDate": "2026-02-05",
+      "dueDate": "2026-02-08",
       "dueTime": null,
       "priority": "medium",
       "recurring": null,
@@ -434,15 +450,16 @@
       "inProgress": false,
       "startedAt": null,
       "timeSpent": 10800,
-      "completedAt": "2026-02-05T16:30:00.000Z",
+      "completedAt": "2026-02-08T16:30:00.000Z",
       "links": [],
       "pomodoroMode": false,
       "pomodoroInterval": 25,
       "plannedStartTime": null,
       "plannedDuration": 60,
       "clockRing": null,
-      "createdAt": "2026-02-03T10:00:00.000Z",
-      "updatedAt": "2026-02-05T16:30:00.000Z"
+      "project": "Acme Corp",
+      "createdAt": "2026-02-06T10:00:00.000Z",
+      "updatedAt": "2026-02-08T16:30:00.000Z"
     }
   ],
   "config": {
@@ -462,7 +479,7 @@
       "timezone": {
         "current": "Australia/Sydney",
         "autoDetect": true,
-        "lastDetected": "2026-02-14T00:00:00.000Z"
+        "lastDetected": "2026-02-17T00:00:00.000Z"
       },
       "localization": {
         "dateFormat": "DD/MM/YYYY",

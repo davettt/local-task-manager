@@ -320,16 +320,8 @@ class SettingsManager {
             <input type="time" class="routine-start-time" value="${item.startTime || ''}" />
           </div>
           <div class="routine-time-group">
-            <label>Duration</label>
-            <select class="routine-duration">
-              <option value="0" ${!item.duration ? 'selected' : ''}>None</option>
-              <option value="15" ${item.duration === 15 ? 'selected' : ''}>15 min</option>
-              <option value="30" ${item.duration === 30 ? 'selected' : ''}>30 min</option>
-              <option value="45" ${item.duration === 45 ? 'selected' : ''}>45 min</option>
-              <option value="60" ${item.duration === 60 ? 'selected' : ''}>1 hr</option>
-              <option value="90" ${item.duration === 90 ? 'selected' : ''}>1.5 hr</option>
-              <option value="120" ${item.duration === 120 ? 'selected' : ''}>2 hr</option>
-            </select>
+            <label>Duration (min)</label>
+            <input type="number" class="routine-duration" value="${item.duration || 0}" min="0" max="1440" step="5" />
           </div>
         </div>
         <div class="routine-item-days">${daysHtml}</div>
@@ -340,7 +332,7 @@ class SettingsManager {
       const labelInput = itemEl.querySelector('.routine-label');
       const iconInput = itemEl.querySelector('.routine-icon');
       const startTimeInput = itemEl.querySelector('.routine-start-time');
-      const durationSelect = itemEl.querySelector('.routine-duration');
+      const durationInput = itemEl.querySelector('.routine-duration');
       const dayCheckboxes = itemEl.querySelectorAll('.routine-day');
       const deleteBtn = itemEl.querySelector('.routine-item-delete');
 
@@ -360,8 +352,8 @@ class SettingsManager {
         items[index].startTime = startTimeInput.value || null;
       });
 
-      durationSelect.addEventListener('change', () => {
-        items[index].duration = parseInt(durationSelect.value, 10) || 0;
+      durationInput.addEventListener('change', () => {
+        items[index].duration = parseInt(durationInput.value, 10) || 0;
       });
 
       dayCheckboxes.forEach((cb) => {

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.12.1] - 2026-02-15
 
+### Changed
+
+- **Duration inputs** — Task planned duration and daily routine duration changed from fixed dropdowns to free number inputs (in minutes), allowing any value up to 24 hours (e.g. 105 min for a therapy session, 420 min for sleep)
+- Clock view info panels now display durations in friendly format (`1h 45m`) instead of raw minutes
+
 ### Fixed
 
 - **Todoist Sync — API v1 Migration** — Todoist deprecated their REST API v2 on 2026-02-10 (all endpoints return HTTP 410 Gone). Migrated to the new API v1.

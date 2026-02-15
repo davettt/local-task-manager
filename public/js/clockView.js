@@ -388,7 +388,7 @@ class ClockView {
           path.setAttribute('class', 'routine-arc');
           path.style.cursor = 'pointer';
           const title = document.createElementNS(NS, 'title');
-          title.textContent = `${item.icon || ''} ${item.label}\n${item.startTime} (${item.duration} min)`;
+          title.textContent = `${item.icon || ''} ${item.label}\n${item.startTime} (${this._formatDuration(item.duration)})`;
           path.appendChild(title);
           path.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -707,7 +707,7 @@ class ClockView {
       <div class="clock-info-title">${this._escapeHtml(task.description)}${projectHtml ? ` ${projectHtml}` : ''}</div>
       <div class="clock-info-meta">
         <span>${startTime} – ${endTime}</span>
-        <span>${duration} min</span>
+        <span>${this._formatDuration(duration)}</span>
         <span class="${priorityClass}">${task.priority} priority</span>
       </div>
     `;
@@ -728,7 +728,7 @@ class ClockView {
       <div class="clock-info-title" style="color: var(--color-accent-cyan)">${this._escapeHtml(appt.description)}</div>
       <div class="clock-info-meta">
         <span>${startTime} – ${endTime}</span>
-        <span>${duration} min</span>
+        <span>${this._formatDuration(duration)}</span>
         <span style="color: var(--color-accent-cyan)">appointment</span>
       </div>
     `;
@@ -744,7 +744,9 @@ class ClockView {
 
     const icon = item.icon || '';
     const label = this._escapeHtml(item.label);
-    const durationStr = item.duration ? `${item.duration} min` : 'Quick item';
+    const durationStr = item.duration
+      ? this._formatDuration(item.duration)
+      : 'Quick item';
     const endMins = item.duration
       ? ClockMath.timeToMinutes(item.startTime) + item.duration
       : null;
@@ -779,6 +781,15 @@ class ClockView {
   /**
    * Escape HTML for safe insertion.
    */
+  _formatDuration(minutes) {
+    if (!minutes) return '0 min';
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    if (h === 0) return `${m} min`;
+    if (m === 0) return `${h}h`;
+    return `${h}h ${m}m`;
+  }
+
   _escapeHtml(str) {
     const div = document.createElement('div');
     div.textContent = str;

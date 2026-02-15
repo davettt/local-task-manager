@@ -526,21 +526,8 @@ class UI {
     );
     document.getElementById('planned-start-time').value =
       task.plannedStartTime || '';
-    const durationSelect = document.getElementById('planned-duration');
-    const durationVal = String(task.plannedDuration || 60);
-    // If the duration from a clock drag isn't a standard option, add it
-    if (!durationSelect.querySelector(`option[value="${durationVal}"]`)) {
-      const mins = parseInt(durationVal, 10);
-      const label =
-        mins >= 60
-          ? `${(mins / 60).toFixed(1).replace('.0', '')} hours`
-          : `${mins} min`;
-      const opt = document.createElement('option');
-      opt.value = durationVal;
-      opt.textContent = label;
-      durationSelect.appendChild(opt);
-    }
-    durationSelect.value = durationVal;
+    document.getElementById('planned-duration').value =
+      task.plannedDuration || 60;
   }
 
   /**
