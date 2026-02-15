@@ -224,6 +224,16 @@ class SettingsManager {
     }
     this.applyFontSize(localization.fontSize || 'small');
 
+    // Streaks toggle
+    const streaksCheckbox = document.getElementById('streaks-enabled');
+    if (streaksCheckbox) {
+      const streaksEnabled =
+        this.currentSettings.streaksEnabled !== undefined
+          ? this.currentSettings.streaksEnabled
+          : true;
+      streaksCheckbox.checked = streaksEnabled;
+    }
+
     // Daily routine items
     this.renderRoutineItems(dailyRoutine);
 
@@ -414,6 +424,7 @@ class SettingsManager {
         timeFormat: document.getElementById('time-format-select').value,
         fontSize: document.getElementById('font-size-select').value,
       },
+      streaksEnabled: document.getElementById('streaks-enabled').checked,
       dailyRoutine: this.currentSettings.dailyRoutine,
       cleanup: {
         defaultCutoffDays: parseInt(
@@ -1071,6 +1082,7 @@ class SettingsManager {
         { id: '4', label: 'Slack DMs', icon: '💬', enabled: true },
         { id: '5', label: 'Slack channels', icon: '📢', enabled: true },
       ],
+      streaksEnabled: true,
       cleanup: {
         defaultCutoffDays: 30,
         lastCleanup: null,

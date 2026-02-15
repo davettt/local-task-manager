@@ -424,6 +424,9 @@ function updateUserSettings(updates) {
         ...updates.cleanup,
       };
     }
+    if (updates.streaksEnabled !== undefined) {
+      config.userSettings.streaksEnabled = updates.streaksEnabled;
+    }
 
     writeConfig(config);
     return config;

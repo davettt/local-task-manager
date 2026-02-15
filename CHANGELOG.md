@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.12.1] - 2026-02-15
 
+### Added
+
+- **Streak toggle** — New "Show streak counter" checkbox in Settings > General to hide/show the daily completion streak from the header bar. Enabled by default. When off, celebrations are also suppressed.
+
 ### Changed
 
 - **Duration inputs** — Task planned duration and daily routine duration changed from fixed dropdowns to free number inputs (in minutes), allowing any value up to 24 hours (e.g. 105 min for a therapy session, 420 min for sleep)

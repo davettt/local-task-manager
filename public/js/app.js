@@ -83,6 +83,12 @@ class App {
     if (config.userSettings?.dailyRoutine) {
       this.clockView.setRoutineItems(config.userSettings.dailyRoutine);
     }
+
+    // Streaks setting
+    this.streaksEnabled =
+      config.userSettings?.streaksEnabled !== undefined
+        ? config.userSettings.streaksEnabled
+        : true;
   }
 
   /**
@@ -604,6 +610,12 @@ class App {
   updateStreakDisplay() {
     const streakDisplay = document.getElementById('streak-display');
     if (!streakDisplay) return;
+
+    if (!this.streaksEnabled) {
+      streakDisplay.textContent = '';
+      streakDisplay.classList.remove('active');
+      return;
+    }
 
     const streakText = gamification.getStreakDisplayText();
     streakDisplay.textContent = streakText;
@@ -1139,8 +1151,10 @@ class App {
       UI.showStatus(`task completed: ${task.description}`);
 
       // Record gamification (streak + celebration)
-      gamification.recordTaskCompletion();
-      gamification.showCelebration(task.description);
+      if (this.streaksEnabled) {
+        gamification.recordTaskCompletion();
+        gamification.showCelebration(task.description);
+      }
 
       // Play completion sound
       playCompletionSound();
