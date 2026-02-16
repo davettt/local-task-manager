@@ -26,10 +26,13 @@ const LOCK_FILE = path.join(DATA_DIR, '.lock');
  */
 function isPortAvailable(port) {
   return new Promise((resolve) => {
-    const server = app.listen(port, () => {
-      server.close(() => resolve(true));
+    const net = require('net');
+    const tester = net.createServer();
+    tester.once('error', () => resolve(false));
+    tester.once('listening', () => {
+      tester.close(() => resolve(true));
     });
-    server.on('error', () => resolve(false));
+    tester.listen(port, '0.0.0.0');
   });
 }
 
