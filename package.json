@@ -1,6 +1,6 @@
 {
   "name": "local-task-manager",
-  "version": "1.12.1",
+  "version": "1.13.0",
   "description": "A lightweight task management application with integrated timer, pomodoro timer, analog clock view, calendar appointment reminders, recurring tasks, gamification, archive management, and server reliability features",
   "main": "src/server.js",
   "type": "commonjs",

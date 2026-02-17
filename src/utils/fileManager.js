@@ -70,6 +70,10 @@ function migrateTaskFields(tasks) {
       task.project = null;
       migrated = true;
     }
+    if (task.plannedStartDate === undefined) {
+      task.plannedStartDate = null;
+      migrated = true;
+    }
   });
   return migrated;
 }

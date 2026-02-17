@@ -178,6 +178,7 @@ router.post('/tasks', (req, res) => {
       workingDaysOnly,
       pomodoroMode,
       pomodoroInterval,
+      plannedStartDate,
       plannedStartTime,
       plannedDuration,
       project,
@@ -217,6 +218,8 @@ router.post('/tasks', (req, res) => {
           pomodoroMode: pomodoroMode ?? existingTask.pomodoroMode ?? false,
           pomodoroInterval:
             pomodoroInterval || existingTask.pomodoroInterval || 25,
+          plannedStartDate:
+            plannedStartDate ?? existingTask.plannedStartDate ?? null,
           plannedStartTime:
             plannedStartTime ?? existingTask.plannedStartTime ?? null,
           project:
@@ -251,6 +254,7 @@ router.post('/tasks', (req, res) => {
           links: links || [],
           pomodoroMode: pomodoroMode || false,
           pomodoroInterval: pomodoroInterval || 25,
+          plannedStartDate: plannedStartDate || null,
           plannedStartTime: plannedStartTime || null,
           plannedDuration: plannedDuration || 60,
           clockRing: null,
@@ -282,6 +286,7 @@ router.post('/tasks', (req, res) => {
         links: links || [],
         pomodoroMode: pomodoroMode || false,
         pomodoroInterval: pomodoroInterval || 25,
+        plannedStartDate: plannedStartDate || null,
         plannedStartTime: plannedStartTime || null,
         plannedDuration: plannedDuration || 60,
         clockRing: null,
@@ -407,6 +412,33 @@ router.post('/tasks/:id/complete', (req, res) => {
         task.recurring,
         task.workingDaysOnly
       );
+      // Calculate planned start date for recurring task
+      // Use date string splitting to avoid UTC/local timezone mismatches
+      let nextPlannedStartDate = null;
+      if (task.plannedStartDate && task.dueDate) {
+        const [dueY, dueM, dueD] = task.dueDate.split('-').map(Number);
+        const [startY, startM, startD] = task.plannedStartDate
+          .split('-')
+          .map(Number);
+        const dueMs = Date.UTC(dueY, dueM - 1, dueD);
+        const startMs = Date.UTC(startY, startM - 1, startD);
+        const offsetDays = Math.round((startMs - dueMs) / 86400000);
+        const [nextY, nextM, nextD] = nextDueDate.split('-').map(Number);
+        const nextStartDate = new Date(
+          Date.UTC(nextY, nextM - 1, nextD + offsetDays)
+        );
+        const sy = nextStartDate.getUTCFullYear();
+        const sm = String(nextStartDate.getUTCMonth() + 1).padStart(2, '0');
+        const sd = String(nextStartDate.getUTCDate()).padStart(2, '0');
+        nextPlannedStartDate = `${sy}-${sm}-${sd}`;
+      } else if (task.plannedStartDate) {
+        nextPlannedStartDate = calculateNextDueDate(
+          task.plannedStartDate,
+          task.recurring,
+          task.workingDaysOnly
+        );
+      }
+
       const newTask = {
         id: `${Date.now()}${Math.floor(Math.random() * 1000)}`,
         description: task.description,
@@ -427,9 +459,11 @@ router.post('/tasks/:id/complete', (req, res) => {
         links: task.links || [],
         pomodoroMode: task.pomodoroMode || false,
         pomodoroInterval: task.pomodoroInterval || 25,
+        plannedStartDate: nextPlannedStartDate,
         plannedStartTime: task.plannedStartTime || null,
         plannedDuration: task.plannedDuration || 60,
         clockRing: null,
+        project: task.project || null,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -787,6 +821,7 @@ router.post('/tasks/import', (req, res) => {
       links: t.links || [],
       pomodoroMode: t.pomodoroMode || false,
       pomodoroInterval: t.pomodoroInterval || 25,
+      plannedStartDate: t.plannedStartDate || null,
       plannedStartTime: t.plannedStartTime || null,
       plannedDuration: t.plannedDuration || 60,
       clockRing: null,

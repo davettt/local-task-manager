@@ -504,7 +504,7 @@ class ClockView {
         !task.completed &&
         !task.archived &&
         !task.isAppointment &&
-        task.dueDate === today &&
+        (task.plannedStartDate || task.dueDate) === today &&
         (task.plannedStartTime || task.dueTime)
     );
 
@@ -986,7 +986,7 @@ class ClockView {
         !t.completed &&
         !t.archived &&
         !t.isAppointment &&
-        t.dueDate === today &&
+        (t.plannedStartDate || t.dueDate) === today &&
         (t.plannedStartTime || t.dueTime)
     );
 

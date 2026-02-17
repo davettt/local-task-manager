@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.13.0] - 2026-02-17
+
+### Added
+
+- **Planned Start Date** — Tasks now have a separate "Planned Start Date" field alongside the existing due date
+  - Allows scheduling work to begin before the due date (e.g., start prep today for a Friday meeting)
+  - Shown in task list and active task view when it differs from the due date ("Start: date")
+  - Clock view displays tasks on their planned start date (falls back to due date if not set)
+  - Appointments remain tied to their due date on the clock
+- **Recurring task start date advancement** — When a recurring task is completed, the planned start date advances by the same interval as the due date, maintaining the original offset between start and due dates
+- **Auto-migration** — Existing tasks automatically receive `plannedStartDate: null` on server start
+
+### Fixed
+
+- **Recurring task timezone bug** — Fixed off-by-one day error in recurring task date calculations caused by UTC/local timezone mismatch (affected AEDT and other UTC+ timezones)
+
+### Files Modified
+
+- `public/index.html` — Added planned-start-date input field in task form
+- `public/js/ui.js` — Form data collection/population, start date display in task list and active task
+- `src/routes/api.js` — plannedStartDate in task CRUD, recurring logic with UTC-safe date arithmetic, import route
+- `src/utils/fileManager.js` — plannedStartDate auto-migration
+- `public/js/clockView.js` — Task filtering uses plannedStartDate when available
+
+---
+
 ## [1.12.1] - 2026-02-15
 
 ### Added

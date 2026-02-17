@@ -19,6 +19,7 @@ A lightweight, single-focused task management application with an integrated tim
 - **Sound Alerts**: Audio notification when tasks are completed
 - **Calendar Appointments**: Mark tasks as time-critical appointments with customizable reminders
 - **Appointment Reminders**: In-app alerts (15 min to 1 day before) with sound notification
+- **Planned Start Date**: Schedule when to begin working on a task separately from the due date — clock view shows tasks on their start date
 - **Recurring Tasks**: Create daily or weekly recurring tasks
 - **Working Days Only**: Daily recurring tasks can skip weekends (Saturday/Sunday)
 - **Gamification**: Streak counter for completing 3+ tasks per day with celebration notifications
@@ -365,6 +366,9 @@ Each task contains:
   "completedAt": "ISO_timestamp or null",
   "links": ["https://example.com"],
   "details": "Optional additional notes",
+  "plannedStartDate": "YYYY-MM-DD or null",
+  "plannedStartTime": "HH:MM or null",
+  "plannedDuration": 60,
   "pomodoroMode": false,
   "pomodoroInterval": 25,
   "project": "Project name or null",
@@ -383,6 +387,9 @@ Each task contains:
 - **reminderMinutes**: How many minutes before the due date/time to trigger the appointment reminder
 - **pomodoroMode**: When true, Pomodoro timer is enabled for this task
 - **pomodoroInterval**: Pomodoro interval duration in minutes (25, 45, or 65)
+- **plannedStartDate**: When the user plans to begin working on the task (clock view uses this date instead of dueDate)
+- **plannedStartTime**: Time of day the user plans to start working (displayed as arc on clock)
+- **plannedDuration**: Estimated work duration in minutes (determines arc length on clock)
 - **project**: Project/category name for grouping tasks (displayed as colored badge)
 
 ## Code Quality

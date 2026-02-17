@@ -120,6 +120,15 @@ class UI {
         const recurringIcon = TaskManager.getRecurringIcon(task.recurring);
         metaHtml += `<span class="active-recurring">${recurringIcon} ${task.recurring}</span>`;
       }
+      if (
+        task.plannedStartDate &&
+        task.plannedStartDate !== task.dueDate
+      ) {
+        const startDateStr = window.settingsManager
+          ? window.settingsManager.formatDate(task.plannedStartDate)
+          : task.plannedStartDate;
+        metaHtml += `<span class="active-start-date">Start: ${startDateStr}</span>`;
+      }
       if (task.dueDate || task.dueTime) {
         const dateTimeStr = TaskManager.formatDateTime(
           task.dueDate,
@@ -210,11 +219,21 @@ class UI {
     const recurringIcon = TaskManager.getRecurringIcon(task.recurring);
     const dateTimeStr = TaskManager.formatDateTime(task.dueDate, task.dueTime);
     const appointmentIndicator = task.isAppointment ? ' 🔔' : '';
-    const dateTimeHtml = dateTimeStr
+    let dateTimeHtml = dateTimeStr
       ? `<span class="task-due">${dateTimeStr}${appointmentIndicator}</span>`
       : task.isAppointment
         ? `<span class="task-due">🔔</span>`
         : '';
+
+    // Show planned start date if it differs from due date
+    if (task.plannedStartDate && task.plannedStartDate !== task.dueDate) {
+      const startDateStr = window.settingsManager
+        ? window.settingsManager.formatDate(task.plannedStartDate)
+        : task.plannedStartDate;
+      dateTimeHtml =
+        `<span class="task-start-date">Start: ${startDateStr}</span>` +
+        dateTimeHtml;
+    }
     const recurringHtml = recurringIcon
       ? `<span class="recurring-badge" title="Recurring: ${task.recurring}">${recurringIcon} ${task.recurring}</span>`
       : '';
@@ -472,6 +491,8 @@ class UI {
       document.getElementById('working-days-only').checked;
     const links = TaskManager.parseLinks(linksInput);
 
+    const plannedStartDate =
+      document.getElementById('planned-start-date').value;
     const plannedStartTime =
       document.getElementById('planned-start-time').value;
     const plannedDuration = parseInt(
@@ -492,6 +513,7 @@ class UI {
       reminderMinutes: isAppointment ? reminderMinutes : null,
       workingDaysOnly: recurring === 'daily' ? workingDaysOnly : false,
       links,
+      plannedStartDate: plannedStartDate || null,
       plannedStartTime: plannedStartTime || null,
       plannedDuration: plannedDuration || 60,
       project: project || null,
@@ -524,6 +546,8 @@ class UI {
     document.getElementById('links').value = TaskManager.linksToString(
       task.links
     );
+    document.getElementById('planned-start-date').value =
+      task.plannedStartDate || '';
     document.getElementById('planned-start-time').value =
       task.plannedStartTime || '';
     document.getElementById('planned-duration').value =
