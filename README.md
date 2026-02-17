@@ -502,8 +502,14 @@ Potential features for future versions:
 
 ## License
 
-MIT
+MIT License with Commons Clause — free to use, fork, and modify for personal use. Commercial use requires written permission. See [LICENSE](LICENSE) for details.
 
-## Support
+## Personal Project Notice
 
-For issues, questions, or feedback about the development, check the `.claude/` directory for project specifications and workflow documentation.
+This is a personal project maintained for my own use. You're welcome to:
+
+- Fork and customize for your own needs
+- Report bugs via [GitHub Issues](https://github.com/davettt/local-task-manager/issues)
+- Reference the code for learning
+
+I'm not actively reviewing pull requests or feature requests, as this keeps the project focused on my personal workflow.

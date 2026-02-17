@@ -21,7 +21,7 @@
     "productivity"
   ],
   "author": "",
-  "license": "MIT",
+  "license": "MIT WITH Commons-Clause",
   "dependencies": {
     "axios": "^1.6.0",
     "dotenv": "^17.2.3",

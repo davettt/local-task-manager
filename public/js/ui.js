@@ -120,10 +120,7 @@ class UI {
         const recurringIcon = TaskManager.getRecurringIcon(task.recurring);
         metaHtml += `<span class="active-recurring">${recurringIcon} ${task.recurring}</span>`;
       }
-      if (
-        task.plannedStartDate &&
-        task.plannedStartDate !== task.dueDate
-      ) {
+      if (task.plannedStartDate && task.plannedStartDate !== task.dueDate) {
         const startDateStr = window.settingsManager
           ? window.settingsManager.formatDate(task.plannedStartDate)
           : task.plannedStartDate;
