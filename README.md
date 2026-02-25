@@ -448,6 +448,28 @@ The timer state is maintained server-side in the tasks.json file for reliability
 - If the server crashed and left a stale lock file, the new instance will automatically clean it up
 - To manually remove a stale lock file: `rm local_data/.lock`
 
+## Privacy & Data Protection
+
+Local Task Manager is designed to be safe for use with personal and work tasks:
+
+- **All data is stored locally** — tasks, settings, and archive files are saved to `local_data/` on your own machine. Nothing is synced to a cloud service, external database, or third-party storage
+- **No telemetry or analytics** — the app collects no usage data and makes no background network calls
+- **The server runs on localhost** — the Express backend is a local process intended for single-user use on your own machine
+- **All core features are fully offline** — task management, timers, Pomodoro, clock view, archive, and backup/restore all work entirely on-device with no external calls
+
+### Todoist sync and data handling
+
+Many organisations restrict the use of personal API tokens for work-related data, or require that task and project information remains within approved systems. The default mode — no Todoist token — keeps the app entirely local, making it suitable for use with work tasks under data privacy or IT policies. Todoist sync is available for personal use or where your organisation permits it.
+
+The only outbound network call this app makes is to the Todoist API, and it is strictly opt-in:
+
+| Mode | How it works | Data leaves your machine? |
+|---|---|---|
+| **Default (no token)** | All features work locally, Todoist sync routes are not loaded | No |
+| **Todoist sync enabled** | Tasks sync bidirectionally with your Todoist account via their API | Yes — task data sent to Todoist API using your personal token |
+
+To enable Todoist sync, add your API token to `.env`. Leave it empty (or omit it entirely) to keep the app fully local. The sync routes are not mounted at all unless the token is present.
+
 ## Development Standards
 
 This project uses:

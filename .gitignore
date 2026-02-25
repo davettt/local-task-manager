@@ -31,5 +31,6 @@ npm-debug.log*
 dist/
 build/
 
-# Claude 
+# Claude Code
 .claude/
+CLAUDE.md
