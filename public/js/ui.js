@@ -1,4 +1,4 @@
-/* global TaskManager, TaskTimer */
+/* global TaskManager, TaskTimer, TimeWidget */
 
 /**
  * UI Module
@@ -53,6 +53,17 @@ class UI {
     return div.innerHTML;
   }
 
+  static autoResizeTextarea(el) {
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
+  }
+
+  static initAutoResizeTextareas() {
+    document.querySelectorAll('.form-group textarea').forEach((ta) => {
+      ta.addEventListener('input', () => UI.autoResizeTextarea(ta));
+    });
+  }
+
   /**
    * Show modal
    * @param {boolean} isEditing - Whether we're editing an existing task
@@ -72,6 +83,11 @@ class UI {
 
     if (modal) {
       modal.classList.remove('hidden');
+    }
+
+    const details = document.getElementById('details');
+    if (details && details.value) {
+      UI.autoResizeTextarea(details);
     }
   }
 
@@ -94,6 +110,10 @@ class UI {
     if (form) {
       form.reset();
     }
+    const details = document.getElementById('details');
+    if (details) details.style.height = 'auto';
+    TimeWidget.syncFromHidden('due-time-widget');
+    TimeWidget.syncFromHidden('planned-start-time-widget');
   }
 
   /**
@@ -137,7 +157,7 @@ class UI {
       // Build extended details
       let extendedDetailsHtml = '';
       if (task.details && task.details.trim()) {
-        extendedDetailsHtml = `<div class="active-details-content">${task.details.replace(/\n/g, '<br>')}</div>`;
+        extendedDetailsHtml = `<div class="active-details-content">${UI.escapeHtml(task.details).replace(/\n/g, '<br>')}</div>`;
       }
 
       // Build links
@@ -147,8 +167,8 @@ class UI {
           ${task.links
             .map(
               (link) =>
-                `<a href="${link}" target="_blank" rel="noopener noreferrer" class="active-link">
-              🔗 ${link}
+                `<a href="${UI.escapeHtml(link)}" target="_blank" rel="noopener noreferrer" class="active-link">
+              🔗 ${UI.escapeHtml(link)}
             </a>`
             )
             .join('')}
@@ -216,31 +236,39 @@ class UI {
     const recurringIcon = TaskManager.getRecurringIcon(task.recurring);
     const dateTimeStr = TaskManager.formatDateTime(task.dueDate, task.dueTime);
     const appointmentIndicator = task.isAppointment ? ' 🔔' : '';
+
+    // Determine due date urgency
+    let dueDateClass = 'task-due';
+    if (task.dueDate) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const dueDate = new Date(task.dueDate + 'T00:00:00');
+      if (dueDate < today) {
+        dueDateClass = 'task-due task-overdue';
+      } else if (dueDate.getTime() === today.getTime()) {
+        dueDateClass = 'task-due task-due-today';
+      }
+    }
+
     let dateTimeHtml = dateTimeStr
-      ? `<span class="task-due">${dateTimeStr}${appointmentIndicator}</span>`
+      ? `<span class="${dueDateClass}">${dateTimeStr}${appointmentIndicator}</span>`
       : task.isAppointment
         ? `<span class="task-due">🔔</span>`
         : '';
 
-    // Show planned start date if it differs from due date
+    // Show planned start date below due date if it differs
+    let startDateHtml = '';
     if (task.plannedStartDate && task.plannedStartDate !== task.dueDate) {
       const startDateStr = window.settingsManager
         ? window.settingsManager.formatDate(task.plannedStartDate)
         : task.plannedStartDate;
-      dateTimeHtml =
-        `<span class="task-start-date">Start: ${startDateStr}</span>` +
-        dateTimeHtml;
+      startDateHtml = `<span class="task-start-date">Start: ${startDateStr}</span>`;
     }
     const recurringHtml = recurringIcon
       ? `<span class="recurring-badge" title="Recurring: ${task.recurring}">${recurringIcon} ${task.recurring}</span>`
       : '';
 
-    // Escape HTML helper function
-    const escapeHtml = (text) => {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    };
+    const escapeHtml = UI.escapeHtml;
 
     // Format time spent
     const timeSpent = task.timeSpent || 0;
@@ -277,21 +305,25 @@ class UI {
 
     const priority = task.priority || 'medium';
 
-    // Format project badge
-    const projectBadgeHtml = task.project
-      ? `<span class="project-badge" style="--badge-color: ${UI.getProjectColor(task.project)}">${escapeHtml(task.project)}</span>`
+    // Format project prefix
+    const projectPrefix = task.project
+      ? `<span class="project-prefix">[${escapeHtml(task.project)}]</span> `
       : '';
+
+    const priorityBadgeHtml = `<span class="priority-badge priority-badge-${priority}" role="img" aria-label="${priority} priority" title="${priority} priority"></span>`;
 
     return `
       <div class="task-item priority-${priority}" data-task-id="${escapeHtml(task.id)}">
         <div class="task-item-header">
+           ${priorityBadgeHtml}
            <div class="task-content">
-             <div class="task-title">${escapeHtml(task.description)}${projectBadgeHtml ? `<span class="task-title-badge-right">${projectBadgeHtml}</span>` : ''}</div>
-             <div class="task-meta">
-               ${dateTimeHtml}
-               ${recurringHtml}
-               ${timeHtml}
-             </div>
+             <div class="task-title">${projectPrefix}${escapeHtml(task.description)}</div>
+           </div>
+           <div class="task-meta-right">
+             ${dateTimeHtml}
+             ${startDateHtml}
+             ${recurringHtml}
+             ${timeHtml}
            </div>
         </div>
         <div class="task-item-details hidden">
@@ -383,16 +415,15 @@ class UI {
       return div.innerHTML;
     };
 
-    const projectBadgeHtml = task.project
-      ? `<span class="project-badge" style="--badge-color: ${UI.getProjectColor(task.project)}">${escapeHtml(task.project)}</span>`
+    const projectPrefix = task.project
+      ? `<span class="project-prefix">[${escapeHtml(task.project)}]</span> `
       : '';
 
     return `
       <div class="archived-task" data-task-id="${escapeHtml(task.id)}">
         <div class="archived-task-info">
           <div class="archived-task-title">
-            ${escapeHtml(task.description)}
-            ${projectBadgeHtml}
+            ${projectPrefix}${escapeHtml(task.description)}
             ${task.isAppointment ? `<span class="appointment-badge" title="Calendar Appointment">🔔</span>` : ''}
           </div>
           <div class="archived-task-time">
@@ -527,9 +558,11 @@ class UI {
     document.getElementById('description').value = task.description || '';
     document.getElementById('due-date').value = task.dueDate || '';
     document.getElementById('due-time').value = task.dueTime || '';
+    TimeWidget.syncFromHidden('due-time-widget');
     document.getElementById('priority').value = task.priority || 'medium';
     document.getElementById('recurring').value = task.recurring || '';
     document.getElementById('details').value = task.details || '';
+    UI.autoResizeTextarea(document.getElementById('details'));
     document.getElementById('is-appointment').checked =
       task.isAppointment || false;
     document.getElementById('reminder-minutes').value =
@@ -547,6 +580,7 @@ class UI {
       task.plannedStartDate || '';
     document.getElementById('planned-start-time').value =
       task.plannedStartTime || '';
+    TimeWidget.syncFromHidden('planned-start-time-widget');
     document.getElementById('planned-duration').value =
       task.plannedDuration || 60;
   }

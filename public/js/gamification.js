@@ -160,21 +160,22 @@ class Gamification {
     ╚════════════════════════════════╝
     `;
 
+    celebration.className = 'celebration-popup';
     celebration.style.cssText = `
       position: fixed;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background-color: #001a23;
-      border: 2px solid #2aa198;
-      color: #2aa198;
+      background-color: var(--color-base-darkest);
+      border: 2px solid var(--color-accent-green);
+      color: var(--color-accent-green);
       padding: 30px;
       border-radius: 4px;
       z-index: 10001;
       font-family: 'Courier New', monospace;
       font-size: 12px;
       white-space: pre;
-      box-shadow: 0 0 20px rgba(42, 161, 152, 0.5);
+      box-shadow: 0 0 20px rgba(42, 161, 152, 0.3);
       text-align: center;
       animation: celebrationPulse 0.6s ease-out;
       line-height: 1.6;

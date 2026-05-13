@@ -431,6 +431,12 @@ function updateUserSettings(updates) {
     if (updates.streaksEnabled !== undefined) {
       config.userSettings.streaksEnabled = updates.streaksEnabled;
     }
+    if (
+      updates.theme !== undefined &&
+      ['light', 'dark'].includes(updates.theme)
+    ) {
+      config.userSettings.theme = updates.theme;
+    }
 
     writeConfig(config);
     return config;

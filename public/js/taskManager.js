@@ -246,7 +246,9 @@ class TaskManager {
       return '';
     }
 
-    const taskDate = new Date(date);
+    const taskDate = date.match(/^\d{4}-\d{2}-\d{2}$/)
+      ? new Date(date + 'T00:00:00')
+      : new Date(date);
     const today = new Date();
 
     // Reset time to midnight for accurate date comparison

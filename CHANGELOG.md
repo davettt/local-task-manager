@@ -5,6 +5,67 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.14.0] - 2026-05-13
+
+### Added
+
+- **Light/Dark Theme Toggle** — Solarized Light theme with header button to switch between light and dark mode. Theme persists across sessions via server-side settings
+- **Custom Time Input Widget** — Replaced native `<input type="time">` with a custom 12-hour widget (hour, minute, AM/PM fields) with auto-advance, blur normalization, and clear button
+- **Auto-Resizing Textarea** — Task details textarea expands automatically to fit content, no manual resizing needed
+- **Priority Traffic Light Circles** — Priority indicators changed from text badges to colored circles (red/yellow/green) with ARIA labels for accessibility
+- **Due Date Urgency Indicators** — Overdue tasks shown in red, due-today tasks in yellow
+- **Task Divider Lines** — Subtle border between tasks for better visual separation in both themes
+
+### Changed
+
+- **Task Layout Restructure** — Project shown as `[ProjectName]` prefix before task title; dates, time, recurring, and time tracked moved to right-aligned column
+- **Expanded Task Background** — Expanded tasks use one uniform background color (no nested dark blocks for details)
+- **Celebration Popup** — Streak completion popup now respects light/dark theme using CSS variables
+- **axios** — Updated from `^1.6.0` to `^1.16.0` (security fix for CVEs in earlier versions)
+
+### Fixed
+
+- **Modal Close on Text Selection** — Modal no longer closes when dragging a text selection outside the modal border; requires both mousedown and click on backdrop
+- **Theme Persistence** — Theme setting now saved and restored on page load
+- **XSS in Active Task Details** — `task.details` now escaped before rendering in active task section
+- **XSS in Active Task Links** — Link URLs now escaped in active task `href` and display text
+- **XSS in Appointment Reminders** — `task.description` now escaped in reminder alerts
+- **XSS in Settings Routine Items** — `item.label` and `item.icon` now escaped in routine editor
+- **javascript: URL Injection** — Server rejects non-http/https URLs in task links
+- **Config Endpoint Validation** — `PUT /api/config` now validates structure and sanitizes string fields
+- **Backup Import Validation** — Config from imported backups sanitized before writing
+- **Timer Leak in Pomodoro Stop** — `handleStopPomodoro()` now calls `timer.stop()` to clear interval
+- **Date Parsing Off-by-One** — YYYY-MM-DD dates parsed as local time (`T00:00:00`) to prevent timezone shift
+- **JSON Body Size Limit** — Explicit 5MB limit on `express.json()` so large backups can import
+- **Theme Value Validation** — Server only accepts `'light'` or `'dark'` theme values
+- **Hardcoded Colors** — Cleanup modal, appointment reminders, settings notifications, and timezone prompt now use CSS variables for theme compatibility
+- **Duplicate escapeHtml** — Consolidated to single `UI.escapeHtml()` implementation
+
+### Accessibility
+
+- Priority badges have `role="img"` and `aria-label` for screen readers
+- Time widget inputs have `aria-label` attributes (Hour, Minute, AM or PM)
+- Clear time button has `aria-label="Clear time"`
+
+### Files Modified
+
+- `public/css/style.css` — Theme variables, task layout, custom time widget styles, divider lines
+- `public/js/timeWidget.js` — New custom time input widget
+- `public/js/app.js` — Modal close fix, theme toggle, timer stop fix
+- `public/js/ui.js` — Task rendering, auto-resize, XSS fixes, accessibility
+- `public/js/gamification.js` — Theme-aware celebration popup
+- `public/js/appointmentReminder.js` — XSS fix, theme-aware colors
+- `public/js/settings.js` — XSS fix, theme-aware notifications, date parsing fix
+- `public/js/taskManager.js` — Date parsing fix
+- `public/js/clockView.js` — Consolidated escapeHtml
+- `public/index.html` — Time widgets, aria labels, theme toggle, CSS variable cleanup
+- `src/routes/api.js` — URL protocol validation, config validation, body size limit
+- `src/utils/fileManager.js` — Theme validation in updateUserSettings
+- `src/server.js` — JSON body size limit
+- `package.json` — axios ^1.16.0, version bump
+
+---
+
 ## [1.13.0] - 2026-02-17
 
 ### Added

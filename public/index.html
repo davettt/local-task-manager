@@ -42,6 +42,13 @@
                   id="daily-checklist-list"
                 ></div>
               </div>
+              <button
+                id="theme-toggle-btn"
+                class="header-btn"
+                title="Toggle light/dark mode"
+              >
+                Light
+              </button>
               <button id="settings-btn" class="header-btn" title="Settings">
                 Settings
               </button>
@@ -223,8 +230,40 @@
             <input type="date" id="due-date" />
           </div>
           <div class="form-group">
-            <label for="due-time">Due Time</label>
-            <input type="time" id="due-time" />
+            <label>Due Time</label>
+            <div class="custom-time-input" id="due-time-widget">
+              <input
+                type="text"
+                class="time-hour"
+                maxlength="2"
+                placeholder="--"
+                inputmode="numeric"
+                aria-label="Hour"
+              />
+              <span class="time-sep">:</span>
+              <input
+                type="text"
+                class="time-minute"
+                maxlength="2"
+                placeholder="--"
+                inputmode="numeric"
+                aria-label="Minute"
+              />
+              <select class="time-period" aria-label="AM or PM">
+                <option value="">--</option>
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+              </select>
+              <button
+                type="button"
+                class="time-clear-btn"
+                title="Clear time"
+                aria-label="Clear time"
+              >
+                &times;
+              </button>
+            </div>
+            <input type="hidden" id="due-time" />
           </div>
           <div class="form-group">
             <label for="planned-start-date">Planned Start Date</label>
@@ -235,8 +274,40 @@
             >
           </div>
           <div class="form-group">
-            <label for="planned-start-time">Planned Start Time</label>
-            <input type="time" id="planned-start-time" />
+            <label>Planned Start Time</label>
+            <div class="custom-time-input" id="planned-start-time-widget">
+              <input
+                type="text"
+                class="time-hour"
+                maxlength="2"
+                placeholder="--"
+                inputmode="numeric"
+                aria-label="Hour"
+              />
+              <span class="time-sep">:</span>
+              <input
+                type="text"
+                class="time-minute"
+                maxlength="2"
+                placeholder="--"
+                inputmode="numeric"
+                aria-label="Minute"
+              />
+              <select class="time-period" aria-label="AM or PM">
+                <option value="">--</option>
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+              </select>
+              <button
+                type="button"
+                class="time-clear-btn"
+                title="Clear time"
+                aria-label="Clear time"
+              >
+                &times;
+              </button>
+            </div>
+            <input type="hidden" id="planned-start-time" />
             <small class="field-hint"
               >When you plan to work on this (shown on clock view)</small
             >
@@ -342,7 +413,13 @@
           <button class="close-btn" id="cleanup-modal-close">&times;</button>
         </div>
         <div style="padding: 12px">
-          <p style="color: #839496; margin-bottom: 8px; font-size: 12px">
+          <p
+            style="
+              color: var(--color-text-primary);
+              margin-bottom: 8px;
+              font-size: 12px;
+            "
+          >
             Move completed tasks to archive files before a selected date.
           </p>
           <div class="form-group">
@@ -351,12 +428,12 @@
           </div>
           <div
             style="
-              color: #586e75;
+              color: var(--color-text-muted);
               font-size: 11px;
               margin-bottom: 8px;
               padding: 6px;
-              background-color: #073642;
-              border-left: 2px solid #586e75;
+              background-color: var(--color-base-dark);
+              border-left: 2px solid var(--color-text-muted);
             "
           >
             💾 Tasks will be saved to archive files in local_data/. No data will
@@ -588,7 +665,7 @@
         <div style="padding: 12px">
           <p
             id="timezone-prompt-text"
-            style="color: #839496; margin-bottom: 12px"
+            style="color: var(--color-text-primary); margin-bottom: 12px"
           >
             Your timezone has changed. Would you like to update your existing
             tasks?
@@ -666,6 +743,7 @@
     </div>
 
     <!-- Scripts -->
+    <script src="js/timeWidget.js"></script>
     <script src="js/timer.js"></script>
     <script src="js/taskManager.js"></script>
     <script src="js/ui.js"></script>

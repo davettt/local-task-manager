@@ -1,4 +1,4 @@
-/* global TaskManager, TaskTimer, UI, ClockView, ClockDrag, playCompletionSound, appointmentReminder, gamification */
+/* global TaskManager, TaskTimer, UI, ClockView, ClockDrag, playCompletionSound, appointmentReminder, gamification, TimeWidget */
 
 /**
  * Main Application Module
@@ -28,6 +28,18 @@ class App {
    * Initialize the application
    */
   async init() {
+    // Load theme early to avoid flash
+    try {
+      const settingsRes = await fetch('/api/settings');
+      if (settingsRes.ok) {
+        const settings = await settingsRes.json();
+        if (settings.theme) this.applyTheme(settings.theme);
+      }
+    } catch {
+      // default dark theme
+    }
+    TimeWidget.initAll();
+    UI.initAutoResizeTextareas();
     this.attachEventListeners();
     UI.initDailyChecklist();
     this.clockView.init(document.getElementById('clock-container'));
@@ -102,6 +114,12 @@ class App {
         this.searchQuery = e.target.value.toLowerCase();
         this.render();
       });
+    }
+
+    // Theme toggle
+    const themeToggleBtn = document.getElementById('theme-toggle-btn');
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => this.toggleTheme());
     }
 
     // Modal controls
@@ -295,13 +313,18 @@ class App {
       );
     }
 
-    // Modal background click to close
+    // Modal background click to close (only if mousedown started on backdrop)
     const modal = document.getElementById('task-modal');
     if (modal) {
+      let mouseDownTarget = null;
+      modal.addEventListener('mousedown', (e) => {
+        mouseDownTarget = e.target;
+      });
       modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
+        if (e.target === modal && mouseDownTarget === modal) {
           UI.hideModal();
         }
+        mouseDownTarget = null;
       });
     }
 
@@ -959,6 +982,7 @@ class App {
       this.deactivateFocusMode();
 
       // Stop the timer
+      this.timer.stop();
       this.stopTaskTimeUpdate();
       const task = await this.taskManager.stopTask(this.activeTaskId);
 
@@ -1678,6 +1702,29 @@ class App {
   /**
    * Resume from break and continue next pomodoro
    */
+  applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    const btn = document.getElementById('theme-toggle-btn');
+    if (btn) {
+      btn.textContent = theme === 'light' ? 'Dark' : 'Light';
+    }
+  }
+
+  async toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'light' ? 'dark' : 'light';
+    this.applyTheme(next);
+    try {
+      await fetch('/api/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ theme: next }),
+      });
+    } catch {
+      // theme still applied visually
+    }
+  }
+
   resumeFromBreak() {
     if (!this.activeTaskId) {
       return;

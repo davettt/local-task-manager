@@ -298,7 +298,7 @@ class SettingsManager {
 
     if (!items || items.length === 0) {
       container.innerHTML =
-        '<p style="color: #586e75; text-align: center; padding: 12px">No items yet</p>';
+        '<p style="color: var(--color-text-muted); text-align: center; padding: 12px">No items yet</p>';
       return;
     }
 
@@ -312,17 +312,19 @@ class SettingsManager {
         )
         .join('');
 
+      const safeLabel = UI.escapeHtml(item.label);
+      const safeIcon = UI.escapeHtml(item.icon);
       itemEl.innerHTML = `
         <div class="routine-item-header">
           <label class="routine-item-checkbox">
             <input type="checkbox" ${item.enabled ? 'checked' : ''} class="routine-enable" />
-            <span>${item.label}</span>
+            <span>${safeLabel}</span>
           </label>
           <button class="routine-item-delete" data-index="${index}">🗑️</button>
         </div>
         <div class="routine-item-fields">
-          <input type="text" class="routine-label" value="${item.label}" placeholder="Item label" />
-          <input type="text" class="routine-icon" value="${item.icon}" placeholder="Icon" maxlength="2" />
+          <input type="text" class="routine-label" value="${safeLabel}" placeholder="Item label" />
+          <input type="text" class="routine-icon" value="${safeIcon}" placeholder="Icon" maxlength="2" />
         </div>
         <div class="routine-item-time-fields">
           <div class="routine-time-group">
@@ -676,7 +678,9 @@ class SettingsManager {
     if (!dateStr) return '';
 
     try {
-      const date = new Date(dateStr);
+      const date = dateStr.match(/^\d{4}-\d{2}-\d{2}$/)
+        ? new Date(dateStr + 'T00:00:00')
+        : new Date(dateStr);
       const format =
         this.currentSettings?.localization?.dateFormat || 'MM/DD/YYYY';
 
@@ -761,7 +765,7 @@ class SettingsManager {
       top: 20px;
       right: 20px;
       padding: 12px 16px;
-      background-color: ${type === 'error' ? '#dc322f' : '#2ecc71'};
+      background-color: ${type === 'error' ? 'var(--color-error)' : 'var(--color-success)'};
       color: white;
       border-radius: 4px;
       z-index: 10000;

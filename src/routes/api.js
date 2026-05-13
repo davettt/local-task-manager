@@ -34,9 +34,14 @@ function validateTask(task) {
   if (task.links && Array.isArray(task.links)) {
     task.links.forEach((link) => {
       try {
-        new URL(link);
-      } catch {
-        throw new Error(`Invalid URL: ${link}`);
+        const parsed = new URL(link);
+        if (!['http:', 'https:'].includes(parsed.protocol)) {
+          throw new Error(`Only http and https URLs are allowed: ${link}`);
+        }
+      } catch (e) {
+        throw e.message.includes('Only http')
+          ? e
+          : new Error(`Invalid URL: ${link}`);
       }
     });
   }
@@ -750,7 +755,14 @@ router.post('/backup/import', (req, res) => {
       });
     }
 
-    // Write config (full replace)
+    if (config.mantra && typeof config.mantra === 'object') {
+      const sanitize = (val, fb) =>
+        typeof val === 'string' ? val.slice(0, 200) : fb;
+      config.mantra.username = sanitize(config.mantra.username, 'user');
+      config.mantra.hostname = sanitize(config.mantra.hostname, 'matrix');
+      config.mantra.text = sanitize(config.mantra.text, '');
+    }
+
     writeConfig(config);
 
     res.json({
@@ -854,6 +866,38 @@ router.put('/config', (req, res) => {
 
     if (!config || typeof config !== 'object') {
       return res.status(400).json({ error: 'Invalid config object' });
+    }
+
+    if (!config.mantra || typeof config.mantra !== 'object') {
+      return res
+        .status(400)
+        .json({ error: 'Config must include mantra object' });
+    }
+
+    const sanitizeString = (val, fallback) =>
+      typeof val === 'string' ? val.slice(0, 200) : fallback;
+
+    config.mantra.username = sanitizeString(config.mantra.username, 'user');
+    config.mantra.hostname = sanitizeString(config.mantra.hostname, 'matrix');
+    config.mantra.text = sanitizeString(config.mantra.text, '');
+
+    if (config.userSettings && config.userSettings.dailyRoutine) {
+      if (!Array.isArray(config.userSettings.dailyRoutine)) {
+        return res.status(400).json({ error: 'dailyRoutine must be an array' });
+      }
+      config.userSettings.dailyRoutine = config.userSettings.dailyRoutine
+        .slice(0, 10)
+        .map((item) => ({
+          id: sanitizeString(item.id, ''),
+          label: sanitizeString(item.label, ''),
+          icon: sanitizeString(item.icon, ''),
+          enabled: Boolean(item.enabled),
+          startTime: item.startTime || null,
+          duration: typeof item.duration === 'number' ? item.duration : 0,
+          days: Array.isArray(item.days)
+            ? item.days.filter((d) => typeof d === 'string')
+            : [],
+        }));
     }
 
     writeConfig(config);

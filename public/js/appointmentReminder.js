@@ -149,8 +149,8 @@ class AppointmentReminder {
       position: fixed;
       top: 20px;
       right: 20px;
-      background-color: #dc322f;
-      color: #001a23;
+      background-color: var(--color-error);
+      color: var(--color-base-darkest);
       padding: 20px;
       border-radius: 8px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
@@ -162,21 +162,23 @@ class AppointmentReminder {
       font-family: monospace;
     `;
 
+    const escapedDesc = UI.escapeHtml(task.description);
+    const escapedId = UI.escapeHtml(task.id);
     alert.innerHTML = `
       <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
         <span style="font-size: 24px;">🔔</span>
         <div>
           <div>Appointment Reminder!</div>
-          <div style="font-size: 12px; margin-top: 4px;">${task.description}</div>
-          <div style="font-size: 12px; color: rgba(0, 26, 35, 0.7);">at ${timeStr}</div>
+          <div style="font-size: 12px; margin-top: 4px;">${escapedDesc}</div>
+          <div style="font-size: 12px; opacity: 0.7;">at ${timeStr}</div>
         </div>
       </div>
-      <button id="close-alert-${task.id}" style="
+      <button id="close-alert-${escapedId}" style="
         width: 100%;
         padding: 8px;
-        background-color: rgba(0, 26, 35, 0.2);
-        border: 1px solid rgba(0, 26, 35, 0.3);
-        color: #001a23;
+        background-color: rgba(0, 0, 0, 0.15);
+        border: 1px solid rgba(0, 0, 0, 0.2);
+        color: var(--color-base-darkest);
         border-radius: 4px;
         cursor: pointer;
         font-weight: bold;

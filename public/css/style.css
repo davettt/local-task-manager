@@ -27,6 +27,31 @@
   --color-primary: #2aa198;
 }
 
+/* Solarized Light Theme */
+[data-theme='light'] {
+  --color-base-darkest: #fdf6e3;
+  --color-base-dark: #eee8d5;
+  --color-base-medium: #ddd6c1;
+  --color-base-light: #eee8d5;
+  --color-base-darker: #c9c1ab;
+
+  --color-text-primary: #586e75;
+  --color-text-secondary: #657b83;
+  --color-text-muted: #93a1a1;
+
+  --color-accent-cyan: #2aa198;
+  --color-accent-blue: #268bd2;
+  --color-accent-green: #859900;
+  --color-accent-yellow: #b58900;
+  --color-accent-red: #dc322f;
+
+  --color-success: #859900;
+  --color-warning: #b58900;
+  --color-error: #dc322f;
+  --color-info: #268bd2;
+  --color-primary: #2aa198;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -255,7 +280,7 @@ body {
   color: var(--color-text-primary);
   font-size: 12px;
   padding: 2px 4px;
-  background-color: rgba(42, 161, 152, 0.05);
+  background-color: transparent;
   border-left: 2px solid var(--color-text-secondary);
   white-space: pre-wrap;
   word-break: break-word;
@@ -510,23 +535,11 @@ body {
 
 /* Task Items */
 .task-item {
-  border-left: 3px solid transparent;
-  padding: 0;
+  padding: 0 0 6px 0;
   margin: 0 6px;
   border-radius: 2px;
   transition: all 150ms ease;
-}
-
-.task-item.priority-high {
-  border-left-color: var(--color-accent-red);
-}
-
-.task-item.priority-medium {
-  border-left-color: var(--color-accent-yellow);
-}
-
-.task-item.priority-low {
-  border-left-color: var(--color-accent-cyan);
+  border-bottom: 1px solid var(--color-base-medium);
 }
 
 .task-item:hover {
@@ -535,9 +548,31 @@ body {
 
 .task-item-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   padding: 8px 10px;
   cursor: pointer;
+  gap: 8px;
+}
+
+/* Priority indicators */
+.priority-badge {
+  width: 10px;
+  height: 10px;
+  margin-top: 4px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.priority-badge-high {
+  background-color: var(--color-accent-red);
+}
+
+.priority-badge-medium {
+  background-color: var(--color-accent-yellow);
+}
+
+.priority-badge-low {
+  background-color: var(--color-accent-green);
 }
 
 .task-content {
@@ -555,28 +590,47 @@ body {
   word-break: break-word;
   overflow-wrap: break-word;
   white-space: pre-wrap;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
 }
 
-.task-title-badge-right {
-  margin-left: auto;
-  flex-shrink: 0;
+.project-prefix {
+  color: var(--color-text-muted);
 }
 
-.task-meta {
+.task-meta-left {
   color: var(--color-text-secondary);
   font-size: 12px;
   margin-top: 2px;
+}
+
+.task-meta-right {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  flex-shrink: 0;
+  text-align: right;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin-left: auto;
+}
+
+.task-start-date {
+  color: var(--color-text-muted);
+  font-size: 11px;
 }
 
 .task-due {
+  color: var(--color-text-secondary);
+}
+
+.task-overdue {
   color: var(--color-accent-red);
+  font-weight: bold;
+}
+
+.task-due-today {
+  color: var(--color-accent-yellow);
+  font-weight: bold;
 }
 
 .recurring-badge {
@@ -844,7 +898,7 @@ body {
   border: 2px solid var(--color-accent-cyan);
   border-radius: 4px;
   box-shadow: 0 0 20px rgba(42, 161, 152, 0.4);
-  max-width: 500px;
+  max-width: min(700px, 90%);
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
@@ -941,6 +995,7 @@ body {
 .form-group textarea {
   min-height: 60px;
   resize: vertical;
+  overflow-y: hidden;
 }
 
 /* Enhance native date picker icon */
@@ -963,24 +1018,75 @@ body {
   filter: invert(1) brightness(1.6);
 }
 
-/* Enhance native time picker icon */
-.form-group input[type='time']::-webkit-calendar-picker-indicator {
-  cursor: pointer;
+/* Custom time input widget */
+.custom-time-input {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.custom-time-input .time-hour,
+.custom-time-input .time-minute {
+  width: 32px;
+  text-align: center;
+  padding: 4px 2px;
+  background-color: var(--color-base-light);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-base-darker);
   border-radius: 2px;
-  margin-right: 2px;
-  opacity: 0.8;
-  filter: invert(0.8) brightness(1.2);
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
   transition: all 150ms ease;
 }
 
-.form-group input[type='time']:hover::-webkit-calendar-picker-indicator {
-  opacity: 1;
-  filter: invert(1) brightness(1.4);
+.custom-time-input .time-hour:focus,
+.custom-time-input .time-minute:focus {
+  outline: none;
+  border-color: var(--color-accent-cyan);
+  box-shadow: 0 0 6px rgba(42, 161, 152, 0.3);
+  color: var(--color-accent-cyan);
 }
 
-.form-group input[type='time']:focus::-webkit-calendar-picker-indicator {
-  opacity: 1;
-  filter: invert(1) brightness(1.6);
+.custom-time-input .time-sep {
+  color: var(--color-text-secondary);
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+}
+
+.custom-time-input .time-period {
+  width: 50px;
+  padding: 4px 2px;
+  margin-left: 4px;
+  background-color: var(--color-base-light);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-base-darker);
+  border-radius: 2px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  transition: all 150ms ease;
+  cursor: pointer;
+}
+
+.custom-time-input .time-period:focus {
+  outline: none;
+  border-color: var(--color-accent-cyan);
+  box-shadow: 0 0 6px rgba(42, 161, 152, 0.3);
+  color: var(--color-accent-cyan);
+}
+
+.custom-time-input .time-clear-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 4px;
+  margin-left: 4px;
+  transition: color 150ms ease;
+}
+
+.custom-time-input .time-clear-btn:hover {
+  color: var(--color-accent-red, #dc322f);
 }
 
 .form-actions {
@@ -2679,4 +2785,46 @@ body.font-large .focus-mode-overlay .break-message {
   #clock-toggle-btn {
     display: none;
   }
+}
+
+/* Light theme overrides */
+[data-theme='light'] .modal {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+[data-theme='light'] .modal-content {
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+  border-color: var(--color-accent-cyan);
+}
+
+[data-theme='light'] .form-group input:focus,
+[data-theme='light'] .form-group textarea:focus,
+[data-theme='light'] .form-group select:focus {
+  box-shadow: 0 0 6px rgba(42, 161, 152, 0.2);
+}
+
+[data-theme='light']
+  .form-group
+  input[type='date']::-webkit-calendar-picker-indicator {
+  filter: none;
+}
+
+[data-theme='light'] .task-item {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme='light'] .task-item:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+[data-theme='light'] .active-task-section {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='light'] .header-bar {
+  border-bottom: 1px solid var(--color-base-medium);
+}
+
+[data-theme='light'] .clock-hour-label {
+  fill: var(--color-text-primary);
 }
