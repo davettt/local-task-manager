@@ -182,8 +182,9 @@ npm run dev
 ## UI Design
 
 - **Header Bar**: Single responsive row with terminal prompt, status feedback, streak, search, +NEW, Routine dropdown, Settings, Clock, and time display
-- **Priority Indicators**: Colored left border on task items (red = high, yellow = medium, cyan = low)
-- **Project Badges**: Colored pill badges on tasks showing their project name, right-aligned in the title row
+- **Light/Dark Theme**: Toggle between Solarized Dark and Solarized Light themes via the header button; preference persists across sessions
+- **Priority Indicators**: Traffic light circles on task items (red = high, yellow = medium, green = low)
+- **Project Prefix**: Project name shown as `[ProjectName]` before the task title in muted text
 - **Task Actions**: START, DONE, and EDIT buttons appear only when a task is expanded
 - **Status Bar**: Terminal prompt shows feedback after actions (e.g., "task created: Review PR")
 - **Daily Routine**: Accessible via "Routine" dropdown in the header
@@ -238,7 +239,8 @@ local-task-manager/
 │       ├── clockDrag.js    # Clock drag interaction
 │       ├── appointmentReminder.js # Calendar appointment reminders
 │       ├── gamification.js # Streak counter and celebrations
-│       └── settings.js     # Settings manager
+│       ├── settings.js     # Settings manager
+│       └── timeWidget.js   # Custom 12-hour time input widget
 ├── local_data/
 │   └── tasks.json          # Task storage
 └── .claude/
@@ -516,7 +518,6 @@ Potential features for future versions:
 
 - Bulk task operations
 - Keyboard shortcuts
-- Dark/light theme toggle
 - Time tracking analytics
 - Calendar grid view
 - Multiple simultaneous timers
