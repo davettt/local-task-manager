@@ -232,9 +232,7 @@ class AppointmentReminder {
    */
   playNotificationSound() {
     try {
-      const audioContext = new (
-        window.AudioContext || window.webkitAudioContext
-      )();
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
 
@@ -246,10 +244,7 @@ class AppointmentReminder {
       oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
 
       gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(
-        0.01,
-        audioContext.currentTime + 0.6
-      );
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.6);
 
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + 0.6);

@@ -30,7 +30,7 @@ A lightweight, single-focused task management application with an integrated tim
 - **Data Persistence**: All tasks and settings saved to local JSON files
 - **Responsive Design**: Clean, narrow panel UI with flexible layout
 - **Server Reliability**: Single instance protection prevents data corruption from concurrent server processes
-- **Smart Port Detection**: Automatically finds available port if default (3000) is in use
+- **Smart Port Detection**: Automatically finds available port if the `PORT` env var (default 3000) is in use
 - **Todoist Sync (Optional)**: Bidirectional sync with Todoist for managing tasks across platforms
 
 ## User Workflow
@@ -104,23 +104,25 @@ npm run dev
    - Only one task can be active at a time
 
 4.1 **Use Pomodoro Timer** (Optional)
-   - While timer is running, you can enable pomodoro mode for flexible work intervals
-   - Select your preferred interval: 25 min (classic), 45 min, or 65 min (deep work)
-   - Check the "Enable Pomodoro" checkbox in the active task section
-   - Timer runs normally until the selected interval completes
-   - When interval ends: timer auto-pauses and a break modal appears with 5-minute countdown
-   - During break: choose to "Skip Break" (resume immediately) or "Continue Working" (auto-start next pomodoro)
-   - You can enable/disable pomodoro or change the interval anytime while timer is running
-   - Pomodoro is fully optional — you can mix normal and pomodoro timers across different tasks
-   - Pomodoro settings are saved per-task and restored when you restart the same task
+
+- While timer is running, you can enable pomodoro mode for flexible work intervals
+- Select your preferred interval: 25 min (classic), 45 min, or 65 min (deep work)
+- Check the "Enable Pomodoro" checkbox in the active task section
+- Timer runs normally until the selected interval completes
+- When interval ends: timer auto-pauses and a break modal appears with 5-minute countdown
+- During break: choose to "Skip Break" (resume immediately) or "Continue Working" (auto-start next pomodoro)
+- You can enable/disable pomodoro or change the interval anytime while timer is running
+- Pomodoro is fully optional — you can mix normal and pomodoro timers across different tasks
+- Pomodoro settings are saved per-task and restored when you restart the same task
 
 4.2 **Focus Mode** (Auto-activated with Pomodoro)
-   - When you enable Pomodoro and start the timer, Focus Mode activates automatically
-   - Full-screen overlay with dark background and your current task displayed prominently
-   - Large timer display with Pomodoro countdown and progress bar
-   - STOP, EDIT, PAUSE/RESUME, and DONE buttons available
-   - Press `Esc` key to exit Focus Mode at any time
-   - Break modal appears within Focus Mode when a Pomodoro interval completes
+
+- When you enable Pomodoro and start the timer, Focus Mode activates automatically
+- Full-screen overlay with dark background and your current task displayed prominently
+- Large timer display with Pomodoro countdown and progress bar
+- STOP, EDIT, PAUSE/RESUME, and DONE buttons available
+- Press `Esc` key to exit Focus Mode at any time
+- Break modal appears within Focus Mode when a Pomodoro interval completes
 
 5. **Stop or Complete**
    - Click "STOP" to pause the timer (task returns to list)
@@ -175,9 +177,10 @@ npm run dev
    - Click the "DELETE" button (red, left side of modal) to delete
 
 10. **Save and Reset Settings**
-   - Click "Save Settings" to apply all changes (app will refresh automatically)
-   - Click "Reset All to Defaults" to restore all settings to their original values
-   - Settings are saved server-side in `local_data/config.json` and persist across sessions
+
+- Click "Save Settings" to apply all changes (app will refresh automatically)
+- Click "Reset All to Defaults" to restore all settings to their original values
+- Settings are saved server-side in `local_data/config.json` and persist across sessions
 
 ## UI Design
 
@@ -213,6 +216,14 @@ npm run format:check
 
 # Security audit
 npm run audit:security
+
+# Smoke and integration tests (run against isolated servers)
+npm run test:smoke
+npm run test:integration
+
+# Secret scanning (betterleaks)
+npm run secrets            # full repo scan (betterleaks git . --redact)
+npm run secrets:staged     # staged changes only (used by the pre-commit hook)
 ```
 
 ### Project Structure
@@ -332,9 +343,7 @@ Import tasks additively (merges with existing tasks). Accepts LLM-friendly forma
 ```json
 {
   "project": "Project Name",
-  "tasks": [
-    { "description": "Task title", "priority": "high", "dueDate": "2026-03-01" }
-  ]
+  "tasks": [{ "description": "Task title", "priority": "high", "dueDate": "2026-03-01" }]
 }
 ```
 
@@ -433,9 +442,9 @@ The timer state is maintained server-side in the tasks.json file for reliability
 
 ### Port already in use
 
-- The server automatically detects if port 3000 is in use and finds the next available port
+- The server uses the `PORT` env var (default 3000) and automatically detects if it is in use, then finds the next available port
 - A warning message will be displayed showing which port is being used
-- Alternatively, you can change the default port in .env file: `PORT=3001`
+- Alternatively, you can change the starting port in your `.env` file: `PORT=3001`
 
 ### No sound on task completion
 
@@ -456,7 +465,9 @@ Local Task Manager is designed to be safe for use with personal and work tasks:
 
 - **All data is stored locally** — tasks, settings, and archive files are saved to `local_data/` on your own machine. Nothing is synced to a cloud service, external database, or third-party storage
 - **No telemetry or analytics** — the app collects no usage data and makes no background network calls
-- **The server runs on localhost** — the Express backend is a local process intended for single-user use on your own machine
+- **The server runs on localhost only:** the Express backend binds to `127.0.0.1` by default, so other devices on your network cannot reach it. The `HOST` env var can override this, but the default is intended for single-user use on your own machine
+- **Browser request checks:** requests with a foreign `Host` header (DNS rebinding) or a foreign `Origin` on POST, PUT, PATCH, or DELETE are rejected with a 403
+- **Strict Content Security Policy:** Helmet sets a strict CSP on responses
 - **All core features are fully offline** — task management, timers, Pomodoro, clock view, archive, and backup/restore all work entirely on-device with no external calls
 
 ### Todoist sync and data handling
@@ -465,9 +476,9 @@ Many organisations restrict the use of personal API tokens for work-related data
 
 The only outbound network call this app makes is to the Todoist API, and it is strictly opt-in:
 
-| Mode | How it works | Data leaves your machine? |
-|---|---|---|
-| **Default (no token)** | All features work locally, Todoist sync routes are not loaded | No |
+| Mode                     | How it works                                                       | Data leaves your machine?                                     |
+| ------------------------ | ------------------------------------------------------------------ | ------------------------------------------------------------- |
+| **Default (no token)**   | All features work locally, Todoist sync routes are not loaded      | No                                                            |
 | **Todoist sync enabled** | Tasks sync bidirectionally with your Todoist account via their API | Yes — task data sent to Todoist API using your personal token |
 
 To enable Todoist sync, add your API token to `.env`. Leave it empty (or omit it entirely) to keep the app fully local. The sync routes are not mounted at all unless the token is present.
@@ -477,7 +488,8 @@ To enable Todoist sync, add your API token to `.env`. Leave it empty (or omit it
 This project uses:
 
 - **Node.js** runtime with CommonJS modules
-- **Express.js** for HTTP server
+- **Express 5** for HTTP server
+- **Helmet** for security headers (including Content-Security-Policy)
 - **Vanilla JavaScript** (no framework dependencies)
 - **File-based storage** (no database required)
 

@@ -48,9 +48,26 @@ class UI {
    * @returns {string} Escaped text
    */
   static escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+    // Quotes are escaped too, so the result is safe inside attribute values
+    return String(text ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  /**
+   * Escaped href for a user-supplied link; anything but http(s)/mailto becomes '#'
+   * so imported or synced data cannot carry javascript: or data: URLs
+   */
+  static safeHref(link) {
+    try {
+      const { protocol } = new URL(link);
+      return ['http:', 'https:', 'mailto:'].includes(protocol) ? UI.escapeHtml(link) : '#';
+    } catch (_e) {
+      return '#';
+    }
   }
 
   static autoResizeTextarea(el) {
@@ -147,10 +164,7 @@ class UI {
         metaHtml += `<span class="active-start-date">Start: ${startDateStr}</span>`;
       }
       if (task.dueDate || task.dueTime) {
-        const dateTimeStr = TaskManager.formatDateTime(
-          task.dueDate,
-          task.dueTime
-        );
+        const dateTimeStr = TaskManager.formatDateTime(task.dueDate, task.dueTime);
         metaHtml += `<span class="active-due">${dateTimeStr}</span>`;
       }
 
@@ -167,7 +181,7 @@ class UI {
           ${task.links
             .map(
               (link) =>
-                `<a href="${UI.escapeHtml(link)}" target="_blank" rel="noopener noreferrer" class="active-link">
+                `<a href="${UI.safeHref(link)}" target="_blank" rel="noopener noreferrer" class="active-link">
               🔗 ${UI.escapeHtml(link)}
             </a>`
             )
@@ -222,9 +236,7 @@ class UI {
       return;
     }
 
-    taskList.innerHTML = tasks
-      .map((task) => UI.createTaskElement(task))
-      .join('');
+    taskList.innerHTML = tasks.map((task) => UI.createTaskElement(task)).join('');
   }
 
   /**
@@ -284,9 +296,7 @@ class UI {
            ${task.links
              .map(
                (link) =>
-                 `<a href="${escapeHtml(
-                   link
-                 )}" target="_blank" rel="noopener noreferrer" class="task-link">
+                 `<a href="${UI.safeHref(link)}" target="_blank" rel="noopener noreferrer" class="task-link">
               🔗 ${escapeHtml(link)}
             </a>`
              )
@@ -367,9 +377,7 @@ class UI {
       return;
     }
 
-    archiveList.innerHTML = tasks
-      .map((task) => UI.createArchivedTaskElement(task))
-      .join('');
+    archiveList.innerHTML = tasks.map((task) => UI.createArchivedTaskElement(task)).join('');
   }
 
   /**
@@ -409,11 +417,7 @@ class UI {
     }
 
     // Escape HTML in task description
-    const escapeHtml = (text) => {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    };
+    const escapeHtml = UI.escapeHtml;
 
     const projectPrefix = task.project
       ? `<span class="project-prefix">[${escapeHtml(task.project)}]</span> `
@@ -511,22 +515,13 @@ class UI {
     const recurring = document.getElementById('recurring').value;
     const details = document.getElementById('details').value;
     const isAppointment = document.getElementById('is-appointment').checked;
-    const reminderMinutes = parseInt(
-      document.getElementById('reminder-minutes').value,
-      10
-    );
-    const workingDaysOnly =
-      document.getElementById('working-days-only').checked;
+    const reminderMinutes = parseInt(document.getElementById('reminder-minutes').value, 10);
+    const workingDaysOnly = document.getElementById('working-days-only').checked;
     const links = TaskManager.parseLinks(linksInput);
 
-    const plannedStartDate =
-      document.getElementById('planned-start-date').value;
-    const plannedStartTime =
-      document.getElementById('planned-start-time').value;
-    const plannedDuration = parseInt(
-      document.getElementById('planned-duration').value,
-      10
-    );
+    const plannedStartDate = document.getElementById('planned-start-date').value;
+    const plannedStartTime = document.getElementById('planned-start-time').value;
+    const plannedDuration = parseInt(document.getElementById('planned-duration').value, 10);
 
     const project = document.getElementById('project').value.trim();
 
@@ -563,26 +558,17 @@ class UI {
     document.getElementById('recurring').value = task.recurring || '';
     document.getElementById('details').value = task.details || '';
     UI.autoResizeTextarea(document.getElementById('details'));
-    document.getElementById('is-appointment').checked =
-      task.isAppointment || false;
-    document.getElementById('reminder-minutes').value =
-      task.reminderMinutes || 30;
+    document.getElementById('is-appointment').checked = task.isAppointment || false;
+    document.getElementById('reminder-minutes').value = task.reminderMinutes || 30;
     document.getElementById('reminder-minutes').disabled = !task.isAppointment;
-    document.getElementById('working-days-only').checked =
-      task.workingDaysOnly || false;
-    document.getElementById('working-days-only').disabled =
-      task.recurring !== 'daily';
+    document.getElementById('working-days-only').checked = task.workingDaysOnly || false;
+    document.getElementById('working-days-only').disabled = task.recurring !== 'daily';
     document.getElementById('project').value = task.project || '';
-    document.getElementById('links').value = TaskManager.linksToString(
-      task.links
-    );
-    document.getElementById('planned-start-date').value =
-      task.plannedStartDate || '';
-    document.getElementById('planned-start-time').value =
-      task.plannedStartTime || '';
+    document.getElementById('links').value = TaskManager.linksToString(task.links);
+    document.getElementById('planned-start-date').value = task.plannedStartDate || '';
+    document.getElementById('planned-start-time').value = task.plannedStartTime || '';
     TimeWidget.syncFromHidden('planned-start-time-widget');
-    document.getElementById('planned-duration').value =
-      task.plannedDuration || 60;
+    document.getElementById('planned-duration').value = task.plannedDuration || 60;
   }
 
   /**
@@ -590,18 +576,13 @@ class UI {
    * @param {string} taskId - Task ID
    */
   static toggleTaskDetails(taskId) {
-    const taskItem = document.querySelector(
-      `.task-item[data-task-id="${taskId}"]`
-    );
+    const taskItem = document.querySelector(`.task-item[data-task-id="${taskId}"]`);
     if (!taskItem) return;
 
     const details = taskItem.querySelector('.task-item-details');
     if (details) {
       details.classList.toggle('hidden');
-      taskItem.classList.toggle(
-        'expanded',
-        !details.classList.contains('hidden')
-      );
+      taskItem.classList.toggle('expanded', !details.classList.contains('hidden'));
     }
   }
 
@@ -664,9 +645,7 @@ class UI {
       const settings = await response.json();
       const { dailyRoutine } = settings;
 
-      const checklistContainer = document.getElementById(
-        'daily-checklist-list'
-      );
+      const checklistContainer = document.getElementById('daily-checklist-list');
       if (!checklistContainer) return;
 
       // Clear existing items but keep the container for state management

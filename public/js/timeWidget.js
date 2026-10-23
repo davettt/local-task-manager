@@ -14,9 +14,7 @@ class TimeWidget {
     const minuteInput = widget.querySelector('.time-minute');
     const periodSelect = widget.querySelector('.time-period');
     const clearBtn = widget.querySelector('.time-clear-btn');
-    const hiddenInput = widget
-      .closest('.form-group')
-      .querySelector('input[type="hidden"]');
+    const hiddenInput = widget.closest('.form-group').querySelector('input[type="hidden"]');
 
     function syncHidden() {
       const h = hourInput.value;
@@ -35,9 +33,7 @@ class TimeWidget {
     hourInput.addEventListener('keydown', (e) => {
       if (
         !/^\d$/.test(e.key) &&
-        !['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight'].includes(
-          e.key
-        )
+        !['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight'].includes(e.key)
       ) {
         e.preventDefault();
         return;
@@ -78,9 +74,7 @@ class TimeWidget {
     minuteInput.addEventListener('keydown', (e) => {
       if (
         !/^\d$/.test(e.key) &&
-        !['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight'].includes(
-          e.key
-        )
+        !['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight'].includes(e.key)
       ) {
         e.preventDefault();
         return;

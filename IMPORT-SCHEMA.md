@@ -19,42 +19,48 @@ Use this reference to generate import-ready JSON files for the Local Task Manage
 ## Fields
 
 ### Required
-| Field | Type | Example |
-|-------|------|---------|
+
+| Field         | Type   | Example                    |
+| ------------- | ------ | -------------------------- |
 | `description` | string | `"Design homepage mockup"` |
 
 ### Optional — Common
-| Field | Type | Default | Example |
-|-------|------|---------|---------|
-| `priority` | `"low"` \| `"medium"` \| `"high"` | `"medium"` | `"high"` |
-| `dueDate` | `"YYYY-MM-DD"` | `null` | `"2026-03-02"` |
-| `dueTime` | `"HH:MM"` (24h) | `null` | `"14:00"` |
-| `details` | string | `null` | `"Detailed notes..."` |
-| `links` | string[] | `[]` | `["https://example.com"]` |
+
+| Field      | Type                              | Default    | Example                   |
+| ---------- | --------------------------------- | ---------- | ------------------------- |
+| `priority` | `"low"` \| `"medium"` \| `"high"` | `"medium"` | `"high"`                  |
+| `dueDate`  | `"YYYY-MM-DD"`                    | `null`     | `"2026-03-02"`            |
+| `dueTime`  | `"HH:MM"` (24h)                   | `null`     | `"14:00"`                 |
+| `details`  | string                            | `null`     | `"Detailed notes..."`     |
+| `links`    | string[]                          | `[]`       | `["https://example.com"]` |
 
 ### Optional — Scheduling
-| Field | Type | Default | Notes |
-|-------|------|---------|-------|
-| `plannedStartTime` | `"HH:MM"` (24h) | `null` | When to start working (shown on clock view) |
-| `plannedDuration` | number (minutes) | `60` | Common: 15, 30, 45, 60, 90, 120, 180, 240 |
+
+| Field              | Type             | Default | Notes                                       |
+| ------------------ | ---------------- | ------- | ------------------------------------------- |
+| `plannedStartTime` | `"HH:MM"` (24h)  | `null`  | When to start working (shown on clock view) |
+| `plannedDuration`  | number (minutes) | `60`    | Common: 15, 30, 45, 60, 90, 120, 180, 240   |
 
 ### Optional — Recurring
-| Field | Type | Default | Notes |
-|-------|------|---------|-------|
-| `recurring` | `"daily"` \| `"weekly"` | `null` | Task repeats automatically |
-| `workingDaysOnly` | boolean | `false` | Skip weekends (only applies when `recurring: "daily"`) |
+
+| Field             | Type                    | Default | Notes                                                  |
+| ----------------- | ----------------------- | ------- | ------------------------------------------------------ |
+| `recurring`       | `"daily"` \| `"weekly"` | `null`  | Task repeats automatically                             |
+| `workingDaysOnly` | boolean                 | `false` | Skip weekends (only applies when `recurring: "daily"`) |
 
 ### Optional — Appointments
-| Field | Type | Default | Notes |
-|-------|------|---------|-------|
-| `isAppointment` | boolean | `false` | Marks as time-sensitive calendar item |
-| `reminderMinutes` | number | `30` | Only active when `isAppointment: true`. Values: 15, 30, 60, 120, 1440 |
+
+| Field             | Type    | Default | Notes                                                                 |
+| ----------------- | ------- | ------- | --------------------------------------------------------------------- |
+| `isAppointment`   | boolean | `false` | Marks as time-sensitive calendar item                                 |
+| `reminderMinutes` | number  | `30`    | Only active when `isAppointment: true`. Values: 15, 30, 60, 120, 1440 |
 
 ### Optional — Pomodoro
-| Field | Type | Default | Notes |
-|-------|------|---------|-------|
-| `pomodoroMode` | boolean | `false` | Enable pomodoro timer |
-| `pomodoroInterval` | number (minutes) | `25` | Common: 25, 45, 65 |
+
+| Field              | Type             | Default | Notes                 |
+| ------------------ | ---------------- | ------- | --------------------- |
+| `pomodoroMode`     | boolean          | `false` | Enable pomodoro timer |
+| `pomodoroInterval` | number (minutes) | `25`    | Common: 25, 45, 65    |
 
 ## Auto-generated (do NOT include)
 

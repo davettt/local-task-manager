@@ -269,6 +269,10 @@ function getDefaultUserSettings() {
       defaultCutoffDays: 30,
       lastCleanup: null,
     },
+    insights: {
+      enabled: true,
+      customTips: [],
+    },
   };
 }
 
@@ -316,9 +320,12 @@ function migrateConfig(config) {
     config.userSettings.dailyRoutine.forEach((item) => {
       if (item.startTime === undefined) item.startTime = null;
       if (item.duration === undefined) item.duration = 0;
-      if (item.days === undefined)
-        item.days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+      if (item.days === undefined) item.days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
     });
+  }
+
+  if (!config.userSettings.insights) {
+    config.userSettings.insights = { enabled: true, customTips: [] };
   }
 
   return config;
@@ -330,21 +337,13 @@ function migrateConfig(config) {
 function initializeConfigFile() {
   ensureDataDir();
   if (!fs.existsSync(CONFIG_FILE)) {
-    fs.writeFileSync(
-      CONFIG_FILE,
-      JSON.stringify(getDefaultConfig(), null, 2),
-      'utf8'
-    );
+    fs.writeFileSync(CONFIG_FILE, JSON.stringify(getDefaultConfig(), null, 2), 'utf8');
   } else {
     // Migrate existing config if needed
     const currentConfig = readConfigRaw();
     const migratedConfig = migrateConfig(currentConfig);
     if (JSON.stringify(currentConfig) !== JSON.stringify(migratedConfig)) {
-      fs.writeFileSync(
-        CONFIG_FILE,
-        JSON.stringify(migratedConfig, null, 2),
-        'utf8'
-      );
+      fs.writeFileSync(CONFIG_FILE, JSON.stringify(migratedConfig, null, 2), 'utf8');
     }
   }
 }
@@ -428,13 +427,21 @@ function updateUserSettings(updates) {
         ...updates.cleanup,
       };
     }
+    if (updates.insights) {
+      config.userSettings.insights = {
+        enabled:
+          updates.insights.enabled !== undefined
+            ? updates.insights.enabled
+            : (config.userSettings.insights?.enabled ?? true),
+        customTips: Array.isArray(updates.insights.customTips)
+          ? updates.insights.customTips
+          : config.userSettings.insights?.customTips || [],
+      };
+    }
     if (updates.streaksEnabled !== undefined) {
       config.userSettings.streaksEnabled = updates.streaksEnabled;
     }
-    if (
-      updates.theme !== undefined &&
-      ['light', 'dark'].includes(updates.theme)
-    ) {
+    if (updates.theme !== undefined && ['light', 'dark'].includes(updates.theme)) {
       config.userSettings.theme = updates.theme;
     }
 
@@ -444,6 +451,17 @@ function updateUserSettings(updates) {
     console.error('Error updating user settings:', error);
     throw error;
   }
+}
+
+function getInsightTips() {
+  const baseTips = require('../data/insight-tips.json');
+  const config = readConfig();
+  const customTips = (config.userSettings.insights?.customTips || []).map((text, i) => ({
+    id: `custom-${i}`,
+    contexts: ['daily', 'creation', 'pomodoro'],
+    text,
+  }));
+  return baseTips.concat(customTips);
 }
 
 module.exports = {
@@ -464,4 +482,5 @@ module.exports = {
   initializeConfigFile,
   updateUserSettings,
   getDefaultUserSettings,
+  getInsightTips,
 };

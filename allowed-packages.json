@@ -1,0 +1,104 @@
+{
+  "@eslint/js": {
+    "repo": "https://github.com/eslint/eslint",
+    "publisher": "openjsfoundation",
+    "weeklyDownloads": 123120417,
+    "versions": 88,
+    "verified": "2026-09-07"
+  },
+  "@linear/cli": {
+    "repo": "UNKNOWN",
+    "publisher": "jorilallo",
+    "weeklyDownloads": 2968,
+    "versions": 4,
+    "verified": "2026-09-07"
+  },
+  "axios": {
+    "repo": "https://github.com/axios/axios",
+    "publisher": "jasonsaayman",
+    "weeklyDownloads": 106518902,
+    "versions": 144,
+    "verified": "2026-09-07"
+  },
+  "dotenv": {
+    "repo": "git://github.com/motdotla/dotenv",
+    "publisher": "scottmotte",
+    "weeklyDownloads": 158377172,
+    "versions": 104,
+    "verified": "2026-09-07"
+  },
+  "eslint": {
+    "repo": "https://github.com/eslint/eslint",
+    "publisher": "openjsfoundation",
+    "weeklyDownloads": 138356696,
+    "versions": 429,
+    "verified": "2026-09-07"
+  },
+  "eslint-plugin-security": {
+    "repo": "https://github.com/eslint-community/eslint-plugin-security",
+    "publisher": "nzakas",
+    "weeklyDownloads": 3693126,
+    "versions": 16,
+    "verified": "2026-09-07"
+  },
+  "express": {
+    "repo": "https://github.com/expressjs/express",
+    "publisher": "wesleytodd",
+    "weeklyDownloads": 92836012,
+    "versions": 288,
+    "verified": "2026-09-07"
+  },
+  "globals": {
+    "repo": "https://github.com/sindresorhus/globals",
+    "publisher": "byk",
+    "weeklyDownloads": 230224470,
+    "versions": 142,
+    "verified": "2026-09-07"
+  },
+  "helmet": {
+    "repo": "git://github.com/helmetjs/helmet",
+    "publisher": "adam_baldwin",
+    "weeklyDownloads": 9598454,
+    "versions": 135,
+    "verified": "2026-10-22",
+    "lastPublished": "2026-07-12",
+    "repoArchived": false,
+    "repoMatch": "unknown",
+    "provenance": false,
+    "maintenance": "maintained",
+    "successor": null,
+    "socket": {
+      "checked": "2026-10-22",
+      "status": "scored",
+      "supplyChain": 100,
+      "vulnerability": 100,
+      "deepSupplyChain": 100,
+      "deepVulnerability": 100,
+      "alerts": [],
+      "flagged": false
+    },
+    "notes": ""
+  },
+  "husky": {
+    "repo": "https://github.com/typicode/husky",
+    "publisher": "typicode",
+    "weeklyDownloads": 31977466,
+    "versions": 215,
+    "verified": "2026-09-07"
+  },
+  "license-checker": {
+    "repo": "https://github.com/davglass/license-checker",
+    "publisher": "davglass",
+    "weeklyDownloads": 891424,
+    "versions": 74,
+    "verified": "2026-09-08"
+  },
+  "prettier": {
+    "repo": "https://github.com/prettier/prettier",
+    "publisher": "jlongster",
+    "weeklyDownloads": 114152754,
+    "versions": 195,
+    "verified": "2026-09-07"
+  },
+  "_installScripts": {}
+}

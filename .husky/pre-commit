@@ -1,4 +1,22 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
+# Private data must never reach a commit — security checks block, they do not report
+# The policy scripts live in the sibling build-policy repo, which only exists on the developer's
+# machines. Anyone else working on a handed-over project commits without the gates, but not
+# without the staged secret scan: a leaked key is a leak on any machine. betterleaks is a brew
+# install; where it is absent the scan is skipped rather than failed, so the hook never blocks
+# a machine that cannot run it.
+if [ ! -f ../build-policy/scripts/policy.js ]; then
+  if command -v betterleaks >/dev/null 2>&1 && grep -q '"secrets:staged"' package.json; then
+    npm run --silent secrets:staged || exit 1
+  fi
+  exit 0
+fi
+node ../build-policy/scripts/policy.js leak-scan || exit 1
 
-npm run quality
+# Full gates must have passed on this exact tree before any source commit
+node ../build-policy/scripts/policy.js verify-marker || exit 1
+node ../build-policy/scripts/policy.js gates --fast || {
+  echo ""
+  echo "Pre-commit gates failed. Fix the issues above, or run:"
+  echo "  node ../build-policy/scripts/policy.js gates --fast"
+  exit 1
+}

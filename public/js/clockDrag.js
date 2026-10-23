@@ -196,18 +196,12 @@ class ClockDrag {
 
     // Read final position from ghost
     const newStartTime = this.ghostPath.getAttribute('data-start-time');
-    const newDuration = parseInt(
-      this.ghostPath.getAttribute('data-duration'),
-      10
-    );
+    const newDuration = parseInt(this.ghostPath.getAttribute('data-duration'), 10);
 
     this._removeGhostArc();
 
     // Only fire callback if something actually changed
-    if (
-      newStartTime !== this.originalStartTime ||
-      newDuration !== this.originalDuration
-    ) {
+    if (newStartTime !== this.originalStartTime || newDuration !== this.originalDuration) {
       if (this.onDragEnd) {
         this.onDragEnd(this.dragTaskId, newStartTime, newDuration);
       }

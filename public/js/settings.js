@@ -75,9 +75,7 @@ class SettingsManager {
    */
   attachEventListeners() {
     // Modal controls
-    document
-      .getElementById('settings-btn')
-      .addEventListener('click', () => this.openModal());
+    document.getElementById('settings-btn').addEventListener('click', () => this.openModal());
     document
       .getElementById('settings-modal-close')
       .addEventListener('click', () => this.closeModal());
@@ -90,9 +88,7 @@ class SettingsManager {
 
     // Tab switching
     document.querySelectorAll('.settings-tab-btn').forEach((btn) => {
-      btn.addEventListener('click', (e) =>
-        this.switchTab(e.target.dataset.tab)
-      );
+      btn.addEventListener('click', (e) => this.switchTab(e.target.dataset.tab));
     });
 
     // Add routine item button
@@ -214,8 +210,7 @@ class SettingsManager {
         : detectedDateFormat;
 
     // Time format
-    document.getElementById('time-format-select').value =
-      localization.timeFormat;
+    document.getElementById('time-format-select').value = localization.timeFormat;
 
     // Font size
     const fontSizeSelect = document.getElementById('font-size-select');
@@ -232,6 +227,19 @@ class SettingsManager {
           ? this.currentSettings.streaksEnabled
           : true;
       streaksCheckbox.checked = streaksEnabled;
+    }
+
+    // Insights toggle
+    const insightsCheckbox = document.getElementById('insights-enabled');
+    if (insightsCheckbox) {
+      insightsCheckbox.checked =
+        this.currentSettings.insights?.enabled !== undefined
+          ? this.currentSettings.insights.enabled
+          : true;
+    }
+    const customTipsField = document.getElementById('insights-custom-tips');
+    if (customTipsField) {
+      customTipsField.value = (this.currentSettings.insights?.customTips || []).join('\n');
     }
 
     // Daily routine items
@@ -254,10 +262,8 @@ class SettingsManager {
       const config = await response.json();
       const usernameInput = document.getElementById('terminal-username');
       const hostnameInput = document.getElementById('terminal-hostname');
-      if (usernameInput)
-        usernameInput.value = config.mantra?.username || 'user';
-      if (hostnameInput)
-        hostnameInput.value = config.mantra?.hostname || 'matrix';
+      if (usernameInput) usernameInput.value = config.mantra?.username || 'user';
+      if (hostnameInput) hostnameInput.value = config.mantra?.hostname || 'matrix';
     } catch (error) {
       console.error('Error loading terminal prompt settings:', error);
     }
@@ -429,10 +435,15 @@ class SettingsManager {
       streaksEnabled: document.getElementById('streaks-enabled').checked,
       dailyRoutine: this.currentSettings.dailyRoutine,
       cleanup: {
-        defaultCutoffDays: parseInt(
-          document.getElementById('cleanup-days').value,
-          10
-        ),
+        defaultCutoffDays: parseInt(document.getElementById('cleanup-days').value, 10),
+      },
+      insights: {
+        enabled: document.getElementById('insights-enabled').checked,
+        customTips: document
+          .getElementById('insights-custom-tips')
+          .value.split('\n')
+          .map((s) => s.trim())
+          .filter(Boolean),
       },
     };
 
@@ -681,8 +692,7 @@ class SettingsManager {
       const date = dateStr.match(/^\d{4}-\d{2}-\d{2}$/)
         ? new Date(dateStr + 'T00:00:00')
         : new Date(dateStr);
-      const format =
-        this.currentSettings?.localization?.dateFormat || 'MM/DD/YYYY';
+      const format = this.currentSettings?.localization?.dateFormat || 'MM/DD/YYYY';
 
       const day = String(date.getDate()).padStart(2, '0');
       const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -785,20 +795,14 @@ class SettingsManager {
    */
   async handleExportBackup() {
     try {
-      const [activeRes, archivedRes, archiveFilesRes, configRes] =
-        await Promise.all([
-          fetch('/api/tasks'),
-          fetch('/api/tasks/archived'),
-          fetch('/api/tasks/archive-files'),
-          fetch('/api/config'),
-        ]);
+      const [activeRes, archivedRes, archiveFilesRes, configRes] = await Promise.all([
+        fetch('/api/tasks'),
+        fetch('/api/tasks/archived'),
+        fetch('/api/tasks/archive-files'),
+        fetch('/api/config'),
+      ]);
 
-      if (
-        !activeRes.ok ||
-        !archivedRes.ok ||
-        !archiveFilesRes.ok ||
-        !configRes.ok
-      ) {
+      if (!activeRes.ok || !archivedRes.ok || !archiveFilesRes.ok || !configRes.ok) {
         throw new Error('Failed to fetch data for backup');
       }
 
@@ -874,9 +878,7 @@ class SettingsManager {
 
         const activeTasks = data.tasks.filter((t) => !t.archived);
         const archivedTasks = data.tasks.filter((t) => t.archived);
-        const exportDate = data.exportedAt
-          ? new Date(data.exportedAt).toLocaleString()
-          : 'Unknown';
+        const exportDate = data.exportedAt ? new Date(data.exportedAt).toLocaleString() : 'Unknown';
 
         previewContentEl.innerHTML = `
           <p><strong>Backup date:</strong> ${exportDate}</p>
@@ -956,9 +958,7 @@ class SettingsManager {
 
     const errorEl = document.getElementById('import-tasks-error');
     const previewEl = document.getElementById('import-tasks-preview');
-    const previewContentEl = document.getElementById(
-      'import-tasks-preview-content'
-    );
+    const previewContentEl = document.getElementById('import-tasks-preview-content');
 
     errorEl.classList.add('hidden');
     previewEl.classList.add('hidden');
@@ -969,14 +969,8 @@ class SettingsManager {
       try {
         const data = JSON.parse(e.target.result);
 
-        if (
-          !data.tasks ||
-          !Array.isArray(data.tasks) ||
-          data.tasks.length === 0
-        ) {
-          throw new Error(
-            'Invalid import file: must contain a non-empty "tasks" array'
-          );
+        if (!data.tasks || !Array.isArray(data.tasks) || data.tasks.length === 0) {
+          throw new Error('Invalid import file: must contain a non-empty "tasks" array');
         }
 
         // Validate each task has a description
@@ -1090,6 +1084,10 @@ class SettingsManager {
       cleanup: {
         defaultCutoffDays: 30,
         lastCleanup: null,
+      },
+      insights: {
+        enabled: true,
+        customTips: [],
       },
     };
   }

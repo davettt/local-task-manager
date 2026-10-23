@@ -1,0 +1,161 @@
+name: Quality Gates
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # full history for secret scanning
+
+      # Read from .nvmrc, so nvm locally and setup-node here resolve the same
+      # file and cannot disagree. This previously read `node-version: 24`, on
+      # the reasoning that matching the major was enough to get the same npm
+      # major. It is not: a floating major resolves to whatever the newest
+      # Node 24 is, so CI's npm kept drifting ahead of local. npm 11.14.1 omits
+      # optional peer dependencies from the lockfile and 11.19.0 records them,
+      # so `npm ci` failed on packages the lockfile never listed — a break
+      # caused by a Node release nobody here made.
+      #
+      # An exact version in this file would have fixed that, but the value
+      # would live somewhere no local tool reads, leaving drift possible and
+      # merely detected. One file both sides read makes it structural.
+      # Floating both sides does NOT work: they resolve at different moments
+      # and drift independently, which is exactly the failure above.
+      #
+      # .nvmrc is written by `policy scaffold` from `node-lts` in
+      # build-policy/registry.json, which is the version of record; `check`
+      # fails on a mismatch and `doctor` fails when local Node differs. Track
+      # the newest LTS patch, not the newest release: Node 25 ships an older
+      # npm than Node 24, so "newest" can reintroduce the same skew.
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: HTML validation
+        run: npm run lint:html --if-present
+
+      - name: CSS validation
+        run: npm run lint:css --if-present
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Type check
+        run: npm run type-check --if-present
+
+      - name: SAST (Semgrep)
+        run: |
+          python3 -m pip install --quiet semgrep
+          semgrep scan --config auto --error --quiet \
+            --exclude-rule javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal \
+            --exclude-rule javascript.express.security.audit.express-path-join-resolve-traversal.express-path-join-resolve-traversal \
+            --exclude-rule javascript.express.security.audit.express-res-sendfile.express-res-sendfile \
+            --exclude-rule javascript.express.security.audit.remote-property-injection.remote-property-injection \
+            --exclude-rule html.security.audit.missing-integrity.missing-integrity
+
+      # Socket supply-chain scanning is deliberately NOT run here. Every package
+      # reaching the lockfile is already checked locally: the full gates verify
+      # registry signatures (npm audit signatures) and stop on new install-time
+      # scripts, and each package new to a project takes one Socket score before
+      # it is allowlisted. A CI step would re-scan a lockfile that was cleared
+      # before the commit existed, while costing an API quota unit per run and
+      # requiring SOCKET_SECURITY_API_KEY in every repo.
+      #
+      # Re-add it only if a project gains contributors who do not go through the
+      # local allowlist flow, or if Dependabot branches start merging without
+      # local review: those are the cases CI would actually cover.
+
+      # With audit-exceptions.json (a dated decision to carry an advisory that
+      # has no fix, approved by the developer in audit-approvals.json), fail
+      # only on high/critical advisories it does not cover; the same rule
+      # `policy gates` applies locally.
+      - name: Dependency audit
+        run: |
+          if [ ! -f audit-exceptions.json ]; then npm run security; exit $?; fi
+          npm audit --json --omit=dev > "$RUNNER_TEMP/audit.json" || true
+          node -e '
+            const fs = require("fs");
+            const ex = JSON.parse(fs.readFileSync("audit-exceptions.json", "utf8"));
+            const ap = fs.existsSync("audit-approvals.json") ? JSON.parse(fs.readFileSync("audit-approvals.json", "utf8")) : {};
+            const hash = (e) => require("crypto").createHash("sha256").update(JSON.stringify({ package: e.package, via: e.via || "", reason: e.reason, decided: e.decided, expires: e.expires })).digest("hex");
+            const today = new Date().toISOString().slice(0, 10);
+            const rep = JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP + "/audit.json", "utf8"));
+            const open = [];
+            for (const [name, v] of Object.entries(rep.vulnerabilities || {}))
+              for (const via of v.via || [])
+                if (via && typeof via === "object" && /high|critical/.test(via.severity || "")) {
+                  const id = String(via.url || "").split("/").pop(); const e = ex[id];
+                  const approved = e && ap[id] && ap[id].hash === hash(e);
+                  if (!(approved && e.package === (via.name || name) && e.expires >= today)) open.push(id + " in " + (via.name || name));
+                }
+            if (open.length) { console.error("Uncovered advisories:\n" + open.join("\n")); process.exit(1); }
+            console.log("No uncovered high or critical advisories");'
+
+      - name: License check
+        run: npm run licenses
+
+      # Build and tests mirror the local gate order. Without them CI verified
+      # only that the code is well-formed, never that it runs — while the policy
+      # called CI "the same gates re-run on GitHub". Tiers are --if-present, so
+      # a project only runs what it defines; smoke/integration are required to
+      # be self-contained (own port, temp data dir), which is what lets them run
+      # on a runner with nothing already listening.
+      #
+      # deps:check is deliberately absent: it runs
+      # ../build-policy/scripts/check-allowlist.js, a sibling repo that does not
+      # exist in a CI checkout. It stays a local/pre-commit gate.
+      - name: Build
+        run: npm run build --if-present
+
+      - name: Unit tests
+        run: npm run test:unit --if-present
+
+      - name: Smoke tests
+        run: npm run test:smoke --if-present
+
+      - name: Integration tests
+        run: npm run test:integration --if-present
+
+      # gitleaks-action scans <first pushed commit>^..<last>, which fails when the
+      # first pushed commit is the repository's root (a new repo's first push).
+      # Then scan the full history directly instead, with the same gitleaks version.
+      - name: Check for a root commit in the push
+        id: rootcheck
+        if: github.event_name == 'push'
+        env:
+          FIRST: ${{ github.event.commits[0].id }}
+        run: |
+          if [ -n "$FIRST" ] && ! git rev-parse --verify --quiet "$FIRST^" > /dev/null; then
+            echo "root=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Secret scanning
+        if: steps.rootcheck.outputs.root != 'true'
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Secret scanning (first push, full history)
+        if: steps.rootcheck.outputs.root == 'true'
+        run: |
+          curl -sSfL -o "$RUNNER_TEMP/gitleaks.tgz" https://github.com/gitleaks/gitleaks/releases/download/v8.24.3/gitleaks_8.24.3_linux_x64.tar.gz
+          echo "9991e0b2903da4c8f6122b5c3186448b927a5da4deef1fe45271c3793f4ee29c  $RUNNER_TEMP/gitleaks.tgz" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/gitleaks.tgz" -C "$RUNNER_TEMP" gitleaks
+          "$RUNNER_TEMP/gitleaks" detect --redact -v --exit-code=2 --source .

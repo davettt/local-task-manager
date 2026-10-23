@@ -167,8 +167,7 @@ class SyncManager {
         // Push update if:
         // 1. Local has changed since last sync, OR
         // 2. Local and Todoist are out of sync (local != todoist)
-        const localChanged =
-          storedLocalChecksum && storedLocalChecksum !== localChecksum;
+        const localChanged = storedLocalChecksum && storedLocalChecksum !== localChecksum;
         const outOfSync = localChecksum !== todoistChecksum;
 
         if (localChanged || outOfSync) {
@@ -236,8 +235,7 @@ class SyncManager {
           metadata.taskMappings[task.id] = todoistTask.id;
           // Store checksums after successful push
           metadata.localChecksums[task.id] = this.generateChecksum(task);
-          metadata.todoistChecksums[task.id] =
-            this.generateTodoistTaskChecksum(todoistTask);
+          metadata.todoistChecksums[task.id] = this.generateTodoistTaskChecksum(todoistTask);
           syncReport.synced.created++;
         } catch (error) {
           syncReport.errors.push({
@@ -297,8 +295,7 @@ class SyncManager {
           // Store checksums after successful push
           metadata.localChecksums[task.id] = this.generateChecksum(task);
           if (finalTodoistTask) {
-            metadata.todoistChecksums[task.id] =
-              this.generateTodoistTaskChecksum(finalTodoistTask);
+            metadata.todoistChecksums[task.id] = this.generateTodoistTaskChecksum(finalTodoistTask);
           }
           syncReport.synced.updated++;
         } catch (error) {
@@ -356,16 +353,12 @@ class SyncManager {
           // Check if remote task was updated using checksum comparison
           // Since Todoist API doesn't reliably return updated_at, we compare content
           const remoteChecksum = this.generateTodoistTaskChecksum(todoistTask);
-          const storedTodoistChecksum =
-            metadata.todoistChecksums?.[localTaskId];
+          const storedTodoistChecksum = metadata.todoistChecksums?.[localTaskId];
 
           // Detect change if:
           // 1. We have no previous checksum (first sync/migration), OR
           // 2. The Todoist content has changed
-          if (
-            !storedTodoistChecksum ||
-            storedTodoistChecksum !== remoteChecksum
-          ) {
+          if (!storedTodoistChecksum || storedTodoistChecksum !== remoteChecksum) {
             remoteChanges.updated.push(todoistTask);
           }
         }
@@ -391,8 +384,7 @@ class SyncManager {
           localTasks.push(newLocalTask);
           metadata.taskMappings[newLocalTask.id] = todoistTask.id;
           // Store both checksums: local (what we have now) and todoist (what we pulled)
-          metadata.localChecksums[newLocalTask.id] =
-            this.generateChecksum(newLocalTask);
+          metadata.localChecksums[newLocalTask.id] = this.generateChecksum(newLocalTask);
           metadata.todoistChecksums[newLocalTask.id] =
             this.generateTodoistTaskChecksum(todoistTask);
           syncReport.synced.pulled++;
@@ -417,16 +409,13 @@ class SyncManager {
           }
 
           if (localTaskId) {
-            const localIndex = localTasks.findIndex(
-              (t) => t.id === localTaskId
-            );
+            const localIndex = localTasks.findIndex((t) => t.id === localTaskId);
             if (localIndex >= 0) {
               const updated = this.todoistTaskToLocal(todoistTask);
               updated.id = localTaskId;
               localTasks[localIndex] = updated;
               // Store both checksums after pulling update
-              metadata.localChecksums[localTaskId] =
-                this.generateChecksum(updated);
+              metadata.localChecksums[localTaskId] = this.generateChecksum(updated);
               metadata.todoistChecksums[localTaskId] =
                 this.generateTodoistTaskChecksum(todoistTask);
               syncReport.synced.pulled++;

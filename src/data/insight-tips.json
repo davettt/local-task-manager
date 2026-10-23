@@ -1,0 +1,72 @@
+[
+  {
+    "id": "focus-block",
+    "contexts": ["daily", "pomodoro"],
+    "text": "Pick one task, give it full focus, then stop. Did the outcome actually need more?"
+  },
+  {
+    "id": "outcome-question",
+    "contexts": ["daily", "creation"],
+    "text": "What outcome am I actually trying to create here? Do I need to do this, or just need the result?"
+  },
+  {
+    "id": "trace-the-win",
+    "contexts": ["daily"],
+    "text": "Think of a recent win. Was it the hours you put in, or the thinking and timing?"
+  },
+  {
+    "id": "fewer-not-more",
+    "contexts": ["creation"],
+    "text": "Before adding this: would removing a task move you forward faster than adding one?"
+  },
+  {
+    "id": "enough-signal",
+    "contexts": ["pomodoro"],
+    "text": "Did you need the full session, or could you have moved on sooner?"
+  },
+  {
+    "id": "needle-mover",
+    "contexts": ["daily", "creation"],
+    "text": "If you could only finish one thing today, which task would actually move the needle? Start there."
+  },
+  {
+    "id": "output-trap",
+    "contexts": ["daily"],
+    "text": "Busyness feels like progress. But which of yesterday's tasks actually changed an outcome?"
+  },
+  {
+    "id": "stop-and-notice",
+    "contexts": ["pomodoro"],
+    "text": "You just finished a focused block. Before starting the next: is continuing the highest-value move right now?"
+  },
+  {
+    "id": "list-audit",
+    "contexts": ["creation"],
+    "text": "Your list has weight. Each item costs attention even when you're not on it. Does this one earn its place?"
+  },
+  {
+    "id": "done-enough",
+    "contexts": ["daily", "pomodoro"],
+    "text": "What if today's work is already enough? What would you do with the rest of the day?"
+  },
+  {
+    "id": "trust-less-effort",
+    "contexts": ["daily"],
+    "text": "Some of your best results came from less effort, not more. What made those different?"
+  },
+  {
+    "id": "urgency-check",
+    "contexts": ["creation"],
+    "text": "Is this genuinely urgent, or does it just feel that way? Urgency and importance are different signals."
+  },
+  {
+    "id": "quality-of-attention",
+    "contexts": ["pomodoro"],
+    "text": "How was the quality of your attention in that session? One focused hour often beats three scattered ones."
+  },
+  {
+    "id": "delegate-or-drop",
+    "contexts": ["creation", "daily"],
+    "text": "For each task: do it, delegate it, or drop it. Two of those three don't need your time."
+  }
+]

@@ -100,11 +100,7 @@ class TaskTimer {
     this.updateProgressBar();
 
     // Check if pomodoro interval has been reached
-    if (
-      this.pomodoroMode &&
-      this.pomodoroIntervalStartedAt &&
-      !this.pomodoroIntervalNotified
-    ) {
+    if (this.pomodoroMode && this.pomodoroIntervalStartedAt && !this.pomodoroIntervalNotified) {
       const pomodoroElapsed = Math.floor(
         (Date.now() - this.pomodoroIntervalStartedAt.getTime()) / 1000
       );
@@ -159,10 +155,7 @@ class TaskTimer {
       (Date.now() - this.pomodoroIntervalStartedAt.getTime()) / 1000
     );
     const pomodoroIntervalSeconds = this.pomodoroInterval * 60;
-    const pomodoroRemaining = Math.max(
-      0,
-      pomodoroIntervalSeconds - pomodoroElapsed
-    );
+    const pomodoroRemaining = Math.max(0, pomodoroIntervalSeconds - pomodoroElapsed);
 
     return {
       elapsed: pomodoroElapsed,
@@ -182,9 +175,7 @@ class TaskTimer {
     const intervalLabel = document.getElementById('pomodoro-interval-label');
 
     if (pomodoroInfo) {
-      const progress =
-        ((pomodoroInfo.total - pomodoroInfo.remaining) / pomodoroInfo.total) *
-        100;
+      const progress = ((pomodoroInfo.total - pomodoroInfo.remaining) / pomodoroInfo.total) * 100;
 
       if (progressBar) {
         progressBar.style.width = `${Math.min(100, progress)}%`;
@@ -230,9 +221,7 @@ class TaskTimer {
 // eslint-disable-next-line no-unused-vars
 function playCompletionSound() {
   try {
-    const audioContext = new (
-      window.AudioContext || window.webkitAudioContext
-    )();
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
 
@@ -243,10 +232,7 @@ function playCompletionSound() {
     oscillator.type = 'sine';
 
     gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(
-      0.01,
-      audioContext.currentTime + 0.5
-    );
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
 
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + 0.5);

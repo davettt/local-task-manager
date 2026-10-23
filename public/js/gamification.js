@@ -28,9 +28,7 @@ class Gamification {
           // Check if it's the next consecutive day
           const lastDate = new Date(data.lastCompletedDate);
           const todayDate = new Date(today);
-          const daysDiff = Math.floor(
-            (todayDate - lastDate) / (1000 * 60 * 60 * 24)
-          );
+          const daysDiff = Math.floor((todayDate - lastDate) / (1000 * 60 * 60 * 24));
 
           if (daysDiff === 1) {
             // Streak continues!
@@ -146,9 +144,7 @@ class Gamification {
 
     const streakProgress = `${this.tasksCompletedToday}/3`;
     const streakText =
-      this.tasksCompletedToday >= 3
-        ? '+STREAK POINT'
-        : `${streakProgress} FOR STREAK`;
+      this.tasksCompletedToday >= 3 ? '+STREAK POINT' : `${streakProgress} FOR STREAK`;
 
     const asciiBox = `
     ╔════════════════════════════════╗
@@ -241,9 +237,7 @@ class Gamification {
    */
   playMatrixSound() {
     try {
-      const audioContext = new (
-        window.AudioContext || window.webkitAudioContext
-      )();
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
       // Create multiple oscillators for matrix effect
       const now = audioContext.currentTime;

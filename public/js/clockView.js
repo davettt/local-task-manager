@@ -162,18 +162,7 @@ class ClockView {
       'clock-labels',
       'clock-time-hand',
     ];
-    const ringNumbers = [
-      null,
-      null,
-      null,
-      '1',
-      '2',
-      '3',
-      null,
-      null,
-      null,
-      null,
-    ];
+    const ringNumbers = [null, null, null, '1', '2', '3', null, null, null, null];
 
     layerNames.forEach((name, i) => {
       const g = document.createElementNS(NS, 'g');
@@ -231,9 +220,7 @@ class ClockView {
       const isMajor = majorHours.includes(h);
 
       // Tick mark
-      const tickInner = isMajor
-        ? ClockMath.TICK_INNER_MAJOR
-        : ClockMath.TICK_INNER_MINOR;
+      const tickInner = isMajor ? ClockMath.TICK_INNER_MAJOR : ClockMath.TICK_INNER_MINOR;
       const start = ClockMath.polarToCartesian(
         ClockMath.CENTER_X,
         ClockMath.CENTER_Y,
@@ -248,10 +235,7 @@ class ClockView {
       );
 
       const tick = document.createElementNS(NS, 'line');
-      tick.setAttribute(
-        'class',
-        isMajor ? 'clock-hour-mark-major' : 'clock-hour-mark'
-      );
+      tick.setAttribute('class', isMajor ? 'clock-hour-mark-major' : 'clock-hour-mark');
       tick.setAttribute('x1', start.x);
       tick.setAttribute('y1', start.y);
       tick.setAttribute('x2', end.x);
@@ -365,8 +349,7 @@ class ClockView {
     // Determine day of week for the viewed date
     const dayNames = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
     const viewDate = new Date();
-    if (this.viewDateOffset)
-      viewDate.setDate(viewDate.getDate() + this.viewDateOffset);
+    if (this.viewDateOffset) viewDate.setDate(viewDate.getDate() + this.viewDateOffset);
     const today = dayNames[viewDate.getDay()];
 
     this.routineItems.forEach((item) => {
@@ -526,19 +509,13 @@ class ClockView {
     // Sort by priority for assignment precedence (high first)
     const priorityOrder = { high: 0, medium: 1, low: 2 };
     const sorted = [...tasks].sort(
-      (a, b) =>
-        (priorityOrder[a.priority] ?? 1) - (priorityOrder[b.priority] ?? 1)
+      (a, b) => (priorityOrder[a.priority] ?? 1) - (priorityOrder[b.priority] ?? 1)
     );
 
     // Gather appointments for conflict checking
     const today = this._getToday();
     const appointments = this.tasks.filter(
-      (t) =>
-        t.isAppointment &&
-        !t.completed &&
-        !t.archived &&
-        t.dueDate === today &&
-        t.dueTime
+      (t) => t.isAppointment && !t.completed && !t.archived && t.dueDate === today && t.dueTime
     );
 
     sorted.forEach((task) => {
@@ -553,12 +530,7 @@ class ClockView {
         const hasConflict = occupiedSlots.some(
           (slot) =>
             slot.ring === ring &&
-            ClockMath.timeRangesOverlap(
-              startTime,
-              duration,
-              slot.start,
-              slot.duration
-            )
+            ClockMath.timeRangesOverlap(startTime, duration, slot.start, slot.duration)
         );
         if (!hasConflict) {
           assignedRing = ring;
@@ -572,12 +544,7 @@ class ClockView {
           const hasConflict = occupiedSlots.some(
             (slot) =>
               slot.ring === ring &&
-              ClockMath.timeRangesOverlap(
-                startTime,
-                duration,
-                slot.start,
-                slot.duration
-              )
+              ClockMath.timeRangesOverlap(startTime, duration, slot.start, slot.duration)
           );
           if (!hasConflict) {
             assignedRing = ring;
@@ -594,12 +561,7 @@ class ClockView {
 
       // Check appointment conflicts
       const appointmentConflict = appointments.some((appt) =>
-        ClockMath.timeRangesOverlap(
-          startTime,
-          duration,
-          appt.dueTime,
-          appt.plannedDuration || 60
-        )
+        ClockMath.timeRangesOverlap(startTime, duration, appt.dueTime, appt.plannedDuration || 60)
       );
 
       assignments.push({
@@ -680,9 +642,7 @@ class ClockView {
       }
     });
 
-    const ringGroup = this.svg.querySelector(
-      `.clock-ring[data-ring="${ring}"]`
-    );
+    const ringGroup = this.svg.querySelector(`.clock-ring[data-ring="${ring}"]`);
     if (ringGroup) {
       ringGroup.appendChild(path);
     }
@@ -695,7 +655,7 @@ class ClockView {
     const panel = document.getElementById('clock-info-panel');
     if (!panel) return;
 
-    const priorityClass = `clock-info-priority-${task.priority}`;
+    const priorityClass = `clock-info-priority-${this._escapeHtml(task.priority)}`;
     const endMins = ClockMath.timeToMinutes(startTime) + duration;
     const endTime = ClockMath.minutesToTime(endMins % 1440);
 
@@ -708,7 +668,7 @@ class ClockView {
       <div class="clock-info-meta">
         <span>${startTime} – ${endTime}</span>
         <span>${this._formatDuration(duration)}</span>
-        <span class="${priorityClass}">${task.priority} priority</span>
+        <span class="${priorityClass}">${this._escapeHtml(task.priority)} priority</span>
       </div>
     `;
     panel.classList.add('active');
@@ -742,18 +702,13 @@ class ClockView {
     const panel = document.getElementById('clock-info-panel');
     if (!panel) return;
 
-    const icon = item.icon || '';
+    const icon = this._escapeHtml(item.icon || '');
     const label = this._escapeHtml(item.label);
-    const durationStr = item.duration
-      ? this._formatDuration(item.duration)
-      : 'Quick item';
-    const endMins = item.duration
-      ? ClockMath.timeToMinutes(item.startTime) + item.duration
-      : null;
+    const durationStr = item.duration ? this._formatDuration(item.duration) : 'Quick item';
+    const endMins = item.duration ? ClockMath.timeToMinutes(item.startTime) + item.duration : null;
     const endTime = endMins ? ClockMath.minutesToTime(endMins % 1440) : '';
-    const timeRange = endTime
-      ? `${item.startTime} – ${endTime}`
-      : item.startTime;
+    const startTime = this._escapeHtml(item.startTime);
+    const timeRange = endTime ? `${startTime} – ${endTime}` : startTime;
 
     panel.innerHTML = `
       <div class="clock-info-title" style="color: rgba(38, 139, 210, 0.9)">${icon} ${label}</div>
@@ -773,8 +728,7 @@ class ClockView {
     const panel = document.getElementById('clock-info-panel');
     if (panel) {
       panel.classList.remove('active');
-      panel.innerHTML =
-        '<div class="clock-info-placeholder">Click an arc for details</div>';
+      panel.innerHTML = '<div class="clock-info-placeholder">Click an arc for details</div>';
     }
   }
 
@@ -856,8 +810,7 @@ class ClockView {
       // Label inside the arc
       const midMinutes = ClockMath.timeToMinutes(startTime) + duration / 2;
       const midAngle = (midMinutes / 1440) * 360;
-      const labelRadius =
-        (ClockMath.APPOINTMENT_INNER + ClockMath.APPOINTMENT_OUTER) / 2;
+      const labelRadius = (ClockMath.APPOINTMENT_INNER + ClockMath.APPOINTMENT_OUTER) / 2;
       const labelPos = ClockMath.polarToCartesian(
         ClockMath.CENTER_X,
         ClockMath.CENTER_Y,
@@ -1007,12 +960,7 @@ class ClockView {
           const elapsed = this._getActiveElapsedMinutes();
           if (elapsed > 0) {
             const fillDuration = Math.min(elapsed, duration);
-            const progressD = ClockMath.arcPath(
-              startTime,
-              fillDuration,
-              inner,
-              outer
-            );
+            const progressD = ClockMath.arcPath(startTime, fillDuration, inner, outer);
             if (progressD) {
               const progress = document.createElementNS(NS, 'path');
               progress.setAttribute('d', progressD);
@@ -1026,12 +974,7 @@ class ClockView {
 
     // All appointments for today
     const appointments = this.tasks.filter(
-      (t) =>
-        t.isAppointment &&
-        !t.completed &&
-        !t.archived &&
-        t.dueDate === today &&
-        t.dueTime
+      (t) => t.isAppointment && !t.completed && !t.archived && t.dueDate === today && t.dueTime
     );
 
     appointments.forEach((appt) => {
@@ -1119,11 +1062,7 @@ class ClockView {
 
     // Render task arcs (simplified - no labels, just arcs)
     const clockTasks = (tasks || []).filter(
-      (t) =>
-        !t.completed &&
-        !t.archived &&
-        !t.isAppointment &&
-        (t.plannedStartTime || t.dueTime)
+      (t) => !t.completed && !t.archived && !t.isAppointment && (t.plannedStartTime || t.dueTime)
     );
 
     const priorityToRing = { high: 1, medium: 2, low: 3 };
@@ -1200,11 +1139,7 @@ class ClockView {
 
       if (previewDates[0] && preview1) {
         preview1.title = previewDates[0];
-        this.renderPreviewClock(
-          preview1,
-          previewDates[0],
-          data[previewDates[0]]
-        );
+        this.renderPreviewClock(preview1, previewDates[0], data[previewDates[0]]);
         const offset0 = dates.indexOf(previewDates[0]);
         preview1.style.cursor = 'pointer';
         preview1.onclick = () => {
@@ -1218,11 +1153,7 @@ class ClockView {
       }
       if (previewDates[1] && preview2) {
         preview2.title = previewDates[1];
-        this.renderPreviewClock(
-          preview2,
-          previewDates[1],
-          data[previewDates[1]]
-        );
+        this.renderPreviewClock(preview2, previewDates[1], data[previewDates[1]]);
         const offset1 = dates.indexOf(previewDates[1]);
         preview2.style.cursor = 'pointer';
         preview2.onclick = () => {
@@ -1360,8 +1291,7 @@ class ClockView {
   _getActiveElapsedMinutes() {
     if (!this.activeTaskStartedAt) return 0;
     const elapsedMs = Date.now() - new Date(this.activeTaskStartedAt).getTime();
-    const elapsedSeconds =
-      Math.floor(elapsedMs / 1000) + this.activeTaskTimeSpent;
+    const elapsedSeconds = Math.floor(elapsedMs / 1000) + this.activeTaskTimeSpent;
     return elapsedSeconds / 60;
   }
 
@@ -1385,17 +1315,11 @@ class ClockView {
     const { inner, outer } = ClockMath.getRingRadii(ring);
 
     // Remove existing segment markers
-    this.svg
-      .querySelectorAll('.pomodoro-segment-marker')
-      .forEach((el) => el.remove());
+    this.svg.querySelectorAll('.pomodoro-segment-marker').forEach((el) => el.remove());
 
     const startMinutes = ClockMath.timeToMinutes(startTime);
 
-    for (
-      let offset = intervalMinutes;
-      offset < plannedDuration;
-      offset += intervalMinutes
-    ) {
+    for (let offset = intervalMinutes; offset < plannedDuration; offset += intervalMinutes) {
       const markerMinutes = startMinutes + offset;
       const markerAngle = (markerMinutes / 1440) * 360;
       const p1 = ClockMath.polarToCartesian(

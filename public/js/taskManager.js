@@ -256,7 +256,7 @@ class TaskManager {
     taskDate.setHours(0, 0, 0, 0);
 
     const timeDiff = taskDate.getTime() - today.getTime();
-    const dayDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+    const dayDiff = Math.round(timeDiff / (1000 * 60 * 60 * 24));
 
     if (dayDiff === 0) {
       return 'Today';

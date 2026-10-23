@@ -13,7 +13,20 @@
     "format:check": "prettier --check src/ public/",
     "audit:security": "npm audit",
     "quality": "npm run lint && npm run format:check && npm run audit:security",
-    "prepare": "husky"
+    "prepare": "husky",
+    "security": "npm audit --audit-level=high --omit=dev",
+    "sast": "semgrep scan --config auto --error --quiet --exclude-rule javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal --exclude-rule javascript.express.security.audit.express-path-join-resolve-traversal.express-path-join-resolve-traversal --exclude-rule javascript.express.security.audit.express-res-sendfile.express-res-sendfile --exclude-rule javascript.express.security.audit.remote-property-injection.remote-property-injection --exclude-rule html.security.audit.missing-integrity.missing-integrity",
+    "secrets": "betterleaks git . --redact",
+    "licenses": "license-checker --production --failOn 'GPL-2.0;GPL-3.0;AGPL-1.0;AGPL-3.0' --summary",
+    "licenses:file": "license-checker --production --relativeLicensePath | sed -e \"s|$PWD/||g\" -e \"s|$PWD|.|g\" > THIRD-PARTY-LICENSES.txt",
+    "deps:check": "node ../build-policy/scripts/check-allowlist.js .",
+    "deps:verify": "node ../build-policy/scripts/verify-package.js",
+    "review": "coderabbit review --agent --include-untracked",
+    "socket:scan": "socket ci",
+    "validate": "npm run lint && npm run format:check",
+    "test:smoke": "node tests/harness.js smoke",
+    "test:integration": "node tests/harness.js integration",
+    "secrets:staged": "betterleaks git --staged --redact"
   },
   "keywords": [
     "task",
@@ -25,7 +38,8 @@
   "dependencies": {
     "axios": "^1.16.0",
     "dotenv": "^17.2.3",
-    "express": "^4.18.2"
+    "express": "^5.2.1",
+    "helmet": "^8.3.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
@@ -34,6 +48,7 @@
     "eslint-plugin-security": "^3.0.1",
     "globals": "^17.2.0",
     "husky": "^9.1.7",
+    "license-checker": "^25.0.1",
     "prettier": "^3.0.3"
   }
 }

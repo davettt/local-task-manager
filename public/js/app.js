@@ -1,4 +1,4 @@
-/* global TaskManager, TaskTimer, UI, ClockView, ClockDrag, playCompletionSound, appointmentReminder, gamification, TimeWidget */
+/* global TaskManager, TaskTimer, UI, ClockView, ClockDrag, playCompletionSound, appointmentReminder, gamification, insights, TimeWidget */
 
 /**
  * Main Application Module
@@ -43,8 +43,7 @@ class App {
     this.attachEventListeners();
     UI.initDailyChecklist();
     this.clockView.init(document.getElementById('clock-container'));
-    this.clockView.onTaskSelected = (taskId) =>
-      this.handleClockTaskSelected(taskId);
+    this.clockView.onTaskSelected = (taskId) => this.handleClockTaskSelected(taskId);
     this.clockView.onTaskTimeNudged = (taskId, newTime, newDuration) =>
       this.handleClockDragEnd(taskId, newTime, newDuration);
     if (this.clockView.svg) {
@@ -53,7 +52,9 @@ class App {
         this.handleClockDragEnd(taskId, newStartTime, newDuration);
     }
     await this.loadConfig();
+    await insights.loadTips();
     await this.loadTasks();
+    insights.maybeShowDailyInsight(this.insightsEnabled);
   }
 
   /**
@@ -98,8 +99,12 @@ class App {
 
     // Streaks setting
     this.streaksEnabled =
-      config.userSettings?.streaksEnabled !== undefined
-        ? config.userSettings.streaksEnabled
+      config.userSettings?.streaksEnabled !== undefined ? config.userSettings.streaksEnabled : true;
+
+    // Insights setting
+    this.insightsEnabled =
+      config.userSettings?.insights?.enabled !== undefined
+        ? config.userSettings.insights.enabled
         : true;
   }
 
@@ -133,6 +138,7 @@ class App {
         this.editingTaskId = null;
         UI.clearForm();
         UI.showModal(false);
+        insights.maybeShowTaskCreationNudge(this.insightsEnabled, this.tasks.length);
       });
     }
 
@@ -143,11 +149,7 @@ class App {
         this.editingActiveTask = false;
         UI.hideModal();
         // Re-activate focus mode if we were editing the active task
-        if (
-          wasEditingActiveTask &&
-          this.activeTaskId &&
-          this.timer.pomodoroMode
-        ) {
+        if (wasEditingActiveTask && this.activeTaskId && this.timer.pomodoroMode) {
           this.activateFocusMode();
         }
       });
@@ -160,11 +162,7 @@ class App {
         this.editingActiveTask = false;
         UI.hideModal();
         // Re-activate focus mode if we were editing the active task
-        if (
-          wasEditingActiveTask &&
-          this.activeTaskId &&
-          this.timer.pomodoroMode
-        ) {
+        if (wasEditingActiveTask && this.activeTaskId && this.timer.pomodoroMode) {
           this.activateFocusMode();
         }
       });
@@ -254,9 +252,7 @@ class App {
     const completeBtn = document.getElementById('complete-btn');
 
     if (editActiveBtn) {
-      editActiveBtn.addEventListener('click', () =>
-        this.handleEditActiveTask()
-      );
+      editActiveBtn.addEventListener('click', () => this.handleEditActiveTask());
     }
 
     if (stopBtn) {
@@ -308,9 +304,7 @@ class App {
     }
 
     if (breakContinueBtn) {
-      breakContinueBtn.addEventListener('click', () =>
-        this.handleBreakContinue()
-      );
+      breakContinueBtn.addEventListener('click', () => this.handleBreakContinue());
     }
 
     // Modal background click to close (only if mousedown started on backdrop)
@@ -353,15 +347,11 @@ class App {
 
     const focusResumeBtn = document.getElementById('focus-resume-btn');
     if (focusResumeBtn) {
-      focusResumeBtn.addEventListener('click', () =>
-        this.handleResumeInFocus()
-      );
+      focusResumeBtn.addEventListener('click', () => this.handleResumeInFocus());
     }
 
     if (focusCompleteBtn) {
-      focusCompleteBtn.addEventListener('click', () =>
-        this.handleCompleteTask()
-      );
+      focusCompleteBtn.addEventListener('click', () => this.handleCompleteTask());
     }
 
     // Focus mode edit button
@@ -471,11 +461,8 @@ class App {
       );
 
       // Sync pomodoro checkbox/select to match the resumed task's state
-      const pomodoroToggle = document.getElementById(
-        'pomodoro-toggle-checkbox'
-      );
-      const pomodoroIntervalSelect =
-        document.getElementById('pomodoro-interval');
+      const pomodoroToggle = document.getElementById('pomodoro-toggle-checkbox');
+      const pomodoroIntervalSelect = document.getElementById('pomodoro-interval');
       if (pomodoroToggle) {
         pomodoroToggle.checked = pomodoroMode;
       }
@@ -586,9 +573,7 @@ class App {
     if (!datalist) return;
 
     const allTasks = [...this.tasks, ...this.archivedTasks];
-    const projectNames = [
-      ...new Set(allTasks.map((t) => t.project).filter((p) => p)),
-    ].sort();
+    const projectNames = [...new Set(allTasks.map((t) => t.project).filter((p) => p))].sort();
 
     datalist.innerHTML = projectNames
       .map((name) => `<option value="${UI.escapeHtml(name)}">`)
@@ -599,9 +584,7 @@ class App {
    * Handle task selection from the clock view - scroll to and highlight in list.
    */
   handleClockTaskSelected(taskId) {
-    const taskEl = document.querySelector(
-      `.task-item[data-task-id="${taskId}"]`
-    );
+    const taskEl = document.querySelector(`.task-item[data-task-id="${taskId}"]`);
     if (taskEl) {
       taskEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
       taskEl.classList.add('task-highlighted');
@@ -675,9 +658,7 @@ class App {
     });
 
     // Delete buttons in archive
-    const archiveDeleteButtons = document.querySelectorAll(
-      '.archived-task .delete-btn'
-    );
+    const archiveDeleteButtons = document.querySelectorAll('.archived-task .delete-btn');
     archiveDeleteButtons.forEach((btn) => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
@@ -877,11 +858,8 @@ class App {
       this.startTaskTimeUpdate();
 
       // Sync pomodoro checkbox/select to match the new task's state
-      const pomodoroToggle = document.getElementById(
-        'pomodoro-toggle-checkbox'
-      );
-      const pomodoroIntervalSelect =
-        document.getElementById('pomodoro-interval');
+      const pomodoroToggle = document.getElementById('pomodoro-toggle-checkbox');
+      const pomodoroIntervalSelect = document.getElementById('pomodoro-interval');
       if (pomodoroToggle) {
         pomodoroToggle.checked = pomodoroMode;
       }
@@ -1020,18 +998,14 @@ class App {
       if (!task) return;
 
       // Calculate elapsed time for this session
-      const elapsed = Math.floor(
-        (Date.now() - new Date(task.startedAt).getTime()) / 1000
-      );
+      const elapsed = Math.floor((Date.now() - new Date(task.startedAt).getTime()) / 1000);
       const totalTimeSpent = task.timeSpent + elapsed;
 
       // Get Pomodoro info before stopping
       const wasPomodoroMode = this.timer.pomodoroMode;
       const pomodoroInterval = this.timer.pomodoroInterval;
       const pomodoroElapsed = wasPomodoroMode
-        ? Math.floor(
-            (Date.now() - this.timer.pomodoroIntervalStartedAt.getTime()) / 1000
-          )
+        ? Math.floor((Date.now() - this.timer.pomodoroIntervalStartedAt.getTime()) / 1000)
         : 0;
       const pomodoroRemaining = wasPomodoroMode
         ? Math.max(0, pomodoroInterval * 60 - pomodoroElapsed)
@@ -1079,8 +1053,7 @@ class App {
         return;
       }
 
-      const { wasPomodoroMode, pomodoroInterval, pomodoroRemaining } =
-        this._pausedPomodoroState;
+      const { wasPomodoroMode, pomodoroInterval, pomodoroRemaining } = this._pausedPomodoroState;
       this._pausedPomodoroState = null;
 
       const task = this.tasks.find((t) => t.id === this.activeTaskId);
@@ -1197,13 +1170,10 @@ class App {
   async handleDeleteTask(taskId) {
     // Find task description before deleting
     const taskToDelete =
-      this.tasks.find((t) => t.id === taskId) ||
-      this.archivedTasks.find((t) => t.id === taskId);
+      this.tasks.find((t) => t.id === taskId) || this.archivedTasks.find((t) => t.id === taskId);
     const taskDesc = taskToDelete ? taskToDelete.description : '';
 
-    const confirmDelete = window.confirm(
-      'Are you sure you want to delete this task?'
-    );
+    const confirmDelete = window.confirm('Are you sure you want to delete this task?');
     if (!confirmDelete) {
       return;
     }
@@ -1307,9 +1277,7 @@ class App {
     const pomodoroIntervalSelect = document.getElementById('pomodoro-interval');
 
     const pomodoroMode = pomodoroToggle ? pomodoroToggle.checked : false;
-    const pomodoroInterval = pomodoroIntervalSelect
-      ? parseInt(pomodoroIntervalSelect.value)
-      : 25;
+    const pomodoroInterval = pomodoroIntervalSelect ? parseInt(pomodoroIntervalSelect.value) : 25;
 
     // Update timer settings
     this.timer.pomodoroMode = pomodoroMode;
@@ -1396,15 +1364,10 @@ class App {
     // Add meta info row
     const metaParts = [];
     if (task.priority) {
-      metaParts.push(
-        `<span class="active-priority-${task.priority}">${task.priority}</span>`
-      );
+      metaParts.push(`<span class="active-priority-${task.priority}">${task.priority}</span>`);
     }
     if (task.dueDate) {
-      const formattedDate = TaskManager.formatDateTime(
-        task.dueDate,
-        task.dueTime
-      );
+      const formattedDate = TaskManager.formatDateTime(task.dueDate, task.dueTime);
       if (formattedDate) {
         metaParts.push(formattedDate);
       }
@@ -1425,7 +1388,7 @@ class App {
     if (task.links && task.links.length > 0) {
       html += `<div class="focus-task-links">`;
       task.links.forEach((link) => {
-        html += `<a href="${UI.escapeHtml(link)}" target="_blank" class="focus-link">${UI.escapeHtml(link)}</a>`;
+        html += `<a href="${UI.safeHref(link)}" target="_blank" rel="noopener noreferrer" class="focus-link">${UI.escapeHtml(link)}</a>`;
       });
       html += `</div>`;
     }
@@ -1470,11 +1433,7 @@ class App {
       if (isTimerRunning && this.isFocusMode) {
         pauseBtn.classList.remove('hidden');
         resumeBtn.classList.add('hidden');
-      } else if (
-        !isTimerRunning &&
-        this.isFocusMode &&
-        this._pausedPomodoroState
-      ) {
+      } else if (!isTimerRunning && this.isFocusMode && this._pausedPomodoroState) {
         pauseBtn.classList.add('hidden');
         resumeBtn.classList.remove('hidden');
       } else {
@@ -1496,9 +1455,7 @@ class App {
 
     const pomodoroInfo = this.timer.getPomodoroInfo();
     const focusPomodoroTimer = document.getElementById('focus-pomodoro-timer');
-    const focusPomodoroProgress = document.getElementById(
-      'focus-pomodoro-progress'
-    );
+    const focusPomodoroProgress = document.getElementById('focus-pomodoro-progress');
 
     if (pomodoroInfo) {
       const minutes = Math.floor(pomodoroInfo.remaining / 60);
@@ -1509,9 +1466,7 @@ class App {
         focusPomodoroTimer.textContent = countdownText;
       }
 
-      const progress =
-        ((pomodoroInfo.total - pomodoroInfo.remaining) / pomodoroInfo.total) *
-        100;
+      const progress = ((pomodoroInfo.total - pomodoroInfo.remaining) / pomodoroInfo.total) * 100;
       if (focusPomodoroProgress) {
         focusPomodoroProgress.style.width = `${Math.min(100, progress)}%`;
       }
@@ -1531,8 +1486,7 @@ class App {
     const taskIndex = this.tasks.findIndex((t) => t.id === this.activeTaskId);
     if (taskIndex >= 0) {
       this.tasks[taskIndex].pomodoroMode = this.timer.pomodoroMode || false;
-      this.tasks[taskIndex].pomodoroInterval =
-        this.timer.pomodoroInterval || 25;
+      this.tasks[taskIndex].pomodoroInterval = this.timer.pomodoroInterval || 25;
     }
   }
 
@@ -1551,9 +1505,7 @@ class App {
     }
 
     // Calculate elapsed time for this session
-    const elapsed = Math.floor(
-      (Date.now() - new Date(currentTask.startedAt).getTime()) / 1000
-    );
+    const elapsed = Math.floor((Date.now() - new Date(currentTask.startedAt).getTime()) / 1000);
     const totalTimeSpent = currentTask.timeSpent + elapsed;
 
     // Store these values for resuming after break
@@ -1570,6 +1522,7 @@ class App {
     const breakModal = document.getElementById('break-modal');
     if (breakModal) {
       breakModal.classList.remove('hidden');
+      insights.showPomodoroReflection(this.insightsEnabled);
       this.startBreakCountdown();
     }
 
@@ -1591,9 +1544,7 @@ class App {
     const updateCountdown = () => {
       const minutes = Math.floor(secondsRemaining / 60);
       const seconds = secondsRemaining % 60;
-      breakCountdown.textContent = `${minutes}:${seconds
-        .toString()
-        .padStart(2, '0')}`;
+      breakCountdown.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 
       if (secondsRemaining > 0) {
         secondsRemaining--;
@@ -1668,16 +1619,12 @@ class App {
     }
 
     // Calculate current total time
-    const elapsed = Math.floor(
-      (Date.now() - new Date(task.startedAt).getTime()) / 1000
-    );
+    const elapsed = Math.floor((Date.now() - new Date(task.startedAt).getTime()) / 1000);
     const totalTime = task.timeSpent + elapsed;
     const timeStr = TaskTimer.formatTime(totalTime);
 
     // Update the active task's time display
-    const timeDisplay = document.querySelector(
-      `[data-task-id-time="${task.id}"]`
-    );
+    const timeDisplay = document.querySelector(`[data-task-id-time="${task.id}"]`);
     if (timeDisplay) {
       timeDisplay.textContent = `⏱ ${timeStr}`;
     }

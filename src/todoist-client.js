@@ -180,9 +180,7 @@ class TodoistClient {
         project_id: projectId,
       });
     } catch (error) {
-      throw new Error(
-        `Failed to fetch sections for project ${projectId}: ${error.message}`
-      );
+      throw new Error(`Failed to fetch sections for project ${projectId}: ${error.message}`);
     }
   }
 

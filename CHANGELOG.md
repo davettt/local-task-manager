@@ -5,16 +5,56 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.14.0] - 2026-05-13
+## [Unreleased]
+
+### Security
+
+- **Loopback-only binding** — the server listens on 127.0.0.1 instead of all network interfaces
+- **Host header validation** — requests whose Host header is not `localhost:<port>` or `127.0.0.1:<port>` are refused with a 403
+- **Cross-site write protection** — POST, PUT, PATCH and DELETE requests with a foreign Origin header are refused with a 403; replaces a blanket static-analysis exclusion with a per-line annotation
+- **Security headers** — added helmet with a strict Content-Security-Policy (scripts from the app origin only), frame denial and `no-referrer`
+- **Secret scan output redacted** — `secrets` script uses `betterleaks git . --redact` (was `-v`); added `secrets:staged` for the pre-commit hook; CI workflow and pre-commit hook synced to the shared templates
+- **Dependency advisories resolved** — `npm audit fix` updated proxy-addr, brace-expansion and follow-redirects
+- **Safer rendering of task links and imported data** — HTML escaping now covers quotes, task links only become clickable for http, https and mailto addresses, and the clock view escapes priority, routine icon and start time
+- **Todoist errors logged by message only** — sync error logging no longer includes the full request object
+
+### Changed
+
+- **Express 5.3.0** — upgraded from Express 4. Handlers treat a missing request body as empty (Express 5 leaves `req.body` undefined), so such requests return 400 instead of 500. Server start-up errors passed to the `app.listen` callback are logged before exit
+- **Dependencies refreshed** — eslint and @eslint/js 9.39.5, globals 17.13.0, prettier 3.9.10
+
+### Fixed
+
+- **Due-date labels across daylight-saving changes** — day counts use `Math.round`, so the day a clock goes back no longer shows a due date one day further away than it is
+- **`PORT` from the environment parsed as a number** — the port-search range and the port stored in the lock file were treated as strings
+- **UI wording** — archive confirmation and custom-prompt hint text reworded
 
 ### Added
 
-- **Light/Dark Theme Toggle** — Solarized Light theme with header button to switch between light and dark mode. Theme persists across sessions via server-side settings
+- **Integration tests** — `npm run test:integration` checks Host and Origin refusals, CORS and security headers against an isolated server; the test harness connects on 127.0.0.1
+
+## [1.14.0] - 2026-09-09
+
+### Added
+
+- **Light/Dark Theme Toggle** — Solarized Light theme with header button to switch between light and dark mode, persisting across sessions via server-side settings
 - **Custom Time Input Widget** — Replaced native `<input type="time">` with a custom 12-hour widget (hour, minute, AM/PM fields) with auto-advance, blur normalization, and clear button
-- **Auto-Resizing Textarea** — Task details textarea expands automatically to fit content, no manual resizing needed
-- **Priority Traffic Light Circles** — Priority indicators changed from text badges to colored circles (red/yellow/green) with ARIA labels for accessibility
+- **Auto-Resizing Textarea** — Task details textarea expands automatically to fit content
+- **Priority Traffic Light Circles** — Priority indicators changed from text badges to colored circles (red/yellow/green) with ARIA labels
 - **Due Date Urgency Indicators** — Overdue tasks shown in red, due-today tasks in yellow
-- **Task Divider Lines** — Subtle border between tasks for better visual separation in both themes
+- **Task Divider Lines** — Subtle borders between tasks for visual separation in both themes
+- **Health Check Endpoint** — `GET /api/health` for smoke testing and monitoring
+- **Smoke Test Suite** — Isolated test runner and smoke tests (`tests/harness.js`, `tests/smoke.js`), with `test:smoke` npm script running against its own server instance and temp data directory
+- **Dependency Allowlist** — `allowed-packages.json` to control permitted npm packages
+- **GitHub Workflows** — `.github/dependabot.yml` and `.github/workflows/ci.yml` from build-policy templates
+- **AGENTS.md** — Template for documenting multi-agent task delegation
+- **Quality Gate Scripts** — New npm scripts for comprehensive checks: `security`, `sast`, `secrets`, `licenses`, `deps:check`, `review`, `socket:scan`, `validate`
+- **license-checker** — Added devDependency for license compliance auditing
+- **Reflective Insights Feature** — Daily reflection card, task creation nudge (when 5+ active tasks), and Pomodoro break reflection prompts
+- **Built-in Reflective Tips** — 14 tips across three contexts (daily, creation, Pomodoro) stored in `src/data/insight-tips.json`
+- **Insights Settings Tab** — Toggle to enable/disable, textarea for custom reflections (one per line)
+- `GET /api/insights/tips` endpoint returning built-in and custom tips
+- **Config Migration for Insights** — User settings auto-migrated with `enabled` and `customTips` fields
 
 ### Changed
 
@@ -22,6 +62,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Expanded Task Background** — Expanded tasks use one uniform background color (no nested dark blocks for details)
 - **Celebration Popup** — Streak completion popup now respects light/dark theme using CSS variables
 - **axios** — Updated from `^1.6.0` to `^1.16.0` (security fix for CVEs in earlier versions)
+- **Prettier Configuration** — `printWidth` increased from 80 to 100 characters (house baseline alignment). Codebase reformatted to match.
+- **Pre-commit Hooks** — `.husky/pre-commit` updated to match shared build-policy template
+- **.gitignore** — Updated to exclude `CLAUDE.local.md`, `AGENTS.md`, and `.policy/`
 
 ### Fixed
 

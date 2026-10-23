@@ -16,8 +16,7 @@ const checkTodoistConfig = (req, res, next) => {
   const token = process.env.TODOIST_API_TOKEN;
   if (!token) {
     return res.status(400).json({
-      error:
-        'Todoist API token not configured. Please set TODOIST_API_TOKEN in .env file.',
+      error: 'Todoist API token not configured. Please set TODOIST_API_TOKEN in .env file.',
     });
   }
   req.todoistToken = token;
@@ -31,7 +30,7 @@ const checkTodoistConfig = (req, res, next) => {
  */
 router.post('/setup', (req, res) => {
   try {
-    const { token } = req.body;
+    const { token } = req.body || {};
     if (!token || typeof token !== 'string' || token.trim() === '') {
       return res.status(400).json({
         error: 'Invalid token provided',
@@ -46,10 +45,7 @@ router.post('/setup', (req, res) => {
       envContent = fs.readFileSync(envPath, 'utf-8');
       // Replace or add TODOIST_API_TOKEN
       if (envContent.includes('TODOIST_API_TOKEN=')) {
-        envContent = envContent.replace(
-          /TODOIST_API_TOKEN=.*/,
-          `TODOIST_API_TOKEN=${token}`
-        );
+        envContent = envContent.replace(/TODOIST_API_TOKEN=.*/, `TODOIST_API_TOKEN=${token}`);
       } else {
         envContent += `\nTODOIST_API_TOKEN=${token}`;
       }
@@ -68,7 +64,7 @@ router.post('/setup', (req, res) => {
       note: 'Please restart the server for changes to take full effect',
     });
   } catch (error) {
-    console.error('Setup error:', error);
+    console.error('Setup error:', error.message);
     res.status(500).json({
       error: 'Failed to configure Todoist',
     });
@@ -103,7 +99,7 @@ router.get('/status', checkTodoistConfig, async (req, res) => {
       lastSync,
     });
   } catch (error) {
-    console.error('Status check error:', error);
+    console.error('Status check error:', error.message);
     res.status(500).json({
       connected: false,
       error: 'Failed to check Todoist status',
@@ -128,7 +124,7 @@ router.post('/sync', checkTodoistConfig, async (req, res) => {
       report: syncReport,
     });
   } catch (error) {
-    console.error('Sync error:', error);
+    console.error('Sync error:', error.message);
     res.status(500).json({
       success: false,
       error: 'Failed to perform sync',
@@ -161,7 +157,7 @@ router.get('/sync-status', checkTodoistConfig, (req, res) => {
       taskCount: Object.keys(metadata.taskMappings).length,
     });
   } catch (error) {
-    console.error('Sync status error:', error);
+    console.error('Sync status error:', error.message);
     res.status(500).json({
       error: 'Failed to get sync status',
     });
@@ -181,7 +177,7 @@ router.get('/projects', checkTodoistConfig, async (req, res) => {
       projects,
     });
   } catch (error) {
-    console.error('Projects error:', error);
+    console.error('Projects error:', error.message);
     res.status(500).json({
       error: 'Failed to fetch Todoist projects',
     });

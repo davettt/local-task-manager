@@ -11,6 +11,7 @@ const {
   updateUserSettings,
   readArchivedTasks,
   clearAllArchiveFiles,
+  getInsightTips,
 } = require('../utils/fileManager');
 
 const router = express.Router();
@@ -39,9 +40,7 @@ function validateTask(task) {
           throw new Error(`Only http and https URLs are allowed: ${link}`);
         }
       } catch (e) {
-        throw e.message.includes('Only http')
-          ? e
-          : new Error(`Invalid URL: ${link}`);
+        throw e.message.includes('Only http') ? e : new Error(`Invalid URL: ${link}`);
       }
     });
   }
@@ -88,6 +87,19 @@ function calculateNextDueDate(currentDate, recurring, workingDaysOnly = false) {
   return `${newYear}-${newMonth}-${newDay}`;
 }
 
+router.get('/health', (_req, res) => {
+  res.json({ status: 'ok' });
+});
+
+router.get('/insights/tips', (_req, res) => {
+  try {
+    res.json({ tips: getInsightTips() });
+  } catch (error) {
+    console.error('Error fetching insight tips:', error);
+    res.status(500).json({ error: 'Failed to fetch insight tips' });
+  }
+});
+
 /**
  * GET /api/tasks
  * Returns all active (non-archived) tasks
@@ -111,9 +123,7 @@ router.get('/tasks/upcoming', (req, res) => {
   try {
     const days = parseInt(req.query.days, 10) || 3;
     const tasks = readTasks();
-    const activeTasks = tasks.filter(
-      (task) => !task.archived && !task.completed
-    );
+    const activeTasks = tasks.filter((task) => !task.archived && !task.completed);
 
     const result = {};
     const today = new Date();
@@ -187,7 +197,7 @@ router.post('/tasks', (req, res) => {
       plannedStartTime,
       plannedDuration,
       project,
-    } = req.body;
+    } = req.body || {};
 
     // Validate required fields
     if (!description || description.trim().length === 0) {
@@ -196,9 +206,7 @@ router.post('/tasks', (req, res) => {
 
     // Validate recurring value
     if (recurring && !['daily', 'weekly'].includes(recurring)) {
-      return res
-        .status(400)
-        .json({ error: 'Recurring must be "daily" or "weekly"' });
+      return res.status(400).json({ error: 'Recurring must be "daily" or "weekly"' });
     }
 
     // Check if task exists (update case)
@@ -218,21 +226,13 @@ router.post('/tasks', (req, res) => {
           links: links || [],
           isAppointment: isAppointment || false,
           reminderMinutes: isAppointment ? reminderMinutes || 30 : null,
-          workingDaysOnly:
-            recurring === 'daily' ? workingDaysOnly || false : false,
+          workingDaysOnly: recurring === 'daily' ? workingDaysOnly || false : false,
           pomodoroMode: pomodoroMode ?? existingTask.pomodoroMode ?? false,
-          pomodoroInterval:
-            pomodoroInterval || existingTask.pomodoroInterval || 25,
-          plannedStartDate:
-            plannedStartDate ?? existingTask.plannedStartDate ?? null,
-          plannedStartTime:
-            plannedStartTime ?? existingTask.plannedStartTime ?? null,
-          project:
-            project !== undefined
-              ? project || null
-              : existingTask.project || null,
-          plannedDuration:
-            plannedDuration ?? existingTask.plannedDuration ?? 60,
+          pomodoroInterval: pomodoroInterval || existingTask.pomodoroInterval || 25,
+          plannedStartDate: plannedStartDate ?? existingTask.plannedStartDate ?? null,
+          plannedStartTime: plannedStartTime ?? existingTask.plannedStartTime ?? null,
+          project: project !== undefined ? project || null : existingTask.project || null,
+          plannedDuration: plannedDuration ?? existingTask.plannedDuration ?? 60,
           clockRing: existingTask.clockRing ?? null,
           updatedAt: new Date().toISOString(),
         };
@@ -248,8 +248,7 @@ router.post('/tasks', (req, res) => {
           details: details || null,
           isAppointment: isAppointment || false,
           reminderMinutes: isAppointment ? reminderMinutes || 30 : null,
-          workingDaysOnly:
-            recurring === 'daily' ? workingDaysOnly || false : false,
+          workingDaysOnly: recurring === 'daily' ? workingDaysOnly || false : false,
           completed: false,
           archived: false,
           inProgress: false,
@@ -280,8 +279,7 @@ router.post('/tasks', (req, res) => {
         details: details || null,
         isAppointment: isAppointment || false,
         reminderMinutes: isAppointment ? reminderMinutes || 30 : null,
-        workingDaysOnly:
-          recurring === 'daily' ? workingDaysOnly || false : false,
+        workingDaysOnly: recurring === 'daily' ? workingDaysOnly || false : false,
         completed: false,
         archived: false,
         inProgress: false,
@@ -359,9 +357,7 @@ router.post('/tasks/:id/stop', (req, res) => {
     }
 
     if (task.inProgress && task.startedAt) {
-      const elapsed = Math.floor(
-        (Date.now() - new Date(task.startedAt).getTime()) / 1000
-      );
+      const elapsed = Math.floor((Date.now() - new Date(task.startedAt).getTime()) / 1000);
       task.timeSpent += elapsed;
     }
 
@@ -394,9 +390,7 @@ router.post('/tasks/:id/complete', (req, res) => {
     const task = allTasks[taskIndex];
 
     if (task.inProgress && task.startedAt) {
-      const elapsed = Math.floor(
-        (Date.now() - new Date(task.startedAt).getTime()) / 1000
-      );
+      const elapsed = Math.floor((Date.now() - new Date(task.startedAt).getTime()) / 1000);
       task.timeSpent += elapsed;
     }
 
@@ -412,26 +406,18 @@ router.post('/tasks/:id/complete', (req, res) => {
 
     // If task is recurring, create a new task for the next occurrence
     if (task.recurring && task.dueDate) {
-      const nextDueDate = calculateNextDueDate(
-        task.dueDate,
-        task.recurring,
-        task.workingDaysOnly
-      );
+      const nextDueDate = calculateNextDueDate(task.dueDate, task.recurring, task.workingDaysOnly);
       // Calculate planned start date for recurring task
       // Use date string splitting to avoid UTC/local timezone mismatches
       let nextPlannedStartDate = null;
       if (task.plannedStartDate && task.dueDate) {
         const [dueY, dueM, dueD] = task.dueDate.split('-').map(Number);
-        const [startY, startM, startD] = task.plannedStartDate
-          .split('-')
-          .map(Number);
+        const [startY, startM, startD] = task.plannedStartDate.split('-').map(Number);
         const dueMs = Date.UTC(dueY, dueM - 1, dueD);
         const startMs = Date.UTC(startY, startM - 1, startD);
         const offsetDays = Math.round((startMs - dueMs) / 86400000);
         const [nextY, nextM, nextD] = nextDueDate.split('-').map(Number);
-        const nextStartDate = new Date(
-          Date.UTC(nextY, nextM - 1, nextD + offsetDays)
-        );
+        const nextStartDate = new Date(Date.UTC(nextY, nextM - 1, nextD + offsetDays));
         const sy = nextStartDate.getUTCFullYear();
         const sm = String(nextStartDate.getUTCMonth() + 1).padStart(2, '0');
         const sd = String(nextStartDate.getUTCDate()).padStart(2, '0');
@@ -538,7 +524,7 @@ router.delete('/tasks/:id', (req, res) => {
  */
 router.post('/archive/cleanup', (req, res) => {
   try {
-    const { cutoffDate } = req.body;
+    const { cutoffDate } = req.body || {};
 
     if (!cutoffDate) {
       return res.status(400).json({ error: 'Cutoff date is required' });
@@ -569,9 +555,7 @@ router.post('/archive/cleanup', (req, res) => {
     tasksToMove.forEach((task) => {
       task.archivedToFile = true;
       // Extract date from completedAt timestamp (YYYY-MM-DD)
-      const completedDate = new Date(task.completedAt)
-        .toISOString()
-        .split('T')[0];
+      const completedDate = new Date(task.completedAt).toISOString().split('T')[0];
       if (!tasksByDate[completedDate]) {
         tasksByDate[completedDate] = [];
       }
@@ -656,7 +640,7 @@ router.put('/settings', (req, res) => {
  */
 router.put('/settings/timezone', (req, res) => {
   try {
-    const { timezone } = req.body;
+    const { timezone } = req.body || {};
 
     if (!timezone || typeof timezone !== 'object') {
       return res.status(400).json({ error: 'Invalid timezone object' });
@@ -676,7 +660,7 @@ router.put('/settings/timezone', (req, res) => {
  */
 router.put('/settings/daily-routine', (req, res) => {
   try {
-    const { dailyRoutine } = req.body;
+    const { dailyRoutine } = req.body || {};
 
     if (!Array.isArray(dailyRoutine)) {
       return res.status(400).json({ error: 'dailyRoutine must be an array' });
@@ -684,9 +668,7 @@ router.put('/settings/daily-routine', (req, res) => {
 
     // Validate items count
     if (dailyRoutine.length > 10) {
-      return res
-        .status(400)
-        .json({ error: 'Maximum 10 daily routine items allowed' });
+      return res.status(400).json({ error: 'Maximum 10 daily routine items allowed' });
     }
 
     // Validate each item
@@ -713,18 +695,14 @@ router.put('/settings/daily-routine', (req, res) => {
  */
 router.post('/backup/import', (req, res) => {
   try {
-    const { tasks, config } = req.body;
+    const { tasks, config } = req.body || {};
 
     if (!tasks || !Array.isArray(tasks)) {
-      return res
-        .status(400)
-        .json({ error: 'Invalid backup: tasks must be an array' });
+      return res.status(400).json({ error: 'Invalid backup: tasks must be an array' });
     }
 
     if (!config || typeof config !== 'object') {
-      return res
-        .status(400)
-        .json({ error: 'Invalid backup: config must be an object' });
+      return res.status(400).json({ error: 'Invalid backup: config must be an object' });
     }
 
     // Clear existing archive files before restoring
@@ -756,8 +734,7 @@ router.post('/backup/import', (req, res) => {
     }
 
     if (config.mantra && typeof config.mantra === 'object') {
-      const sanitize = (val, fb) =>
-        typeof val === 'string' ? val.slice(0, 200) : fb;
+      const sanitize = (val, fb) => (typeof val === 'string' ? val.slice(0, 200) : fb);
       config.mantra.username = sanitize(config.mantra.username, 'user');
       config.mantra.hostname = sanitize(config.mantra.hostname, 'matrix');
       config.mantra.text = sanitize(config.mantra.text, '');
@@ -783,27 +760,16 @@ router.post('/backup/import', (req, res) => {
  */
 router.post('/tasks/import', (req, res) => {
   try {
-    const { project, tasks: importTasks } = req.body;
+    const { project, tasks: importTasks } = req.body || {};
 
-    if (
-      !importTasks ||
-      !Array.isArray(importTasks) ||
-      importTasks.length === 0
-    ) {
-      return res
-        .status(400)
-        .json({ error: 'Invalid import: tasks must be a non-empty array' });
+    if (!importTasks || !Array.isArray(importTasks) || importTasks.length === 0) {
+      return res.status(400).json({ error: 'Invalid import: tasks must be a non-empty array' });
     }
 
     // Validate each task has at least a description
     for (let i = 0; i < importTasks.length; i++) {
-      if (
-        !importTasks[i].description ||
-        importTasks[i].description.trim().length === 0
-      ) {
-        return res
-          .status(400)
-          .json({ error: `Task at index ${i} is missing a description` });
+      if (!importTasks[i].description || importTasks[i].description.trim().length === 0) {
+        return res.status(400).json({ error: `Task at index ${i} is missing a description` });
       }
     }
 
@@ -822,8 +788,7 @@ router.post('/tasks/import', (req, res) => {
       details: t.details || null,
       isAppointment: t.isAppointment || false,
       reminderMinutes: t.isAppointment ? t.reminderMinutes || 30 : null,
-      workingDaysOnly:
-        t.recurring === 'daily' ? t.workingDaysOnly || false : false,
+      workingDaysOnly: t.recurring === 'daily' ? t.workingDaysOnly || false : false,
       completed: false,
       archived: false,
       inProgress: false,
@@ -869,9 +834,7 @@ router.put('/config', (req, res) => {
     }
 
     if (!config.mantra || typeof config.mantra !== 'object') {
-      return res
-        .status(400)
-        .json({ error: 'Config must include mantra object' });
+      return res.status(400).json({ error: 'Config must include mantra object' });
     }
 
     const sanitizeString = (val, fallback) =>
@@ -894,9 +857,7 @@ router.put('/config', (req, res) => {
           enabled: Boolean(item.enabled),
           startTime: item.startTime || null,
           duration: typeof item.duration === 'number' ? item.duration : 0,
-          days: Array.isArray(item.days)
-            ? item.days.filter((d) => typeof d === 'string')
-            : [],
+          days: Array.isArray(item.days) ? item.days.filter((d) => typeof d === 'string') : [],
         }));
     }
 

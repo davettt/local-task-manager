@@ -1,17 +1,18 @@
 require('dotenv').config();
 
 const express = require('express');
+const helmet = require('helmet');
 const path = require('path');
 const fs = require('fs');
 const apiRoutes = require('./routes/api');
-const {
-  initializeTasksFile,
-  cleanupOldArchives,
-  ensureDataDir,
-} = require('./utils/fileManager');
+const { initializeTasksFile, cleanupOldArchives, ensureDataDir } = require('./utils/fileManager');
 
-const app = express();
-const DEFAULT_PORT = process.env.PORT || 3000;
+// CSRF defence for a local app is the Origin check below (project-standards § CSRF Protection):
+// there are no cookies or sessions for a token to protect
+const app = express(); // nosemgrep: javascript.express.security.audit.express-check-csurf-middleware-usage.express-check-csurf-middleware-usage
+const DEFAULT_PORT = parseInt(process.env.PORT, 10) || 3000;
+// Loopback only: the API has no authentication, so it must not be reachable from the network
+const HOST = process.env.HOST || '127.0.0.1';
 const DATA_DIR = process.env.DATA_DIR || './local_data';
 const LOCK_FILE = path.join(DATA_DIR, '.lock');
 
@@ -32,7 +33,7 @@ function isPortAvailable(port) {
     tester.once('listening', () => {
       tester.close(() => resolve(true));
     });
-    tester.listen(port, '0.0.0.0');
+    tester.listen(port, HOST);
   });
 }
 
@@ -50,9 +51,7 @@ async function findAvailablePort(startPort) {
     }
     port++;
   }
-  throw new Error(
-    `No available ports found between ${startPort} and ${port - 1}`
-  );
+  throw new Error(`No available ports found between ${startPort} and ${port - 1}`);
 }
 
 // ===================================
@@ -126,9 +125,7 @@ function cleanup() {
         } else {
           // Stale lock file - process is no longer running
           // eslint-disable-next-line no-console
-          console.log(
-            'Removing stale lock file from previous crashed instance...'
-          );
+          console.log('Removing stale lock file from previous crashed instance...');
           fs.unlinkSync(LOCK_FILE);
         }
       } catch (_error) {
@@ -176,6 +173,58 @@ function cleanup() {
     // Auto-delete archive files older than 45 days
     cleanupOldArchives();
 
+    // Find available port before middleware, so the Host and Origin checks know it
+    const PORT = await findAvailablePort(DEFAULT_PORT);
+    const portChanged = PORT !== DEFAULT_PORT;
+    const allowedHosts = new Set([`localhost:${PORT}`, `127.0.0.1:${PORT}`]);
+    const allowedOrigins = new Set([`http://localhost:${PORT}`, `http://127.0.0.1:${PORT}`]);
+
+    app.disable('x-powered-by');
+
+    // Reject foreign Host headers (DNS rebinding) before any route runs
+    app.use((req, res, next) => {
+      if (!allowedHosts.has(req.headers.host)) {
+        return res.status(403).json({ error: 'Invalid host' });
+      }
+      next();
+    });
+
+    // CORS only stops a website reading responses, not sending them, so refuse
+    // state-changing requests that carry a foreign Origin
+    app.use((req, res, next) => {
+      if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
+        return next();
+      }
+      const origin = req.headers.origin;
+      if (origin && !allowedOrigins.has(origin)) {
+        return res.status(403).json({ error: 'Cross-site request refused' });
+      }
+      next();
+    });
+
+    app.use(
+      helmet({
+        contentSecurityPolicy: {
+          useDefaults: false,
+          directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'"],
+            // index.html and ui.js set inline style attributes; scripts stay external
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            imgSrc: ["'self'", 'data:'],
+            connectSrc: ["'self'"],
+            fontSrc: ["'self'"],
+            objectSrc: ["'none'"],
+            baseUri: ["'self'"],
+            frameAncestors: ["'none'"],
+            formAction: ["'self'"],
+          },
+        },
+        frameguard: { action: 'deny' },
+        referrerPolicy: { policy: 'no-referrer' },
+      })
+    );
+
     // Middleware
     app.use(express.json({ limit: '5mb' }));
     app.use(express.static(path.join(__dirname, '../public')));
@@ -202,10 +251,6 @@ function cleanup() {
       res.status(500).json({ error: 'Internal server error' });
     });
 
-    // Find available port and start server
-    const PORT = await findAvailablePort(DEFAULT_PORT);
-    const portChanged = PORT !== DEFAULT_PORT;
-
     // Update lock file with port number
     fs.writeFileSync(
       LOCK_FILE,
@@ -221,7 +266,13 @@ function cleanup() {
     );
 
     // Start server
-    app.listen(PORT, () => {
+    // Express 5 passes listen errors (e.g. EADDRINUSE) to this callback instead of throwing
+    app.listen(PORT, HOST, (err) => {
+      if (err) {
+        console.error('Failed to start server:', err.message);
+        cleanup();
+        process.exit(1);
+      }
       // eslint-disable-next-line no-console
       console.log(`
 ╔════════════════════════════════════════════════╗
