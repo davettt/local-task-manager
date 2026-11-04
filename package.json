@@ -36,7 +36,7 @@
   "author": "",
   "license": "MIT WITH Commons-Clause",
   "dependencies": {
-    "axios": "^1.16.0",
+    "axios": "^1.21.0",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "helmet": "^8.3.0"
